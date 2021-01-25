@@ -7,9 +7,13 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 @Entity
+@Table(name = "vartotojai")
 public class User {
 
 	@Id
@@ -24,10 +28,15 @@ public class User {
 
 	@NotNull
 	@Column(unique = true)
+	@Email
 	private String email;
 
 	@Enumerated(EnumType.STRING)
 	private UserRole role;
+	
+	@NotBlank
+	private String password;
+	
 
 	public User() {
 		super();
@@ -79,6 +88,14 @@ public class User {
 
 	public void setRole(UserRole role) {
 		this.role = role;
+	}
+	
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
 }

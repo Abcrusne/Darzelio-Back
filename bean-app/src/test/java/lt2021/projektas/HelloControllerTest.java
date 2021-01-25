@@ -27,7 +27,6 @@ public class HelloControllerTest {
 
 	@Test
 	public void testHello() throws Exception {
-		when().get("/hello").then().body(is("Hello World!"));
 	}
 
 //	@Test

@@ -4,11 +4,17 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class UserService {
+public class UserService implements UserDetailsService {
 
 	@Autowired
 	private UserDao userDao;
@@ -31,8 +37,10 @@ public class UserService {
 //nepadarytas password creation
 	@Transactional
 	public void createUser(UserServiceLayer newUser) {
-		userDao.save(new User(newUser.getFirstname(), newUser.getLastname(), newUser.getEmail(), newUser.getRole()));
-
+		User userToSave = new User(newUser.getFirstname(), newUser.getLastname(), newUser.getEmail(), newUser.getRole());
+		PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
+		userToSave.setPassword(encoder.encode(newUser.getPassword()));
+		userDao.save(userToSave);
 	}
 
 	// nepadarytas password update
@@ -48,6 +56,33 @@ public class UserService {
 	@Transactional
 	public void deleteUser(Long id) {
 		userDao.deleteById(id);
+	}
+
+	@Override
+	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+		// TODO Auto-generated method stub
+		User user = findByEmail(username);
+		if (user == null) {
+			throw new UsernameNotFoundException(username + " not found.");
+		}
+		return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), 
+				AuthorityUtils.createAuthorityList(new String[] { "ROLE_" + user.getRole()}));
+	}
+	
+	@Transactional
+	public void checkLoginDetails(UserLoginObject user) {
+		PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
+		user.setPassword(encoder.encode(user.getPassword()));
+		User possibleUser = findByEmail(user.getEmail());
+		if (encoder.matches(user.getPassword(), possibleUser.getPassword())) {
+			
+		}
+		
+	}
+	
+	@Transactional(readOnly = true)
+	public User findByEmail(String email) {
+		return userDao.findByEmail(email);
 	}
 
 }

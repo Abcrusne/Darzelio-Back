@@ -9,6 +9,7 @@ public class UserServiceLayer {
 	private String firstname;
 	private String lastname;
 	private String email;
+	private String password;
 
 	@Enumerated(EnumType.STRING)
 	private UserRole role;
@@ -17,12 +18,13 @@ public class UserServiceLayer {
 		super();
 	}
 
-	public UserServiceLayer(String firstname, String lastname, String email, UserRole role) {
+	public UserServiceLayer(String firstname, String lastname, String email, String password, UserRole role) {
 		super();
 		this.firstname = firstname;
 		this.lastname = lastname;
 		this.email = email;
 		this.role = role;
+		this.password = password;
 	}
 
 	public UserServiceLayer(Long id, String firstname, String lastname, String email, UserRole role) {
@@ -72,6 +74,14 @@ public class UserServiceLayer {
 
 	public void setRole(UserRole role) {
 		this.role = role;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
 }
