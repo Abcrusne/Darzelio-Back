@@ -22,7 +22,7 @@ public class UserService {
 	}
 
 	@Transactional(readOnly = true)
-	public UserServiceLayer getSingleUser(Long id) {
+	public UserServiceLayer getSingleUser(long id) {
 		var userFromService = userDao.findById(id).orElse(null);
 		return new UserServiceLayer(userFromService.getId(), userFromService.getFirstname(),
 				userFromService.getLastname(), userFromService.getEmail(), userFromService.getRole());
@@ -46,7 +46,7 @@ public class UserService {
 	}
 
 	@Transactional
-	public void deleteUser(Long id) {
+	public void deleteUser(long id) {
 		userDao.deleteById(id);
 	}
 

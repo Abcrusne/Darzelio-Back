@@ -13,8 +13,8 @@ import javax.validation.constraints.NotNull;
 public class User {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	private Long id;
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private long id;
 
 	@NotNull
 	private String firstname;
@@ -29,6 +29,8 @@ public class User {
 	@Enumerated(EnumType.STRING)
 	private UserRole role;
 
+	// private String password
+
 	public User() {
 		super();
 	}
@@ -41,7 +43,7 @@ public class User {
 		this.role = role;
 	}
 
-	public Long getId() {
+	public long getId() {
 		return id;
 	}
 
@@ -57,7 +59,7 @@ public class User {
 		return email;
 	}
 
-	public void setId(Long id) {
+	public void setId(long id) {
 		this.id = id;
 	}
 

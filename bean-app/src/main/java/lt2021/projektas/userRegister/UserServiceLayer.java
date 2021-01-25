@@ -5,13 +5,15 @@ import javax.persistence.Enumerated;
 
 public class UserServiceLayer {
 
-	private Long id;
+	private long id;
 	private String firstname;
 	private String lastname;
 	private String email;
 
 	@Enumerated(EnumType.STRING)
 	private UserRole role;
+
+	// private String password
 
 	public UserServiceLayer() {
 		super();
@@ -25,7 +27,7 @@ public class UserServiceLayer {
 		this.role = role;
 	}
 
-	public UserServiceLayer(Long id, String firstname, String lastname, String email, UserRole role) {
+	public UserServiceLayer(long id, String firstname, String lastname, String email, UserRole role) {
 		super();
 		this.id = id;
 		this.firstname = firstname;
@@ -34,7 +36,7 @@ public class UserServiceLayer {
 		this.role = role;
 	}
 
-	public Long getId() {
+	public long getId() {
 		return id;
 	}
 
@@ -54,7 +56,7 @@ public class UserServiceLayer {
 		return role;
 	}
 
-	public void setId(Long id) {
+	public void setId(long id) {
 		this.id = id;
 	}
 

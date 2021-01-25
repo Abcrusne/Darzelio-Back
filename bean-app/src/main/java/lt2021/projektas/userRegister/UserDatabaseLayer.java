@@ -12,6 +12,8 @@ public class UserDatabaseLayer {
 	@Enumerated(EnumType.STRING)
 	private UserRole role;
 
+	// private String password
+
 	public UserDatabaseLayer() {
 		super();
 	}
