@@ -16,7 +16,7 @@ import javax.validation.constraints.NotNull;
 public class User {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
 	@NotNull
@@ -37,16 +37,25 @@ public class User {
 	private String password;
 	
 
+	// @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=\\S+$).{8,}$")
+	@NotNull
+	private String password;
+
+//	@NotNull
+//	private String confirmPassword;
+
 	public User() {
 		super();
 	}
 
-	public User(@NotNull String firstname, @NotNull String lastname, @NotNull String email, UserRole role) {
+	public User(@NotNull String firstname, @NotNull String lastname, @NotNull String email, UserRole role,
+			@NotNull String password) {
 		super();
 		this.firstname = firstname;
 		this.lastname = lastname;
 		this.email = email;
 		this.role = role;
+		this.password = password;
 	}
 
 	public Long getId() {
@@ -89,6 +98,14 @@ public class User {
 		this.role = role;
 	}
 	
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
 	public String getPassword() {
 		return password;
 	}

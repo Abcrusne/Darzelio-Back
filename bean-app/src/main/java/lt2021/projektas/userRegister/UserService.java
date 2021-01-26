@@ -24,18 +24,18 @@ public class UserService implements UserDetailsService {
 	public List<ServiceLayerUser> getUsers() {
 		return userDao.findAll().stream()
 				.map(userFromService -> new ServiceLayerUser(userFromService.getId(), userFromService.getFirstname(),
-						userFromService.getLastname(), userFromService.getEmail(), userFromService.getRole()))
+						userFromService.getLastname(), userFromService.getEmail(),
+						userFromService.getPassword(), userFromService.getRole()))
 				.collect(Collectors.toList());
 	}
 
 	@Transactional(readOnly = true)
-	public ServiceLayerUser getSingleUser(Long id) {
+	public ServiceLayerUser getSingleUser(long id) {
 		var userFromService = userDao.findById(id).orElse(null);
 		return new ServiceLayerUser(userFromService.getId(), userFromService.getFirstname(),
-				userFromService.getLastname(), userFromService.getEmail(), userFromService.getRole());
+				userFromService.getLastname(), userFromService.getEmail(), userFromService.getPassword(), userFromService.getRole());
 	}
 
-//nepadarytas password creation
 	@Transactional
 	public void createUser(ServiceLayerUser newUser) {
 		User userToSave = new User(newUser.getFirstname(), newUser.getLastname(), newUser.getEmail(),
@@ -46,7 +46,6 @@ public class UserService implements UserDetailsService {
 		userDao.save(userToSave);
 	}
 
-	// nepadarytas password update
 	@Transactional
 	public void updateUser(ServiceLayerUser user) {
 		var updatedUser = userDao.findById(user.getId()).orElse(null);
@@ -54,6 +53,7 @@ public class UserService implements UserDetailsService {
 		updatedUser.setLastname(user.getLastname());
 		updatedUser.setEmail(user.getEmail());
 		updatedUser.setRole(user.getRole());
+		updatedUser.setPassword(user.getPassword());
 	}
 
 	@Transactional

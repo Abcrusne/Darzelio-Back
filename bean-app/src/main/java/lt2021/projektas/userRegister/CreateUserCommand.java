@@ -8,15 +8,19 @@ public class CreateUserCommand {
 	private String firstname;
 	private String lastname;
 	private String email;
-	private String password;
+
 	@Enumerated(EnumType.STRING)
 	private UserRole role;
+
+	private String password;
+//	private String confirmPassword;
 
 	public CreateUserCommand() {
 		super();
 	}
 
 	public CreateUserCommand(String firstname, String lastname, String email, String password, UserRole role) {
+
 		super();
 		this.firstname = firstname;
 		this.lastname = lastname;
