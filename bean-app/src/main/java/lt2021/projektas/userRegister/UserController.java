@@ -16,12 +16,12 @@ public class UserController {
 	private UserService userService;
 
 	@RequestMapping(method = RequestMethod.GET)
-	public List<UserServiceLayer> getUsers() {
+	public List<ServiceLayerUser> getUsers() {
 		return userService.getUsers();
 	}
 
 	@RequestMapping(path = "/{userId}", method = RequestMethod.GET)
-	public UserServiceLayer getSingleUser(@PathVariable final Long userId) {
+	public ServiceLayerUser getSingleUser(@PathVariable final Long userId) {
 		return userService.getSingleUser(userId);
 	}
 }

@@ -1,4 +1,4 @@
-package lt2021.projektas;
+package lt2021.projektas.security;
 
 import java.io.IOException;
 

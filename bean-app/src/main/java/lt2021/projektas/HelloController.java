@@ -14,7 +14,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.Data;
-import lt2021.projektas.userRegister.UserLoginObject;
+import lt2021.projektas.userRegister.ServiceLayerUser;
+import lt2021.projektas.userRegister.UserRole;
 import lt2021.projektas.userRegister.UserService;
 
 @RestController
@@ -81,8 +82,4 @@ public class HelloController {
 				(rs, rowNum) -> new Result(left, right, rs.getLong("answer")));
 	}
 	
-	@RequestMapping(path = "/login", method = RequestMethod.POST)
-	public void loginWithUser(@RequestBody final UserLoginObject user) {
-		
-	}
 }

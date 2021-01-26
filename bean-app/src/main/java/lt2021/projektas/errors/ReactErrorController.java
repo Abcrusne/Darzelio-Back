@@ -1,4 +1,4 @@
-package lt2021.projektas;
+package lt2021.projektas.errors;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.http.HttpServletRequest;

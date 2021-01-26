@@ -20,24 +20,25 @@ public class UserService implements UserDetailsService {
 	private UserDao userDao;
 
 	@Transactional(readOnly = true)
-	public List<UserServiceLayer> getUsers() {
+	public List<ServiceLayerUser> getUsers() {
 		return userDao.findAll().stream()
-				.map(userFromService -> new UserServiceLayer(userFromService.getId(), userFromService.getFirstname(),
+				.map(userFromService -> new ServiceLayerUser(userFromService.getId(), userFromService.getFirstname(),
 						userFromService.getLastname(), userFromService.getEmail(), userFromService.getRole()))
 				.collect(Collectors.toList());
 	}
 
 	@Transactional(readOnly = true)
-	public UserServiceLayer getSingleUser(Long id) {
+	public ServiceLayerUser getSingleUser(Long id) {
 		var userFromService = userDao.findById(id).orElse(null);
-		return new UserServiceLayer(userFromService.getId(), userFromService.getFirstname(),
+		return new ServiceLayerUser(userFromService.getId(), userFromService.getFirstname(),
 				userFromService.getLastname(), userFromService.getEmail(), userFromService.getRole());
 	}
 
 //nepadarytas password creation
 	@Transactional
-	public void createUser(UserServiceLayer newUser) {
-		User userToSave = new User(newUser.getFirstname(), newUser.getLastname(), newUser.getEmail(), newUser.getRole());
+	public void createUser(ServiceLayerUser newUser) {
+		User userToSave = new User(newUser.getFirstname(), newUser.getLastname(), newUser.getEmail(),
+				newUser.getRole());
 		PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
 		userToSave.setPassword(encoder.encode(newUser.getPassword()));
 		userDao.save(userToSave);
@@ -45,7 +46,7 @@ public class UserService implements UserDetailsService {
 
 	// nepadarytas password update
 	@Transactional
-	public void updateUser(UserServiceLayer user) {
+	public void updateUser(ServiceLayerUser user) {
 		var updatedUser = userDao.findById(user.getId()).orElse(null);
 		updatedUser.setFirstname(user.getFirstname());
 		updatedUser.setLastname(user.getLastname());
@@ -65,21 +66,10 @@ public class UserService implements UserDetailsService {
 		if (user == null) {
 			throw new UsernameNotFoundException(username + " not found.");
 		}
-		return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), 
-				AuthorityUtils.createAuthorityList(new String[] { "ROLE_" + user.getRole()}));
+		return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(),
+				AuthorityUtils.createAuthorityList(new String[] { "ROLE_" + user.getRole() }));
 	}
-	
-	@Transactional
-	public void checkLoginDetails(UserLoginObject user) {
-		PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
-		user.setPassword(encoder.encode(user.getPassword()));
-		User possibleUser = findByEmail(user.getEmail());
-		if (encoder.matches(user.getPassword(), possibleUser.getPassword())) {
-			
-		}
-		
-	}
-	
+
 	@Transactional(readOnly = true)
 	public User findByEmail(String email) {
 		return userDao.findByEmail(email);
