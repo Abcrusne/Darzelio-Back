@@ -12,7 +12,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import lt2021.projektas.userRegister.User;
-import lt2021.projektas.userRegister.UserServiceLayer;
+import lt2021.projektas.userRegister.ServiceLayerUser;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = App.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -32,7 +32,7 @@ public class UserControllerTest {
 		final String email = "test@mail.com";
 		final String password = "Slaptazodis1";
 
-		final UserServiceLayer createUser = new UserServiceLayer();
+		final ServiceLayerUser createUser = new ServiceLayerUser();
 
 		createUser.setFirstname(firstname);
 		createUser.setLastname(lastname);

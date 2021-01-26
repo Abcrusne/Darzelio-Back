@@ -27,28 +27,28 @@ public class UserController {
 
 	@RequestMapping(method = RequestMethod.GET)
 	@ApiOperation(value = "Get users list", notes = "Returns all users")
-	public List<UserServiceLayer> getUsers() {
+	public List<ServiceLayerUser> getUsers() {
 		return userService.getUsers();
 	}
 
 	@RequestMapping(path = "/{userId}", method = RequestMethod.GET)
-	public UserServiceLayer getSingleUser(@PathVariable final long userId) {
+	public ServiceLayerUser getSingleUser(@PathVariable final long userId) {
 		return userService.getSingleUser(userId);
 	}
 
 	@RequestMapping(method = RequestMethod.POST)
 	@ResponseStatus(HttpStatus.CREATED)
 	@ApiOperation(value = "Create user", notes = "Creates users with data")
-	public List<UserServiceLayer> createUser(
-			@ApiParam(value = "User Data", required = true) @RequestBody final UserDatabaseLayer user) {
-		userService.createUser(new UserServiceLayer(user.getFirstname(), user.getLastname(), user.getEmail(),
+	public List<ServiceLayerUser> createUser(
+			@ApiParam(value = "User Data", required = true) @RequestBody final CreateUserCommand user) {
+		userService.createUser(new ServiceLayerUser(user.getFirstname(), user.getLastname(), user.getEmail(),
 				user.getRole(), user.getPassword()));
 		return userService.getUsers();
 	}
 
 	@RequestMapping(path = "/{userId}", method = RequestMethod.PUT)
-	public void updateUser(@PathVariable final long userId, @Valid @RequestBody final UserDatabaseLayer user) {
-		userService.updateUser(new UserServiceLayer(userId, user.getFirstname(), user.getLastname(), user.getEmail(),
+	public void updateUser(@PathVariable final long userId, @Valid @RequestBody final CreateUserCommand user) {
+		userService.updateUser(new ServiceLayerUser(userId, user.getFirstname(), user.getLastname(), user.getEmail(),
 				user.getRole(), user.getPassword()));
 	}
 

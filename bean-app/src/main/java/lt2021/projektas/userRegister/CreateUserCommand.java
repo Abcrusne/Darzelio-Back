@@ -3,7 +3,7 @@ package lt2021.projektas.userRegister;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 
-public class UserDatabaseLayer {
+public class CreateUserCommand {
 
 	private String firstname;
 	private String lastname;
@@ -15,11 +15,11 @@ public class UserDatabaseLayer {
 	private String password;
 //	private String confirmPassword;
 
-	public UserDatabaseLayer() {
+	public CreateUserCommand() {
 		super();
 	}
 
-	public UserDatabaseLayer(String firstname, String lastname, String email, UserRole role, String password) {
+	public CreateUserCommand(String firstname, String lastname, String email, UserRole role, String password) {
 		super();
 		this.firstname = firstname;
 		this.lastname = lastname;
