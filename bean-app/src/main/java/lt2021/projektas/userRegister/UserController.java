@@ -41,15 +41,14 @@ public class UserController {
 	@ApiOperation(value = "Create user", notes = "Creates users with data")
 	public List<ServiceLayerUser> createUser(
 			@ApiParam(value = "User Data", required = true) @RequestBody final CreateUserCommand user) {
-		userService.createUser(new ServiceLayerUser(user.getFirstname(), user.getLastname(), user.getEmail(),
-				user.getRole(), user.getPassword()));
+		userService.createUser(user);
 		return userService.getUsers();
 	}
 
 	@RequestMapping(path = "/{userId}", method = RequestMethod.PUT)
 	public void updateUser(@PathVariable final long userId, @Valid @RequestBody final CreateUserCommand user) {
 		userService.updateUser(new ServiceLayerUser(userId, user.getFirstname(), user.getLastname(), user.getEmail(),
-				user.getRole(), user.getPassword()));
+				user.getPassword(), user.getRole()));
 	}
 
 //	@ResponseStatus(HttpStatus.NO_CONTENT)

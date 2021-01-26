@@ -39,7 +39,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		http.authorizeRequests().antMatchers("/", "/api/user", "/swagger-ui").permitAll().antMatchers("/api/**")
+		http.authorizeRequests().antMatchers("/", "/api/users", "/swagger-ui").permitAll().antMatchers("/api/**")
 				.authenticated().and().formLogin().successHandler(new SimpleUrlAuthenticationSuccessHandler())
 				.failureHandler(new SimpleUrlAuthenticationFailureHandler()).loginPage("/login").permitAll().and()
 				.logout().permitAll().and().csrf().disable().exceptionHandling()

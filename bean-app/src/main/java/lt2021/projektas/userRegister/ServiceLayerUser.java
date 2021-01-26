@@ -31,13 +31,14 @@ public class ServiceLayerUser {
 	}
 
 
-	public ServiceLayerUser(Long id, String firstname, String lastname, String email, UserRole role) {
+	public ServiceLayerUser(Long id, String firstname, String lastname, String email, String password, UserRole role) {
 		super();
 		this.id = id;
 		this.firstname = firstname;
 		this.lastname = lastname;
 		this.email = email;
 		this.role = role;
+		this.password = password;
 	}
 
 	public Long getId() {

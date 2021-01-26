@@ -32,10 +32,6 @@ public class User {
 
 	@Enumerated(EnumType.STRING)
 	private UserRole role;
-	
-	@NotBlank
-	private String password;
-	
 
 	// @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=\\S+$).{8,}$")
 	@NotNull
@@ -48,14 +44,12 @@ public class User {
 		super();
 	}
 
-	public User(@NotNull String firstname, @NotNull String lastname, @NotNull String email, UserRole role,
-			@NotNull String password) {
+	public User(@NotNull String firstname, @NotNull String lastname, @NotNull String email, UserRole role) {
 		super();
 		this.firstname = firstname;
 		this.lastname = lastname;
 		this.email = email;
-		this.role = role;
-		this.password = password;
+		this.role = role; 
 	}
 
 	public Long getId() {
@@ -96,14 +90,6 @@ public class User {
 
 	public void setRole(UserRole role) {
 		this.role = role;
-	}
-	
-	public String getPassword() {
-		return password;
-	}
-
-	public void setPassword(String password) {
-		this.password = password;
 	}
 
 	public String getPassword() {

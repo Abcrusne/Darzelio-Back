@@ -1,15 +1,11 @@
 package lt2021.projektas.userRegister;
 
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-
 public class CreateUserCommand {
 
 	private String firstname;
 	private String lastname;
 	private String email;
 
-	@Enumerated(EnumType.STRING)
 	private UserRole role;
 
 	private String password;

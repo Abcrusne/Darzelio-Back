@@ -24,8 +24,7 @@ public class UserService implements UserDetailsService {
 	public List<ServiceLayerUser> getUsers() {
 		return userDao.findAll().stream()
 				.map(userFromService -> new ServiceLayerUser(userFromService.getId(), userFromService.getFirstname(),
-						userFromService.getLastname(), userFromService.getEmail(),
-						userFromService.getPassword(), userFromService.getRole()))
+						userFromService.getLastname(), userFromService.getEmail(), userFromService.getPassword(), userFromService.getRole()))
 				.collect(Collectors.toList());
 	}
 
@@ -37,7 +36,7 @@ public class UserService implements UserDetailsService {
 	}
 
 	@Transactional
-	public void createUser(ServiceLayerUser newUser) {
+	public void createUser(CreateUserCommand newUser) {
 		User userToSave = new User(newUser.getFirstname(), newUser.getLastname(), newUser.getEmail(),
 				newUser.getRole());
 		@SuppressWarnings("deprecation")
