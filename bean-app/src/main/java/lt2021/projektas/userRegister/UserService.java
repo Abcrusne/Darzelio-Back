@@ -4,11 +4,18 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.MessageDigestPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class UserService {
+public class UserService implements UserDetailsService {
 
 	@Autowired
 	private UserDao userDao;
@@ -17,8 +24,8 @@ public class UserService {
 	public List<ServiceLayerUser> getUsers() {
 		return userDao.findAll().stream()
 				.map(userFromService -> new ServiceLayerUser(userFromService.getId(), userFromService.getFirstname(),
-						userFromService.getLastname(), userFromService.getEmail(), userFromService.getRole(),
-						userFromService.getPassword()))
+						userFromService.getLastname(), userFromService.getEmail(),
+						userFromService.getPassword(), userFromService.getRole()))
 				.collect(Collectors.toList());
 	}
 
@@ -26,15 +33,17 @@ public class UserService {
 	public ServiceLayerUser getSingleUser(long id) {
 		var userFromService = userDao.findById(id).orElse(null);
 		return new ServiceLayerUser(userFromService.getId(), userFromService.getFirstname(),
-				userFromService.getLastname(), userFromService.getEmail(), userFromService.getRole(),
-				userFromService.getPassword());
+				userFromService.getLastname(), userFromService.getEmail(), userFromService.getPassword(), userFromService.getRole());
 	}
 
 	@Transactional
 	public void createUser(ServiceLayerUser newUser) {
-		userDao.save(new User(newUser.getFirstname(), newUser.getLastname(), newUser.getEmail(), newUser.getRole(),
-				newUser.getPassword()));
-
+		User userToSave = new User(newUser.getFirstname(), newUser.getLastname(), newUser.getEmail(),
+				newUser.getRole());
+		@SuppressWarnings("deprecation")
+		PasswordEncoder encoder = new MessageDigestPasswordEncoder("SHA-256");
+		userToSave.setPassword(encoder.encode(newUser.getPassword()));
+		userDao.save(userToSave);
 	}
 
 	@Transactional
@@ -50,6 +59,22 @@ public class UserService {
 	@Transactional
 	public void deleteUser(Long id) {
 		userDao.deleteById(id);
+	}
+
+	@Override
+	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+		// TODO Auto-generated method stub
+		User user = findByEmail(username);
+		if (user == null) {
+			throw new UsernameNotFoundException(username + " not found.");
+		}
+		return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(),
+				AuthorityUtils.createAuthorityList(new String[] { "ROLE_" + user.getRole() }));
+	}
+
+	@Transactional(readOnly = true)
+	public User findByEmail(String email) {
+		return userDao.findByEmail(email);
 	}
 
 }

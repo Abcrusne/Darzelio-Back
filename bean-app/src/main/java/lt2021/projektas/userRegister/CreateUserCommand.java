@@ -19,7 +19,8 @@ public class CreateUserCommand {
 		super();
 	}
 
-	public CreateUserCommand(String firstname, String lastname, String email, UserRole role, String password) {
+	public CreateUserCommand(String firstname, String lastname, String email, String password, UserRole role) {
+
 		super();
 		this.firstname = firstname;
 		this.lastname = lastname;
