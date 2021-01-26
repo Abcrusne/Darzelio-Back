@@ -8,7 +8,7 @@ public class CreateUserCommand {
 	private String firstname;
 	private String lastname;
 	private String email;
-
+	private String password;
 	@Enumerated(EnumType.STRING)
 	private UserRole role;
 
@@ -16,12 +16,13 @@ public class CreateUserCommand {
 		super();
 	}
 
-	public CreateUserCommand(String firstname, String lastname, String email, UserRole role) {
+	public CreateUserCommand(String firstname, String lastname, String email, String password, UserRole role) {
 		super();
 		this.firstname = firstname;
 		this.lastname = lastname;
 		this.email = email;
 		this.role = role;
+		this.password = password;
 	}
 
 	public String getFirstname() {
@@ -54,6 +55,14 @@ public class CreateUserCommand {
 
 	public void setRole(UserRole role) {
 		this.role = role;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
 }
