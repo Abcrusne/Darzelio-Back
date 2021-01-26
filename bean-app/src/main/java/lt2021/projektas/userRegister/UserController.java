@@ -41,21 +41,21 @@ public class UserController {
 	@ApiOperation(value = "Create user", notes = "Creates users with data")
 	public List<UserServiceLayer> createUser(
 			@ApiParam(value = "User Data", required = true) @RequestBody final UserDatabaseLayer user) {
-		userService.createUser(
-				new UserServiceLayer(user.getFirstname(), user.getLastname(), user.getEmail(), user.getRole()));
+		userService.createUser(new UserServiceLayer(user.getFirstname(), user.getLastname(), user.getEmail(),
+				user.getRole(), user.getPassword()));
 		return userService.getUsers();
 	}
 
 	@RequestMapping(path = "/{userId}", method = RequestMethod.PUT)
 	public void updateUser(@PathVariable final long userId, @Valid @RequestBody final UserDatabaseLayer user) {
-		userService.updateUser(
-				new UserServiceLayer(userId, user.getFirstname(), user.getLastname(), user.getEmail(), user.getRole()));
+		userService.updateUser(new UserServiceLayer(userId, user.getFirstname(), user.getLastname(), user.getEmail(),
+				user.getRole(), user.getPassword()));
 	}
 
 //	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@RequestMapping(path = "/{userId}", method = RequestMethod.DELETE)
 	@ApiOperation(value = "Delete user", notes = "Deletes user by id")
-	public void deleteUser(@PathVariable final long userId) {
+	public void deleteUser(@PathVariable final Long userId) {
 		userService.deleteUser(userId);
 	}
 

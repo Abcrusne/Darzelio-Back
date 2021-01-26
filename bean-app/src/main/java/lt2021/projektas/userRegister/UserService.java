@@ -17,7 +17,8 @@ public class UserService {
 	public List<UserServiceLayer> getUsers() {
 		return userDao.findAll().stream()
 				.map(userFromService -> new UserServiceLayer(userFromService.getId(), userFromService.getFirstname(),
-						userFromService.getLastname(), userFromService.getEmail(), userFromService.getRole()))
+						userFromService.getLastname(), userFromService.getEmail(), userFromService.getRole(),
+						userFromService.getPassword()))
 				.collect(Collectors.toList());
 	}
 
@@ -25,17 +26,17 @@ public class UserService {
 	public UserServiceLayer getSingleUser(long id) {
 		var userFromService = userDao.findById(id).orElse(null);
 		return new UserServiceLayer(userFromService.getId(), userFromService.getFirstname(),
-				userFromService.getLastname(), userFromService.getEmail(), userFromService.getRole());
+				userFromService.getLastname(), userFromService.getEmail(), userFromService.getRole(),
+				userFromService.getPassword());
 	}
 
-//nepadarytas password creation
 	@Transactional
 	public void createUser(UserServiceLayer newUser) {
-		userDao.save(new User(newUser.getFirstname(), newUser.getLastname(), newUser.getEmail(), newUser.getRole()));
+		userDao.save(new User(newUser.getFirstname(), newUser.getLastname(), newUser.getEmail(), newUser.getRole(),
+				newUser.getPassword()));
 
 	}
 
-	// nepadarytas password update
 	@Transactional
 	public void updateUser(UserServiceLayer user) {
 		var updatedUser = userDao.findById(user.getId()).orElse(null);
@@ -43,10 +44,11 @@ public class UserService {
 		updatedUser.setLastname(user.getLastname());
 		updatedUser.setEmail(user.getEmail());
 		updatedUser.setRole(user.getRole());
+		updatedUser.setPassword(user.getPassword());
 	}
 
 	@Transactional
-	public void deleteUser(long id) {
+	public void deleteUser(Long id) {
 		userDao.deleteById(id);
 	}
 

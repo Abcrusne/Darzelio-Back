@@ -14,7 +14,7 @@ public class User {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private long id;
+	private Long id;
 
 	@NotNull
 	private String firstname;
@@ -29,21 +29,28 @@ public class User {
 	@Enumerated(EnumType.STRING)
 	private UserRole role;
 
-	// private String password
+	// @Pattern(regexp="^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=\\S+$).{8,}$")
+	@NotNull
+	private String password;
+
+//	@NotNull
+//	private String confirmPassword;
 
 	public User() {
 		super();
 	}
 
-	public User(@NotNull String firstname, @NotNull String lastname, @NotNull String email, UserRole role) {
+	public User(@NotNull String firstname, @NotNull String lastname, @NotNull String email, UserRole role,
+			@NotNull String password) {
 		super();
 		this.firstname = firstname;
 		this.lastname = lastname;
 		this.email = email;
 		this.role = role;
+		this.password = password;
 	}
 
-	public long getId() {
+	public Long getId() {
 		return id;
 	}
 
@@ -59,7 +66,7 @@ public class User {
 		return email;
 	}
 
-	public void setId(long id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 
@@ -81,6 +88,14 @@ public class User {
 
 	public void setRole(UserRole role) {
 		this.role = role;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
 }

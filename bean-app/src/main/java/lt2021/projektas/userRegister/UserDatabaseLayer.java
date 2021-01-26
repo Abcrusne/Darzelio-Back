@@ -12,18 +12,20 @@ public class UserDatabaseLayer {
 	@Enumerated(EnumType.STRING)
 	private UserRole role;
 
-	// private String password
+	private String password;
+//	private String confirmPassword;
 
 	public UserDatabaseLayer() {
 		super();
 	}
 
-	public UserDatabaseLayer(String firstname, String lastname, String email, UserRole role) {
+	public UserDatabaseLayer(String firstname, String lastname, String email, UserRole role, String password) {
 		super();
 		this.firstname = firstname;
 		this.lastname = lastname;
 		this.email = email;
 		this.role = role;
+		this.password = password;
 	}
 
 	public String getFirstname() {
@@ -56,6 +58,14 @@ public class UserDatabaseLayer {
 
 	public void setRole(UserRole role) {
 		this.role = role;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
 }
