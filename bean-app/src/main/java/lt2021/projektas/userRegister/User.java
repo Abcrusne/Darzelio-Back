@@ -29,7 +29,7 @@ public class User {
 	@Enumerated(EnumType.STRING)
 	private UserRole role;
 
-	// @Pattern(regexp="^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=\\S+$).{8,}$")
+	// @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=\\S+$).{8,}$")
 	@NotNull
 	private String password;
 
