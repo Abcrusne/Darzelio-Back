@@ -1,6 +1,6 @@
 package lt2021.projektas.errors;
 
-import java.sql.Date;
+import java.util.Date;
 
 public class ErrorDetails {
 	private Date timestamp;
