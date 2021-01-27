@@ -19,13 +19,13 @@ public class User {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@NotNull
+	@NotBlank
 	private String firstname;
 
-	@NotNull
+	@NotBlank
 	private String lastname;
 
-	@NotNull
+	@NotBlank
 	@Column(unique = true)
 	@Email
 	private String email;
@@ -34,7 +34,7 @@ public class User {
 	private UserRole role;
 
 	// @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=\\S+$).{8,}$")
-	@NotNull
+	@NotBlank
 	private String password;
 
 //	@NotNull
@@ -44,7 +44,7 @@ public class User {
 		super();
 	}
 
-	public User(@NotNull String firstname, @NotNull String lastname, @NotNull String email, UserRole role) {
+	public User(@NotBlank String firstname, @NotBlank String lastname, @NotBlank String email, UserRole role) {
 		super();
 		this.firstname = firstname;
 		this.lastname = lastname;
