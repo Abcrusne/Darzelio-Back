@@ -11,6 +11,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import lt2021.projektas.userRegister.ServiceLayerUser;
 import lt2021.projektas.userRegister.User;
+import lt2021.projektas.userRegister.UserRole;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = App.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -29,6 +30,7 @@ public class UserControllerTest {
 		final String lastname = "Testauskaite";
 		final String email = "test@mail.com";
 		final String password = "Slaptazodis1";
+		UserRole role = UserRole.PARENT;
 
 		final ServiceLayerUser createUser = new ServiceLayerUser();
 
@@ -36,6 +38,8 @@ public class UserControllerTest {
 		createUser.setLastname(lastname);
 		createUser.setEmail(email);
 		createUser.setPassword(password);
+
+		createUser.setRole(role);
 //		createUser.setId(id);
 
 		rest.postForLocation(URI, createUser);
