@@ -8,7 +8,6 @@ import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.MessageDigestPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -24,7 +23,8 @@ public class UserService implements UserDetailsService {
 	public List<ServiceLayerUser> getUsers() {
 		return userDao.findAll().stream()
 				.map(userFromService -> new ServiceLayerUser(userFromService.getId(), userFromService.getFirstname(),
-						userFromService.getLastname(), userFromService.getEmail(), userFromService.getPassword(), userFromService.getRole()))
+						userFromService.getLastname(), userFromService.getEmail(), userFromService.getPassword(),
+						userFromService.getRole()))
 				.collect(Collectors.toList());
 	}
 
@@ -32,7 +32,8 @@ public class UserService implements UserDetailsService {
 	public ServiceLayerUser getSingleUser(long id) {
 		var userFromService = userDao.findById(id).orElse(null);
 		return new ServiceLayerUser(userFromService.getId(), userFromService.getFirstname(),
-				userFromService.getLastname(), userFromService.getEmail(), userFromService.getPassword(), userFromService.getRole());
+				userFromService.getLastname(), userFromService.getEmail(), userFromService.getPassword(),
+				userFromService.getRole());
 	}
 
 	@Transactional
@@ -47,12 +48,16 @@ public class UserService implements UserDetailsService {
 
 	@Transactional
 	public void updateUser(ServiceLayerUser user) {
+
 		var updatedUser = userDao.findById(user.getId()).orElse(null);
 		updatedUser.setFirstname(user.getFirstname());
 		updatedUser.setLastname(user.getLastname());
 		updatedUser.setEmail(user.getEmail());
 		updatedUser.setRole(user.getRole());
-		updatedUser.setPassword(user.getPassword());
+		@SuppressWarnings("deprecation")
+		PasswordEncoder encoder = new MessageDigestPasswordEncoder("SHA-256");
+		updatedUser.setPassword(encoder.encode(user.getPassword()));
+
 	}
 
 	@Transactional

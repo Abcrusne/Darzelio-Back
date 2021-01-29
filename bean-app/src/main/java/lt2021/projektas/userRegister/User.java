@@ -7,10 +7,8 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Table;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 
 @Entity
 public class User {
@@ -49,7 +47,7 @@ public class User {
 		this.firstname = firstname;
 		this.lastname = lastname;
 		this.email = email;
-		this.role = role; 
+		this.role = role;
 	}
 
 	public Long getId() {
