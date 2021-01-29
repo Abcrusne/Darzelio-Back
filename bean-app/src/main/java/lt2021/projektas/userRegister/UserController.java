@@ -4,9 +4,11 @@ import java.util.List;
 
 import javax.validation.Valid;
 
-import org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -57,6 +59,16 @@ public class UserController {
 	@ApiOperation(value = "Delete user", notes = "Deletes user by id")
 	public void deleteUser(@PathVariable final Long userId) {
 		userService.deleteUser(userId);
+	}
+	
+	@RequestMapping(path = "/loggedrole", method = RequestMethod.GET)
+	public String getLoggedRole() {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		if (!(auth instanceof AnonymousAuthenticationToken)) {
+			String currentRole = userService.findByEmail(auth.getName()).getRole().toString();
+			return currentRole;
+		}
+		return "not logged";
 	}
 
 }
