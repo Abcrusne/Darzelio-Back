@@ -50,7 +50,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		http
 			.authorizeRequests()
 			.antMatchers("/", "/api/users", "/api/users/loggedrole", "/swagger-ui").permitAll()
-			.antMatchers("/api/**").authenticated()
+			//.antMatchers("/api/**").authenticated()
 			.and()
 			.formLogin()
 			.successHandler(new AuthenticationSuccessHandler() {
