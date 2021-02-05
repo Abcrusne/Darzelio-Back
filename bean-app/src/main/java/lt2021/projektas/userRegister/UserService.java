@@ -38,7 +38,7 @@ public class UserService implements UserDetailsService {
 
 	@Transactional
 	public void createUser(CreateUserCommand newUser) {
-		User userToSave = new User(newUser.getFirstname(), newUser.getLastname(), newUser.getEmail(),
+		User userToSave = new User(newUser.getFirstname(), newUser.getLastname(), newUser.getEmail().toLowerCase(),
 				newUser.getRole());
 		@SuppressWarnings("deprecation")
 		PasswordEncoder encoder = new MessageDigestPasswordEncoder("SHA-256");
@@ -52,12 +52,14 @@ public class UserService implements UserDetailsService {
 		var updatedUser = userDao.findById(user.getId()).orElse(null);
 		updatedUser.setFirstname(user.getFirstname());
 		updatedUser.setLastname(user.getLastname());
-		updatedUser.setEmail(user.getEmail());
+		updatedUser.setEmail(user.getEmail().toLowerCase());
 		updatedUser.setRole(user.getRole());
 		@SuppressWarnings("deprecation")
 		PasswordEncoder encoder = new MessageDigestPasswordEncoder("SHA-256");
-		updatedUser.setPassword(encoder.encode(user.getPassword()));
-
+		if (!(user.getPassword().equals(updatedUser.getPassword()))) {
+			updatedUser.setPassword(encoder.encode(user.getPassword()));
+		}
+		userDao.save(updatedUser);
 	}
 
 	@Transactional

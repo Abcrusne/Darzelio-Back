@@ -1,17 +1,24 @@
 package lt2021.projektas.parentdetails;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.persistence.AttributeOverride;
 import javax.persistence.AttributeOverrides;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToOne;
+import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
+import lt2021.projektas.child.Child;
 import lt2021.projektas.userRegister.User;
 
 @Entity
@@ -20,15 +27,25 @@ public class ParentDetails {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	
+
 	@OneToOne(mappedBy = "parentDetails")
 	private User parent;
-
+	
+	@NotBlank
+	private String firstname;
+	
+	@NotBlank
+	private String lastname;
+	
+	@NotBlank
+	@Email
+	private String email;
+	
 	@NotBlank
 	private String phone;
 
 	@NotNull
-	@Column(length = 11)
+	@Column(length = 11, unique = true)
 	private long personalCode;
 
 	@Embedded
@@ -36,34 +53,38 @@ public class ParentDetails {
 
 	@NotNull
 	private int numberOfKids;
-	
+
 	@NotNull
 	private boolean isStudying;
 
 	private String studyingInstitution;
-	
+
 	@NotNull
 	private boolean hasDisability;
-	
+
 	@NotNull
 	private boolean declaredResidenceSameAsLiving;
 
 	@Embedded
-	@AttributeOverrides({
-		@AttributeOverride(name = "city", column = @Column(name = "declared_city")),
-		@AttributeOverride(name = "street", column = @Column(name = "declared_street")),
-		@AttributeOverride(name = "houseNumber", column = @Column(name = "declared_houseNumber")),
-		@AttributeOverride(name = "flatNumber", column = @Column(name = "declared_flatNumber"))
-	})
+	@AttributeOverrides({ @AttributeOverride(name = "city", column = @Column(name = "declared_city")),
+			@AttributeOverride(name = "street", column = @Column(name = "declared_street")),
+			@AttributeOverride(name = "houseNumber", column = @Column(name = "declared_houseNumber")),
+			@AttributeOverride(name = "flatNumber", column = @Column(name = "declared_flatNumber")) })
 	private Address declaredAddress;
+
+	@ManyToMany(mappedBy = "parents", cascade = CascadeType.ALL)
+	private Set<Child> children;
 
 	public ParentDetails() {
 	}
 
-	public ParentDetails(@NotBlank String phone, @NotBlank Long personalCode, Address livingAddress,
+	public ParentDetails(@NotBlank String firstname, @NotBlank String lastname, @NotBlank String email, @NotBlank String phone, @NotBlank Long personalCode, Address livingAddress,
 			@NotBlank int numberOfKids, @NotBlank boolean isStudying, String studyingInstitution,
 			@NotBlank boolean hasDisability, @NotBlank boolean declaredResidenceSameAsLiving, Address declaredAddress) {
 		super();
+		this.firstname = firstname;
+		this.lastname = lastname;
+		this.email = email;
 		this.phone = phone;
 		this.personalCode = personalCode;
 		this.livingAddress = livingAddress;
@@ -73,7 +94,9 @@ public class ParentDetails {
 		this.hasDisability = hasDisability;
 		this.declaredResidenceSameAsLiving = declaredResidenceSameAsLiving;
 		this.declaredAddress = declaredAddress;
+		this.children = new HashSet<>();
 	}
+	
 
 	public Long getId() {
 		return id;
@@ -97,14 +120,6 @@ public class ParentDetails {
 
 	public void setPhone(String phone) {
 		this.phone = phone;
-	}
-
-	public Long getPersonalCode() {
-		return personalCode;
-	}
-
-	public void setPersonalCode(Long personalCode) {
-		this.personalCode = personalCode;
 	}
 
 	public int getNumberOfKids() {
@@ -161,6 +176,46 @@ public class ParentDetails {
 
 	public void setStudying(boolean isStudying) {
 		this.isStudying = isStudying;
+	}
+
+	public Set<Child> getChildren() {
+		return children;
+	}
+
+	public void setChildren(Set<Child> children) {
+		this.children = children;
+	}
+
+	public void setPersonalCode(long personalCode) {
+		this.personalCode = personalCode;
+	}
+
+	public long getPersonalCode() {
+		return personalCode;
+	}
+
+	public String getFirstname() {
+		return firstname;
+	}
+
+	public void setFirstname(String firstname) {
+		this.firstname = firstname;
+	}
+
+	public String getLastname() {
+		return lastname;
+	}
+
+	public void setLastname(String lastname) {
+		this.lastname = lastname;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
 	}
 	
 	

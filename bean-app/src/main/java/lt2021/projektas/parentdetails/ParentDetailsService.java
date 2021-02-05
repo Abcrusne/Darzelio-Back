@@ -19,7 +19,7 @@ public class ParentDetailsService {
 	@Transactional
 	public ServiceLayerDetails getParentDetails(long id) {
 		ParentDetails parent = detailsDao.findById(id).orElse(null);
-		return new ServiceLayerDetails(id, parent.getPhone(), parent.getPersonalCode(), parent.getLivingAddress(), 
+		return new ServiceLayerDetails(id, parent.getFirstname(), parent.getLastname(), parent.getEmail(), parent.getPhone(), parent.getPersonalCode(), parent.getLivingAddress(), 
 				parent.getNumberOfKids(), parent.isStudying(), parent.getStudyingInstitution(), parent.isHasDisability(), 
 				parent.isDeclaredResidenceSameAsLiving(), parent.getDeclaredAddress());
 	}
@@ -28,7 +28,8 @@ public class ParentDetailsService {
 	public void addParentDetails(ServiceLayerDetails parentDetails) {
 		User parent = userDao.findById(parentDetails.getId()).orElse(null);
 		if (!(parent.equals(null))) {
-			parent.setParentDetails(new ParentDetails(parentDetails.getPhone(), parentDetails.getPersonalCode(), parentDetails.getLivingAddress(), 
+			parent.setParentDetails(new ParentDetails(parentDetails.getFirstname(), parentDetails.getLastname(), parentDetails.getEmail(), parentDetails.getPhone(),
+					parentDetails.getPersonalCode(), parentDetails.getLivingAddress(), 
 					parentDetails.getNumberOfKids(), parentDetails.isStudying(), parentDetails.getStudyingInstitution(), parentDetails.isHasDisability(), 
 					parentDetails.isDeclaredResidenceSameAsLiving(), parentDetails.getDeclaredAddress()));
 			userDao.save(parent);

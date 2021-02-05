@@ -1,8 +1,8 @@
 {
   "files": {
     "main.css": "/bean-app/static/css/main.ea53e0f1.chunk.css",
-    "main.js": "/bean-app/static/js/main.90dfb527.chunk.js",
-    "main.js.map": "/bean-app/static/js/main.90dfb527.chunk.js.map",
+    "main.js": "/bean-app/static/js/main.51384bcd.chunk.js",
+    "main.js.map": "/bean-app/static/js/main.51384bcd.chunk.js.map",
     "runtime-main.js": "/bean-app/static/js/runtime-main.88626820.js",
     "runtime-main.js.map": "/bean-app/static/js/runtime-main.88626820.js.map",
     "static/css/2.437d98bc.chunk.css": "/bean-app/static/css/2.437d98bc.chunk.css",
@@ -11,7 +11,7 @@
     "static/js/3.621210b6.chunk.js": "/bean-app/static/js/3.621210b6.chunk.js",
     "static/js/3.621210b6.chunk.js.map": "/bean-app/static/js/3.621210b6.chunk.js.map",
     "index.html": "/bean-app/index.html",
-    "precache-manifest.f5cd32a8573ba363644115f5f38dbb74.js": "/bean-app/precache-manifest.f5cd32a8573ba363644115f5f38dbb74.js",
+    "precache-manifest.a99e768e8233676d9ac42184b54ac7a1.js": "/bean-app/precache-manifest.a99e768e8233676d9ac42184b54ac7a1.js",
     "service-worker.js": "/bean-app/service-worker.js",
     "static/css/2.437d98bc.chunk.css.map": "/bean-app/static/css/2.437d98bc.chunk.css.map",
     "static/css/main.ea53e0f1.chunk.css.map": "/bean-app/static/css/main.ea53e0f1.chunk.css.map",
@@ -22,6 +22,6 @@
     "static/css/2.437d98bc.chunk.css",
     "static/js/2.96ca176e.chunk.js",
     "static/css/main.ea53e0f1.chunk.css",
-    "static/js/main.90dfb527.chunk.js"
+    "static/js/main.51384bcd.chunk.js"
   ]
 }

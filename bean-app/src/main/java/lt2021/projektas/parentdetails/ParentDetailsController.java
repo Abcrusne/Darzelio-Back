@@ -17,7 +17,7 @@ public class ParentDetailsController {
 	@RequestMapping(method = RequestMethod.GET)
 	public CreateDetailsCommand getParentDetails(@PathVariable final long id) {
 		ServiceLayerDetails parent = detailsService.getParentDetails(id);
-		return new CreateDetailsCommand(id, parent.getPhone(), parent.getPersonalCode(), parent.getLivingAddress().getCity(), 
+		return new CreateDetailsCommand(id, parent.getFirstname(), parent.getLastname(), parent.getEmail(), parent.getPhone(), parent.getPersonalCode(), parent.getLivingAddress().getCity(), 
 				parent.getLivingAddress().getStreet(), parent.getLivingAddress().getHouseNumber(), parent.getLivingAddress().getFlatNumber(), 
 				parent.getNumberOfKids(), parent.isStudying(), parent.getStudyingInstitution(), parent.isHasDisability(), parent.isDeclaredResidenceSameAsLiving(), 
 				parent.getDeclaredAddress().getCity(), parent.getDeclaredAddress().getStreet(), parent.getDeclaredAddress().getHouseNumber(), parent.getDeclaredAddress().getFlatNumber());
@@ -25,7 +25,8 @@ public class ParentDetailsController {
 	
 	@RequestMapping(method = RequestMethod.POST)
 	public void addParentDetails(@RequestBody final CreateDetailsCommand details, @PathVariable final long id) {
-		detailsService.addParentDetails(new ServiceLayerDetails(id, details.getPhone(), details.getPersonalCode(), new Address(details.getCity(), details.getStreet(), 
+		detailsService.addParentDetails(new ServiceLayerDetails(id, details.getFirstname(), details.getLastname(), details.getEmail(), details.getPhone(), details.getPersonalCode(),
+				new Address(details.getCity(), details.getStreet(), 
 				details.getHouseNumber(), details.getFlatNumber()), details.getNumberOfKids(), details.isStudying(), details.getStudyingInstitution(), 
 				details.isHasDisability(), details.isDeclaredResidenceSameAsLiving(), new Address(details.getDeclaredCity(), details.getDeclaredStreet(), 
 						details.getDeclaredHouseNumber(), details.getDeclaredFlatNumber())));

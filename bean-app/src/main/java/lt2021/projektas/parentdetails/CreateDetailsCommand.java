@@ -3,7 +3,13 @@ package lt2021.projektas.parentdetails;
 public class CreateDetailsCommand {
 
 	private Long id;
-
+	
+	private String firstname;
+	
+	private String lastname;
+	
+	private String email;
+	
 	private String phone;
 
 	private long personalCode;
@@ -37,12 +43,15 @@ public class CreateDetailsCommand {
 	public CreateDetailsCommand() {
 	}
 
-	public CreateDetailsCommand(Long id, String phone, Long personalCode, String city, String street,
+	public CreateDetailsCommand(Long id, String firstname, String lastname, String email, String phone, Long personalCode, String city, String street,
 			String houseNumber, String flatNumber, int numberOfKids, boolean isStudying, String studyingInstitution,
 			boolean hasDisability, boolean declaredResidenceSameAsLiving, String declaredCity, String declaredStreet,
 			String declaredHouseNumber, String declaredFlatNumber) {
 		super();
 		this.id = id;
+		this.firstname = firstname;
+		this.lastname = lastname;
+		this.email = email;
 		this.phone = phone;
 		this.personalCode = personalCode;
 		this.city = city;
@@ -74,14 +83,6 @@ public class CreateDetailsCommand {
 
 	public void setPhone(String phone) {
 		this.phone = phone;
-	}
-
-	public Long getPersonalCode() {
-		return personalCode;
-	}
-
-	public void setPersonalCode(Long personalCode) {
-		this.personalCode = personalCode;
 	}
 
 	public String getCity() {
@@ -187,5 +188,39 @@ public class CreateDetailsCommand {
 	public void setDeclaredFlatNumber(String declaredFlatNumber) {
 		this.declaredFlatNumber = declaredFlatNumber;
 	}
+
+	public String getFirstname() {
+		return firstname;
+	}
+
+	public void setFirstname(String firstname) {
+		this.firstname = firstname;
+	}
+
+	public String getLastname() {
+		return lastname;
+	}
+
+	public void setLastname(String lastname) {
+		this.lastname = lastname;
+	}
+
+	public long getPersonalCode() {
+		return personalCode;
+	}
+
+	public void setPersonalCode(long personalCode) {
+		this.personalCode = personalCode;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+	
+	
 
 }

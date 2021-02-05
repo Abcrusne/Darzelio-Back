@@ -5,7 +5,13 @@ import lt2021.projektas.userRegister.User;
 public class ServiceLayerDetails {
 
 	private Long id;
-
+	
+	private String firstname;
+	
+	private String lastname;
+	
+	private String email;
+	
 	private String phone;
 
 	private long personalCode;
@@ -27,11 +33,14 @@ public class ServiceLayerDetails {
 	public ServiceLayerDetails() {
 	}
 
-	public ServiceLayerDetails(Long id, String phone, Long personalCode, Address livingAddress,
+	public ServiceLayerDetails(Long id, String firstname, String lastname, String email, String phone, Long personalCode, Address livingAddress,
 			int numberOfKids, boolean isStudying, String studyingInstitution, boolean hasDisability,
 			boolean declaredResidenceSameAsLiving, Address declaredAddress) {
 		super();
 		this.id = id;
+		this.firstname = firstname;
+		this.lastname = lastname;
+		this.email = email;
 		this.phone = phone;
 		this.personalCode = personalCode;
 		this.livingAddress = livingAddress;
@@ -43,10 +52,13 @@ public class ServiceLayerDetails {
 		this.declaredAddress = declaredAddress;
 	}
 
-	public ServiceLayerDetails(String phone, Long personalCode, Address livingAddress, int numberOfKids,
+	public ServiceLayerDetails(String firstname, String lastname, String email, String phone, Long personalCode, Address livingAddress, int numberOfKids,
 			boolean isStudying, String studyingInstitution, boolean hasDisability,
 			boolean declaredResidenceSameAsLiving, Address declaredAddress) {
 		super();
+		this.firstname = firstname;
+		this.lastname = lastname;
+		this.email = email;
 		this.phone = phone;
 		this.personalCode = personalCode;
 		this.livingAddress = livingAddress;
@@ -75,13 +87,6 @@ public class ServiceLayerDetails {
 		this.phone = phone;
 	}
 
-	public Long getPersonalCode() {
-		return personalCode;
-	}
-
-	public void setPersonalCode(Long personalCode) {
-		this.personalCode = personalCode;
-	}
 
 	public Address getLivingAddress() {
 		return livingAddress;
@@ -138,5 +143,39 @@ public class ServiceLayerDetails {
 	public void setDeclaredAddress(Address declaredAddress) {
 		this.declaredAddress = declaredAddress;
 	}
+
+	public String getFirstname() {
+		return firstname;
+	}
+
+	public void setFirstname(String firstname) {
+		this.firstname = firstname;
+	}
+
+	public String getLastname() {
+		return lastname;
+	}
+
+	public void setLastname(String lastname) {
+		this.lastname = lastname;
+	}
+
+	public void setPersonalCode(long personalCode) {
+		this.personalCode = personalCode;
+	}
+
+	public long getPersonalCode() {
+		return personalCode;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+	
+	
 
 }
