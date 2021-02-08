@@ -19,7 +19,7 @@ public class ParentDetailsService {
 	@Transactional
 	public ServiceLayerDetails getParentDetails(long id) {
 		User parent = userDao.findById(id).orElse(null);
-		return new ServiceLayerDetails(id, parent.getParentDetails().getFirstname(), parent.getParentDetails().getLastname(), parent.getParentDetails().getEmail(),
+		return new ServiceLayerDetails(parent.getParentDetails().getId(), parent.getParentDetails().getFirstname(), parent.getParentDetails().getLastname(), parent.getParentDetails().getEmail(),
 				parent.getParentDetails().getPhone(), parent.getParentDetails().getPersonalCode(), parent.getParentDetails().getLivingAddress(), 
 				parent.getParentDetails().getNumberOfKids(), parent.getParentDetails().isStudying(), parent.getParentDetails().getStudyingInstitution(),
 				parent.getParentDetails().isHasDisability(), parent.getParentDetails().isDeclaredResidenceSameAsLiving(), parent.getParentDetails().getDeclaredAddress());
