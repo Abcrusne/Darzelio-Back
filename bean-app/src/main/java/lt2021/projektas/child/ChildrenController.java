@@ -1,5 +1,8 @@
 package lt2021.projektas.child;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -11,14 +14,14 @@ import lt2021.projektas.parentdetails.Address;
 import lt2021.projektas.parentdetails.ServiceLayerDetails;
 
 @RestController
-@RequestMapping(value = "/api/users/{id}/parentdetails/children")
+@RequestMapping(value = "/api/users/{userId}/parentdetails/children")
 public class ChildrenController {
 	
 	@Autowired
 	private ChildService childService;
 	
 	@RequestMapping(method = RequestMethod.POST)
-	public void addChild(@RequestBody final CreateChildCommand child, @PathVariable final long id) {
+	public void addChild(@RequestBody final CreateChildCommand child, @PathVariable("userId") final long id) {
 		if (!(child.isSecondParent())) {
 			childService.addChild(id, new ServiceLayerChild(child.getFirstname(), child.getLastname(), child.getPersonalCode(), child.isAdopted(), 
 					child.getBirthdate(), new Address(child.getCity(), child.getStreet(), child.getHouseNumber(), child.getFlatNumber())));
@@ -31,6 +34,20 @@ public class ChildrenController {
 							child.isSecondParentDeclaredResidenceSameAsLiving(), new Address(child.getSecondParentDeclaredCity(), child.getSecondParentDeclaredStreet(), 
 									child.getSecondParentDeclaredHouseNumber(), child.getSecondParentDeclaredFlatNumber()))));
 		}
+	}
+	
+	@RequestMapping(method = RequestMethod.GET)
+	public List<CreateChildCommand> getChildren(@PathVariable("userId") final long id) {
+		return childService.getChildren(id).stream()
+				.map(child -> new CreateChildCommand(child.getId(), child.getFirstname(), child.getLastname(), child.getPersonalCode(), child.isAdopted(), 
+						child.getBirthdate(), child.getLivingAddress().getCity(), child.getLivingAddress().getStreet(), child.getLivingAddress().getHouseNumber(), 
+						child.getLivingAddress().getFlatNumber(), false, "", "", "", "", 0L, "", "", "", "", 0, false, "", false, false, "", "", "", ""))
+				.collect(Collectors.toList());
+	}
+	
+	@RequestMapping(path = "/{childId}", method = RequestMethod.GET)
+	public CreateChildCommand getChildDetails(@PathVariable("userId") final long userId, @PathVariable("childId") final long childId) {
+		return childService.getChildDetails(userId, childId);
 	}
 
 }

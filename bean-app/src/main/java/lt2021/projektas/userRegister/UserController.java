@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import lt2021.projektas.parentdetails.CreateDetailsCommand;
+import lt2021.projektas.parentdetails.ParentDetails;
 
 @RestController
 @Api(value = "users")
@@ -69,6 +71,16 @@ public class UserController {
 			return currentRole;
 		}
 		return "not logged";
+	}
+	
+	@RequestMapping(path = "/loggeduserid", method = RequestMethod.GET)
+	public Long getLoggedInUserId() {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		if (!(auth instanceof AnonymousAuthenticationToken)) {
+			User user = userService.findByEmail(auth.getName());
+			return user.getId();
+		} 
+		return null;
 	}
 
 }

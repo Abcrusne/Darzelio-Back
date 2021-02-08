@@ -15,6 +15,8 @@ import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToOne;
 import javax.validation.constraints.Email;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
@@ -38,13 +40,15 @@ public class ParentDetails {
 	private String lastname;
 	
 	@NotBlank
-	@Email
+	@Email(message = "Email format must be correct")
 	private String email;
 	
 	@NotBlank
 	private String phone;
 
 	@NotNull
+	@Min(value = 30000000000L, message = "Personal code must be valid")
+	@Max(value = 49999999999L, message = "Personal code must be valid")
 	@Column(length = 11, unique = true)
 	private long personalCode;
 

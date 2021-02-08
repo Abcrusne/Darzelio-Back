@@ -57,6 +57,20 @@ public class ServiceLayerChild {
 		this.livingAddress = livingAddress;
 		this.secondParentDetails = secondParentDetails;
 	}
+	
+	public ServiceLayerChild(Long id, String firstname, String lastname, long personalCode, boolean isAdopted, String birthdate,
+			Address livingAddress, ServiceLayerDetails secondParentDetails) {
+		super();
+		this.id = id;
+		this.firstname = firstname;
+		this.lastname = lastname;
+		this.personalCode = personalCode;
+		this.isAdopted = isAdopted;
+		this.birthdate = birthdate;
+		this.livingAddress = livingAddress;
+		this.secondParentDetails = secondParentDetails;
+	}
+	
 
 	public Long getId() {
 		return id;

@@ -31,7 +31,7 @@ public class ErrorResponse extends ResponseEntityExceptionHandler {
 	
 	@ExceptionHandler(JdbcSQLIntegrityConstraintViolationException.class)
 	protected ResponseEntity<Object> handleQLIntegrityConstraintViolation(HttpServletRequest req, Exception ex) {
-		ErrorDetails errorDetails = new ErrorDetails(new Date(), "Email already taken", ex.getMessage());
+		ErrorDetails errorDetails = new ErrorDetails(new Date(), "Item already exists", ex.getMessage());
 		return new ResponseEntity<Object>(errorDetails, HttpStatus.BAD_REQUEST);
 	}
 	

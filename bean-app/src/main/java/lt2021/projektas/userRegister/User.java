@@ -22,22 +22,22 @@ public class User {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@NotBlank
+	@NotBlank(message = "first name can't be blank")
 	private String firstname;
 
-	@NotBlank
+	@NotBlank(message = "last name can't be blank")
 	private String lastname;
 
 	@NotBlank
 	@Column(unique = true)
-	@Email
+	@Email(message = "email format needs to be correct")
 	private String email;
 	
 	@Enumerated(EnumType.STRING)
 	private UserRole role;
 
 	// @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=\\S+$).{8,}$")
-	@NotBlank
+	@NotBlank(message = "password can't be blank")
 	private String password;
 	
 	@OneToOne(cascade= CascadeType.ALL)
