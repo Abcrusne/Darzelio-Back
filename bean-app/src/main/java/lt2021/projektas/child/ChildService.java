@@ -29,7 +29,7 @@ public class ChildService {
 	@Transactional
 	public void addChild(Long parentId, ServiceLayerChild child) {
 		User mainParent = userDao.findById(parentId).orElse(null);
-		if (!(mainParent == null)) {
+		if (mainParent != null) {
 			Set<Child> childrenSet = mainParent.getParentDetails().getChildren();
 			Child newChild = new Child(child.getFirstname(), child.getLastname(), child.getPersonalCode(),
 					child.isAdopted(), child.getBirthdate(), child.getLivingAddress());
@@ -38,7 +38,7 @@ public class ChildService {
 			newChild.setParents(parentSet);
 			childrenSet.add(newChild);
 			mainParent.getParentDetails().setChildren(childrenSet);
-			if (!(child.getSecondParentDetails() == null)) {
+			if (child.getSecondParentDetails() != null) {
 				if (!(detailsDao.findByPersonalCode(child.getSecondParentDetails().getPersonalCode()).isPresent())) {
 					ParentDetails secondParent = new ParentDetails(child.getSecondParentDetails().getFirstname(),
 							child.getSecondParentDetails().getLastname(), child.getSecondParentDetails().getEmail(),
@@ -75,7 +75,7 @@ public class ChildService {
 	@Transactional
 	public List<ServiceLayerChild> getChildren(long parentId) {
 		User parent = userDao.findById(parentId).orElse(null);
-		if (!(parent == null)) {
+		if (parent != null) {
 			return parent.getParentDetails().getChildren().stream()
 					.map(child -> new ServiceLayerChild(child.getId(), child.getFirstname(), child.getLastname(),
 							child.getPersonalCode(), child.isAdopted(), child.getBirthdate(), child.getLivingAddress()))
@@ -88,21 +88,23 @@ public class ChildService {
 	@Transactional
 	public CreateChildCommand getChildDetails(long parentId, long childId) {
 		User currentParent = userDao.findById(parentId).orElse(null);
-		if (!(currentParent == null)) {
+		if (currentParent != null) {
 			Child currentChild = currentParent.getParentDetails().getChildren().stream()
 					.filter(child -> child.getId().equals(childId)).findFirst().orElse(null);
-			if (!(currentChild == null)) {
+			if (currentChild != null) {
 				ParentDetails secondParent = currentChild.getParents().stream()
 						.filter(parent -> !(parent.getId().equals(parentId))).findFirst().orElse(null);
-				if (!(secondParent == null)) {
+				if (secondParent != null) {
 					return new CreateChildCommand(currentChild.getId(), currentChild.getFirstname(),
 							currentChild.getLastname(), currentChild.getPersonalCode(), currentChild.isAdopted(),
 							currentChild.getBirthdate(), currentChild.getLivingAddress().getCity(),
-							currentChild.getLivingAddress().getStreet(), currentChild.getLivingAddress().getHouseNumber(),
-							currentChild.getLivingAddress().getFlatNumber(), true, secondParent.getFirstname(),
+							currentChild.getLivingAddress().getStreet(),
+							currentChild.getLivingAddress().getHouseNumber(),
+							currentChild.getLivingAddress().getFlatNumber(), true, secondParent.getId(), secondParent.getFirstname(),
 							secondParent.getLastname(), secondParent.getEmail(), secondParent.getPhone(),
 							secondParent.getPersonalCode(), secondParent.getLivingAddress().getCity(),
-							secondParent.getLivingAddress().getStreet(), secondParent.getLivingAddress().getHouseNumber(),
+							secondParent.getLivingAddress().getStreet(),
+							secondParent.getLivingAddress().getHouseNumber(),
 							secondParent.getLivingAddress().getFlatNumber(), secondParent.getNumberOfKids(),
 							secondParent.isStudying(), secondParent.getStudyingInstitution(),
 							secondParent.isHasDisability(), secondParent.isDeclaredResidenceSameAsLiving(),
@@ -113,9 +115,10 @@ public class ChildService {
 					return new CreateChildCommand(currentChild.getId(), currentChild.getFirstname(),
 							currentChild.getLastname(), currentChild.getPersonalCode(), currentChild.isAdopted(),
 							currentChild.getBirthdate(), currentChild.getLivingAddress().getCity(),
-							currentChild.getLivingAddress().getStreet(), currentChild.getLivingAddress().getHouseNumber(),
-							currentChild.getLivingAddress().getFlatNumber(), false, "", "", "", "", 0L, "", "", "", "", 0,
-							false, "", false, false, "", "", "", "");
+							currentChild.getLivingAddress().getStreet(),
+							currentChild.getLivingAddress().getHouseNumber(),
+							currentChild.getLivingAddress().getFlatNumber(), false, 0L, "", "", "", "", 0L, "", "", "", "",
+							0, false, "", false, false, "", "", "", "");
 				}
 			} else {
 				return null;
@@ -123,7 +126,69 @@ public class ChildService {
 		} else {
 			return null;
 		}
+	}
 
+	@Transactional
+	public void updateChild(ServiceLayerChild updatedChild, long userId, long childId) {
+		User mainParent = userDao.findById(userId).orElse(null);
+		if (mainParent != null) {
+			Child child = mainParent.getParentDetails().getChildren().stream().filter(ch -> ch.getId().equals(childId))
+					.findFirst().orElse(null);
+			if (updatedChild.getSecondParentDetails() != null) {
+				child.setFirstname(updatedChild.getFirstname());
+				child.setLastname(updatedChild.getLastname());
+				child.setPersonalCode(updatedChild.getPersonalCode());
+				child.setAdopted(updatedChild.isAdopted());
+				child.setBirthdate(updatedChild.getBirthdate());
+				child.setLivingAddress(updatedChild.getLivingAddress());
+				ParentDetails secondParent = detailsDao.findById(updatedChild.getSecondParentDetails().getId()).orElse(null);
+				if (secondParent != null) {
+					secondParent.setFirstname(updatedChild.getSecondParentDetails().getFirstname());
+					secondParent.setLastname(updatedChild.getSecondParentDetails().getLastname());
+					secondParent.setEmail(updatedChild.getSecondParentDetails().getEmail());
+					secondParent.setPhone(updatedChild.getSecondParentDetails().getPhone());
+					secondParent.setPersonalCode(updatedChild.getSecondParentDetails().getPersonalCode());
+					secondParent.setLivingAddress(updatedChild.getSecondParentDetails().getLivingAddress());
+					secondParent.setNumberOfKids(updatedChild.getSecondParentDetails().getNumberOfKids());
+					secondParent.setStudying(updatedChild.getSecondParentDetails().isStudying());
+					secondParent.setStudyingInstitution(updatedChild.getSecondParentDetails().getStudyingInstitution());
+					secondParent.setHasDisability(updatedChild.getSecondParentDetails().isHasDisability());
+					secondParent.setDeclaredResidenceSameAsLiving(updatedChild.getSecondParentDetails().isDeclaredResidenceSameAsLiving());
+					secondParent.setDeclaredAddress(updatedChild.getSecondParentDetails().getDeclaredAddress());
+					detailsDao.save(secondParent);
+					childDao.save(child);
+				}
+			} else {
+				child.setFirstname(updatedChild.getFirstname());
+				child.setLastname(updatedChild.getLastname());
+				child.setPersonalCode(updatedChild.getPersonalCode());
+				child.setAdopted(updatedChild.isAdopted());
+				child.setBirthdate(updatedChild.getBirthdate());
+				child.setLivingAddress(updatedChild.getLivingAddress());
+				childDao.save(child);
+			}
+		}
+	}
+	
+	@Transactional
+	public void deleteChild(long userId, long childId) {
+		User parent = userDao.findById(userId).orElse(null);
+		if (parent != null) {
+			ParentDetails details = parent.getParentDetails();
+			Set<Child> childList = details.getChildren();
+			Child childToDelete = childList.stream()
+						.filter(ch -> ch.getId().equals(childId))
+						.findFirst().orElse(null);
+			if (childToDelete != null) {
+				var parents = childToDelete.getParents();
+				parents.clear();
+				childToDelete.setParents(parents);
+				childList.remove(childToDelete);
+				details.setChildren(childList);
+				userDao.save(parent);
+				childDao.delete(childToDelete);
+			}
+		}
 	}
 
 }

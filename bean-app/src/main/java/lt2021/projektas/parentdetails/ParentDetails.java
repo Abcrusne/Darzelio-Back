@@ -14,6 +14,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToOne;
+import javax.validation.Valid;
+import javax.validation.Valid;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
@@ -53,6 +55,7 @@ public class ParentDetails {
 	private long personalCode;
 
 	@Embedded
+	@Valid
 	private Address livingAddress;
 
 	@NotNull
@@ -70,6 +73,7 @@ public class ParentDetails {
 	private boolean declaredResidenceSameAsLiving;
 
 	@Embedded
+	@Valid
 	@AttributeOverrides({ @AttributeOverride(name = "city", column = @Column(name = "declared_city")),
 			@AttributeOverride(name = "street", column = @Column(name = "declared_street")),
 			@AttributeOverride(name = "houseNumber", column = @Column(name = "declared_houseNumber")),

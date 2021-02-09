@@ -1,7 +1,5 @@
 package lt2021.projektas.child;
 
-import lt2021.projektas.parentdetails.Address;
-
 public class CreateChildCommand {
 
 	private Long id;
@@ -25,6 +23,8 @@ public class CreateChildCommand {
 	private String flatNumber;
 
 	private boolean secondParent;
+	
+	private Long secondParentId;
 
 	private String secondParentFirstname;
 
@@ -64,7 +64,7 @@ public class CreateChildCommand {
 
 	public CreateChildCommand(Long id, String firstname, String lastname, long personalCode, boolean isAdopted,
 			String birthdate, String city, String street, String houseNumber, String flatNumber, boolean secondParent,
-			String secondParentFirstname, String secondParentLastname, String secondParentEmail,
+			Long secondParentId, String secondParentFirstname, String secondParentLastname, String secondParentEmail,
 			String secondParentPhone, long secondParentPersonalCode, String secondParentCity, String secondParentStreet,
 			String secondParentHouseNumber, String secondParentFlatNumber, int secondParentNumberOfKids,
 			boolean secondParentStudying, String secondParentStudyingInstitution, boolean secondParentHasDisability,
@@ -83,6 +83,7 @@ public class CreateChildCommand {
 		this.houseNumber = houseNumber;
 		this.flatNumber = flatNumber;
 		this.secondParent = secondParent;
+		this.secondParentId = secondParentId;
 		this.secondParentFirstname = secondParentFirstname;
 		this.secondParentLastname = secondParentLastname;
 		this.secondParentEmail = secondParentEmail;
@@ -334,5 +335,15 @@ public class CreateChildCommand {
 	public void setSecondParentDeclaredFlatNumber(String secondParentDeclaredFlatNumber) {
 		this.secondParentDeclaredFlatNumber = secondParentDeclaredFlatNumber;
 	}
+
+	public Long getSecondParentId() {
+		return secondParentId;
+	}
+
+	public void setSecondParentId(Long secondParentId) {
+		this.secondParentId = secondParentId;
+	}
+	
+	
 
 }
