@@ -56,6 +56,7 @@ public class ParentDetails {
 	private Address livingAddress;
 
 	@NotNull
+	@Min(value = 1)
 	private int numberOfKids;
 
 	@NotNull
