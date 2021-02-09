@@ -16,7 +16,7 @@ public class Kindergarten {
 	private Long id;
 
 	@NotBlank
-	@Column(name = "kindergarten_name")
+	@Column(name = "kindergarten_name", unique = true)
 	private String name;
 
 	@NotBlank

@@ -73,7 +73,6 @@ public class ParentDetails {
 	private boolean declaredResidenceSameAsLiving;
 
 	@Embedded
-	@Valid
 	@AttributeOverrides({ @AttributeOverride(name = "city", column = @Column(name = "declared_city")),
 			@AttributeOverride(name = "street", column = @Column(name = "declared_street")),
 			@AttributeOverride(name = "houseNumber", column = @Column(name = "declared_houseNumber")),

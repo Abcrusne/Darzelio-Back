@@ -25,11 +25,20 @@ public class ParentDetailsController {
 	
 	@RequestMapping(method = RequestMethod.POST)
 	public void addParentDetails(@RequestBody final CreateDetailsCommand details, @PathVariable final long id) {
-		detailsService.addParentDetails(new ServiceLayerDetails(id, details.getFirstname(), details.getLastname(), details.getEmail(), details.getPhone(), details.getPersonalCode(),
-				new Address(details.getCity(), details.getStreet(), 
-				details.getHouseNumber(), details.getFlatNumber()), details.getNumberOfKids(), details.isStudying(), details.getStudyingInstitution(), 
-				details.isHasDisability(), details.isDeclaredResidenceSameAsLiving(), new Address(details.getDeclaredCity(), details.getDeclaredStreet(), 
-						details.getDeclaredHouseNumber(), details.getDeclaredFlatNumber())));
+		if (details.isDeclaredResidenceSameAsLiving()) {
+			detailsService.addParentDetails(new ServiceLayerDetails(id, details.getFirstname(), details.getLastname(), details.getEmail(), details.getPhone(), details.getPersonalCode(),
+					new Address(details.getCity(), details.getStreet(), 
+					details.getHouseNumber(), details.getFlatNumber()), details.getNumberOfKids(), details.isStudying(), details.getStudyingInstitution(), 
+					details.isHasDisability(), details.isDeclaredResidenceSameAsLiving(), new Address(details.getCity(), details.getStreet(), 
+							details.getHouseNumber(), details.getFlatNumber())));
+		} else {
+			detailsService.addParentDetails(new ServiceLayerDetails(id, details.getFirstname(), details.getLastname(), details.getEmail(), details.getPhone(), details.getPersonalCode(),
+					new Address(details.getCity(), details.getStreet(), 
+					details.getHouseNumber(), details.getFlatNumber()), details.getNumberOfKids(), details.isStudying(), details.getStudyingInstitution(), 
+					details.isHasDisability(), details.isDeclaredResidenceSameAsLiving(), new Address(details.getDeclaredCity(), details.getDeclaredStreet(), 
+							details.getDeclaredHouseNumber(), details.getDeclaredFlatNumber())));
+		}
+		
 	}
 	
 	@RequestMapping(method = RequestMethod.PUT)
