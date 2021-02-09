@@ -37,4 +37,27 @@ public class ParentDetailsService {
 		}
 	}
 	
+	@Transactional
+	public void updateParentDetails(ServiceLayerDetails parentDetails, long userId) {
+		User parent = userDao.findById(userId).orElse(null);
+		if (parent != null) {
+			ParentDetails details = parent.getParentDetails();
+			if (details != null) {
+				details.setFirstname(parentDetails.getFirstname());
+				details.setLastname(parentDetails.getLastname());
+				details.setEmail(parentDetails.getEmail());
+				details.setPhone(parentDetails.getPhone());
+				details.setPersonalCode(parentDetails.getPersonalCode());
+				details.setLivingAddress(parentDetails.getLivingAddress());
+				details.setNumberOfKids(parentDetails.getNumberOfKids());
+				details.setStudying(parentDetails.isStudying());
+				details.setStudyingInstitution(parentDetails.getStudyingInstitution());
+				details.setHasDisability(parentDetails.isHasDisability());
+				details.setDeclaredResidenceSameAsLiving(parentDetails.isDeclaredResidenceSameAsLiving());
+				details.setDeclaredAddress(parentDetails.getDeclaredAddress());
+				detailsDao.save(details);
+			}
+		}
+	}
+	
 }

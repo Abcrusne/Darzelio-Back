@@ -31,4 +31,13 @@ public class ParentDetailsController {
 				details.isHasDisability(), details.isDeclaredResidenceSameAsLiving(), new Address(details.getDeclaredCity(), details.getDeclaredStreet(), 
 						details.getDeclaredHouseNumber(), details.getDeclaredFlatNumber())));
 	}
+	
+	@RequestMapping(method = RequestMethod.PUT)
+	public void updateParentDetails(@RequestBody final CreateDetailsCommand details, @PathVariable final long id) {
+		detailsService.updateParentDetails(new ServiceLayerDetails(details.getId(), details.getFirstname(), details.getLastname(), details.getEmail(), details.getPhone(), details.getPersonalCode(),
+				new Address(details.getCity(), details.getStreet(), 
+				details.getHouseNumber(), details.getFlatNumber()), details.getNumberOfKids(), details.isStudying(), details.getStudyingInstitution(), 
+				details.isHasDisability(), details.isDeclaredResidenceSameAsLiving(), new Address(details.getDeclaredCity(), details.getDeclaredStreet(), 
+						details.getDeclaredHouseNumber(), details.getDeclaredFlatNumber())), id);
+	}
 }

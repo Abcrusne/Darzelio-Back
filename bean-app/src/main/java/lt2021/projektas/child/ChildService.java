@@ -1,8 +1,8 @@
 package lt2021.projektas.child;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -76,10 +76,23 @@ public class ChildService {
 	public List<ServiceLayerChild> getChildren(long parentId) {
 		User parent = userDao.findById(parentId).orElse(null);
 		if (parent != null) {
-			return parent.getParentDetails().getChildren().stream()
-					.map(child -> new ServiceLayerChild(child.getId(), child.getFirstname(), child.getLastname(),
-							child.getPersonalCode(), child.isAdopted(), child.getBirthdate(), child.getLivingAddress()))
-					.collect(Collectors.toList());
+			long mainCode = parent.getParentDetails().getPersonalCode();
+			Set<Child> children = parent.getParentDetails().getChildren();
+			List<ServiceLayerChild> childArray = new ArrayList<>();
+			for (Child ch: children) {
+				ServiceLayerChild child = new ServiceLayerChild(ch.getId(), ch.getFirstname(), ch.getLastname(), 
+						ch.getPersonalCode(), ch.isAdopted(), ch.getBirthdate(), ch.getLivingAddress());
+				ParentDetails secondParent = ch.getParents().stream()
+						.filter(p -> !p.getId().equals(parentId))
+						.findFirst().orElse(null);
+				if (secondParent != null) {
+					child.setSecondParentDetails(new ServiceLayerDetails(secondParent.getId(), secondParent.getFirstname(), secondParent.getLastname(), 
+							secondParent.getEmail(), secondParent.getPhone(), secondParent.getPersonalCode(), secondParent.getLivingAddress(), secondParent.getNumberOfKids(), 
+							secondParent.isStudying(), secondParent.getStudyingInstitution(), secondParent.isHasDisability(), secondParent.isDeclaredResidenceSameAsLiving(), secondParent.getDeclaredAddress()));
+				}
+				childArray.add(child);
+			}
+			return childArray;
 		} else {
 			return null;
 		}
