@@ -13,11 +13,13 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.OneToOne;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
+import lt2021.projektas.kindergarten.registration.KindergartenRegistration;
 import lt2021.projektas.parentdetails.Address;
 import lt2021.projektas.parentdetails.ParentDetails;
 
@@ -52,6 +54,9 @@ public class Child {
 	@ManyToMany(cascade = CascadeType.ALL)
 	@JoinTable(name = "Parents_Children", joinColumns = @JoinColumn(name = "Child_id"), inverseJoinColumns = @JoinColumn(name = "Parent_details_id"))
 	private Set<ParentDetails> parents;
+	
+	@OneToOne(mappedBy = "child")
+	private KindergartenRegistration registrationForm;
 
 	public Child() {
 	}

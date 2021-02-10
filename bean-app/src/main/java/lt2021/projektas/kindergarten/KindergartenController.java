@@ -9,12 +9,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import lt2021.projektas.kindergarten.registration.CreateRegistrationCommand;
+import lt2021.projektas.kindergarten.registration.KindergartenRegistrationService;
+
 @RestController
 @RequestMapping(value = "/api/kindergartens")
 public class KindergartenController {
 	
 	@Autowired
 	private KindergartenService kgService;
+	
+	@Autowired
+	private KindergartenRegistrationService kgRegService;
 	
 	@RequestMapping(path = "/{kgId}", method = RequestMethod.GET)
 	public CreateKindergartenCommand getKindergarten(@PathVariable final long kgId) {
@@ -36,5 +42,9 @@ public class KindergartenController {
 		kgService.updateKindergarten(kg, kgId);
 	}
 	
+	@RequestMapping(path = "/register", method = RequestMethod.POST)
+	public void addRegistration(@RequestBody final CreateRegistrationCommand reg) {
+		kgRegService.addRegistration(reg);
+	}
 	
 }

@@ -42,7 +42,7 @@ public class User {
 	
 	@OneToOne(cascade= CascadeType.ALL)
 	@JoinColumn(name="parentDetails_id")
-	public ParentDetails parentDetails;
+	private ParentDetails parentDetails;
 //	@NotNull
 //	private String confirmPassword;
 

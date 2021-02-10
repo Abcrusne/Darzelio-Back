@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,8 +29,11 @@ public class ChildService {
 	ParentDetailsDao detailsDao;
 
 	@Transactional
-	public void addChild(Long parentId, ServiceLayerChild child) {
+	public ResponseEntity<String> addChild(Long parentId, ServiceLayerChild child) {
 		User mainParent = userDao.findById(parentId).orElse(null);
+		if (detailsDao.findByPersonalCode(child.getPersonalCode()).isPresent() || child.getSecondParentDetails().getPersonalCode() == child.getPersonalCode()) {
+			return new ResponseEntity<>("This personal code already exists", HttpStatus.BAD_REQUEST);
+		}
 		if (mainParent != null) {
 			Set<Child> childrenSet = mainParent.getParentDetails().getChildren();
 			Child newChild = new Child(child.getFirstname(), child.getLastname(), child.getPersonalCode(),
@@ -40,22 +45,41 @@ public class ChildService {
 			mainParent.getParentDetails().setChildren(childrenSet);
 			if (child.getSecondParentDetails() != null) {
 				if (!(detailsDao.findByPersonalCode(child.getSecondParentDetails().getPersonalCode()).isPresent())) {
-					ParentDetails secondParent = new ParentDetails(child.getSecondParentDetails().getFirstname(),
-							child.getSecondParentDetails().getLastname(), child.getSecondParentDetails().getEmail(),
-							child.getSecondParentDetails().getPhone(), child.getSecondParentDetails().getPersonalCode(),
-							child.getSecondParentDetails().getLivingAddress(),
-							child.getSecondParentDetails().getNumberOfKids(),
-							child.getSecondParentDetails().isStudying(),
-							child.getSecondParentDetails().getStudyingInstitution(),
-							child.getSecondParentDetails().isHasDisability(),
-							child.getSecondParentDetails().isDeclaredResidenceSameAsLiving(),
-							child.getSecondParentDetails().getDeclaredAddress());
-					childrenSet = secondParent.getChildren();
-					childrenSet.add(newChild);
-					secondParent.setChildren(childrenSet);
-					parentSet.add(secondParent);
-					newChild.setParents(parentSet);
-					detailsDao.save(secondParent);
+					if (child.getSecondParentDetails().isDeclaredResidenceSameAsLiving()) {
+						ParentDetails secondParent = new ParentDetails(child.getSecondParentDetails().getFirstname(),
+								child.getSecondParentDetails().getLastname(), child.getSecondParentDetails().getEmail(),
+								child.getSecondParentDetails().getPhone(), child.getSecondParentDetails().getPersonalCode(),
+								child.getSecondParentDetails().getLivingAddress(),
+								child.getSecondParentDetails().getNumberOfKids(),
+								child.getSecondParentDetails().isStudying(),
+								child.getSecondParentDetails().getStudyingInstitution(),
+								child.getSecondParentDetails().isHasDisability(),
+								child.getSecondParentDetails().isDeclaredResidenceSameAsLiving(),
+								child.getSecondParentDetails().getLivingAddress());
+						childrenSet = secondParent.getChildren();
+						childrenSet.add(newChild);
+						secondParent.setChildren(childrenSet);
+						parentSet.add(secondParent);
+						newChild.setParents(parentSet);
+						detailsDao.save(secondParent);
+					} else {
+						ParentDetails secondParent = new ParentDetails(child.getSecondParentDetails().getFirstname(),
+								child.getSecondParentDetails().getLastname(), child.getSecondParentDetails().getEmail(),
+								child.getSecondParentDetails().getPhone(), child.getSecondParentDetails().getPersonalCode(),
+								child.getSecondParentDetails().getLivingAddress(),
+								child.getSecondParentDetails().getNumberOfKids(),
+								child.getSecondParentDetails().isStudying(),
+								child.getSecondParentDetails().getStudyingInstitution(),
+								child.getSecondParentDetails().isHasDisability(),
+								child.getSecondParentDetails().isDeclaredResidenceSameAsLiving(),
+								child.getSecondParentDetails().getDeclaredAddress());
+						childrenSet = secondParent.getChildren();
+						childrenSet.add(newChild);
+						secondParent.setChildren(childrenSet);
+						parentSet.add(secondParent);
+						newChild.setParents(parentSet);
+						detailsDao.save(secondParent);
+					}
 				} else {
 					ParentDetails secondParent = detailsDao
 							.findByPersonalCode(child.getSecondParentDetails().getPersonalCode()).get();
@@ -69,26 +93,29 @@ public class ChildService {
 			}
 
 			userDao.save(mainParent);
+			return new ResponseEntity<>("Child created", HttpStatus.OK);
 		}
+		return new ResponseEntity<>("Bad information passed", HttpStatus.BAD_REQUEST);
 	}
 
 	@Transactional
 	public List<ServiceLayerChild> getChildren(long parentId) {
 		User parent = userDao.findById(parentId).orElse(null);
 		if (parent != null) {
-			long mainCode = parent.getParentDetails().getPersonalCode();
 			Set<Child> children = parent.getParentDetails().getChildren();
 			List<ServiceLayerChild> childArray = new ArrayList<>();
-			for (Child ch: children) {
-				ServiceLayerChild child = new ServiceLayerChild(ch.getId(), ch.getFirstname(), ch.getLastname(), 
+			for (Child ch : children) {
+				ServiceLayerChild child = new ServiceLayerChild(ch.getId(), ch.getFirstname(), ch.getLastname(),
 						ch.getPersonalCode(), ch.isAdopted(), ch.getBirthdate(), ch.getLivingAddress());
 				ParentDetails secondParent = ch.getParents().stream()
-						.filter(p -> !p.getId().equals(parentId))
-						.findFirst().orElse(null);
+						.filter(p -> !(p.getId().equals(parent.getParentDetails().getId()))).findFirst().orElse(null);
 				if (secondParent != null) {
-					child.setSecondParentDetails(new ServiceLayerDetails(secondParent.getId(), secondParent.getFirstname(), secondParent.getLastname(), 
-							secondParent.getEmail(), secondParent.getPhone(), secondParent.getPersonalCode(), secondParent.getLivingAddress(), secondParent.getNumberOfKids(), 
-							secondParent.isStudying(), secondParent.getStudyingInstitution(), secondParent.isHasDisability(), secondParent.isDeclaredResidenceSameAsLiving(), secondParent.getDeclaredAddress()));
+					child.setSecondParentDetails(new ServiceLayerDetails(secondParent.getId(),
+							secondParent.getFirstname(), secondParent.getLastname(), secondParent.getEmail(),
+							secondParent.getPhone(), secondParent.getPersonalCode(), secondParent.getLivingAddress(),
+							secondParent.getNumberOfKids(), secondParent.isStudying(),
+							secondParent.getStudyingInstitution(), secondParent.isHasDisability(),
+							secondParent.isDeclaredResidenceSameAsLiving(), secondParent.getDeclaredAddress()));
 				}
 				childArray.add(child);
 			}
@@ -106,17 +133,18 @@ public class ChildService {
 					.filter(child -> child.getId().equals(childId)).findFirst().orElse(null);
 			if (currentChild != null) {
 				ParentDetails secondParent = currentChild.getParents().stream()
-						.filter(parent -> !(parent.getId().equals(parentId))).findFirst().orElse(null);
+						.filter(parent -> !(parent.getId().equals(currentParent.getParentDetails().getId())))
+						.findFirst().orElse(null);
 				if (secondParent != null) {
 					return new CreateChildCommand(currentChild.getId(), currentChild.getFirstname(),
 							currentChild.getLastname(), currentChild.getPersonalCode(), currentChild.isAdopted(),
 							currentChild.getBirthdate(), currentChild.getLivingAddress().getCity(),
 							currentChild.getLivingAddress().getStreet(),
 							currentChild.getLivingAddress().getHouseNumber(),
-							currentChild.getLivingAddress().getFlatNumber(), true, secondParent.getId(), secondParent.getFirstname(),
-							secondParent.getLastname(), secondParent.getEmail(), secondParent.getPhone(),
-							secondParent.getPersonalCode(), secondParent.getLivingAddress().getCity(),
-							secondParent.getLivingAddress().getStreet(),
+							currentChild.getLivingAddress().getFlatNumber(), true, secondParent.getId(),
+							secondParent.getFirstname(), secondParent.getLastname(), secondParent.getEmail(),
+							secondParent.getPhone(), secondParent.getPersonalCode(),
+							secondParent.getLivingAddress().getCity(), secondParent.getLivingAddress().getStreet(),
 							secondParent.getLivingAddress().getHouseNumber(),
 							secondParent.getLivingAddress().getFlatNumber(), secondParent.getNumberOfKids(),
 							secondParent.isStudying(), secondParent.getStudyingInstitution(),
@@ -130,8 +158,8 @@ public class ChildService {
 							currentChild.getBirthdate(), currentChild.getLivingAddress().getCity(),
 							currentChild.getLivingAddress().getStreet(),
 							currentChild.getLivingAddress().getHouseNumber(),
-							currentChild.getLivingAddress().getFlatNumber(), false, 0L, "", "", "", "", 0L, "", "", "", "",
-							0, false, "", false, false, "", "", "", "");
+							currentChild.getLivingAddress().getFlatNumber(), false, 0L, "", "", "", "", 0L, "", "", "",
+							"", 0, false, "", false, false, "", "", "", "");
 				}
 			} else {
 				return null;
@@ -154,7 +182,8 @@ public class ChildService {
 				child.setAdopted(updatedChild.isAdopted());
 				child.setBirthdate(updatedChild.getBirthdate());
 				child.setLivingAddress(updatedChild.getLivingAddress());
-				ParentDetails secondParent = detailsDao.findById(updatedChild.getSecondParentDetails().getId()).orElse(null);
+				ParentDetails secondParent = detailsDao.findById(updatedChild.getSecondParentDetails().getId())
+						.orElse(null);
 				if (secondParent != null) {
 					secondParent.setFirstname(updatedChild.getSecondParentDetails().getFirstname());
 					secondParent.setLastname(updatedChild.getSecondParentDetails().getLastname());
@@ -166,7 +195,8 @@ public class ChildService {
 					secondParent.setStudying(updatedChild.getSecondParentDetails().isStudying());
 					secondParent.setStudyingInstitution(updatedChild.getSecondParentDetails().getStudyingInstitution());
 					secondParent.setHasDisability(updatedChild.getSecondParentDetails().isHasDisability());
-					secondParent.setDeclaredResidenceSameAsLiving(updatedChild.getSecondParentDetails().isDeclaredResidenceSameAsLiving());
+					secondParent.setDeclaredResidenceSameAsLiving(
+							updatedChild.getSecondParentDetails().isDeclaredResidenceSameAsLiving());
 					secondParent.setDeclaredAddress(updatedChild.getSecondParentDetails().getDeclaredAddress());
 					detailsDao.save(secondParent);
 					childDao.save(child);
@@ -182,16 +212,14 @@ public class ChildService {
 			}
 		}
 	}
-	
+
 	@Transactional
 	public void deleteChild(long userId, long childId) {
 		User parent = userDao.findById(userId).orElse(null);
 		if (parent != null) {
 			ParentDetails details = parent.getParentDetails();
 			Set<Child> childList = details.getChildren();
-			Child childToDelete = childList.stream()
-						.filter(ch -> ch.getId().equals(childId))
-						.findFirst().orElse(null);
+			Child childToDelete = childList.stream().filter(ch -> ch.getId().equals(childId)).findFirst().orElse(null);
 			if (childToDelete != null) {
 				var parents = childToDelete.getParents();
 				parents.clear();
