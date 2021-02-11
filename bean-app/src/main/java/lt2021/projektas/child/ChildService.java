@@ -31,7 +31,8 @@ public class ChildService {
 	@Transactional
 	public ResponseEntity<String> addChild(Long parentId, ServiceLayerChild child) {
 		User mainParent = userDao.findById(parentId).orElse(null);
-		if (detailsDao.findByPersonalCode(child.getPersonalCode()).isPresent() || child.getSecondParentDetails().getPersonalCode() == child.getPersonalCode()) {
+		if (detailsDao.findByPersonalCode(child.getPersonalCode()).isPresent() || child.getSecondParentDetails().getPersonalCode() == child.getPersonalCode() || 
+				childDao.findByPersonalCode(child.getSecondParentDetails().getPersonalCode()).isPresent()) {
 			return new ResponseEntity<>("This personal code already exists", HttpStatus.BAD_REQUEST);
 		}
 		if (mainParent != null) {
