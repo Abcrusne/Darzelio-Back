@@ -1,5 +1,6 @@
 package lt2021.projektas.child;
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -14,6 +15,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToOne;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
@@ -45,8 +48,8 @@ public class Child {
 	@NotNull
 	private boolean isAdopted;
 
-	@NotBlank
-	private String birthdate;
+	@Temporal(TemporalType.DATE)
+	private Date birthdate;
 
 	@Embedded
 	private Address livingAddress;
@@ -61,8 +64,8 @@ public class Child {
 	public Child() {
 	}
 
-	public Child(@NotBlank String firstname, @NotBlank String lastname, @NotNull long personalCode, @NotNull boolean isAdopted,
-			@NotBlank String birthdate, Address livingAddress) {
+	public Child(@NotBlank String firstname, @NotBlank String lastname, @NotNull long personalCode,
+			@NotNull boolean isAdopted, Date birthdate, Address livingAddress) {
 		super();
 		this.firstname = firstname;
 		this.lastname = lastname;
@@ -105,11 +108,11 @@ public class Child {
 		this.personalCode = personalCode;
 	}
 
-	public String getBirthdate() {
+	public Date getBirthdate() {
 		return birthdate;
 	}
 
-	public void setBirthdate(String birthdate) {
+	public void setBirthdate(Date birthdate) {
 		this.birthdate = birthdate;
 	}
 

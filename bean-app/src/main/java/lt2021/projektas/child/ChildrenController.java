@@ -1,5 +1,6 @@
 package lt2021.projektas.child;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +23,7 @@ public class ChildrenController {
 	private ChildService childService;
 	
 	@RequestMapping(method = RequestMethod.POST)
-	public ResponseEntity<String> addChild(@RequestBody final CreateChildCommand child, @PathVariable("userId") final long id) {
+	public ResponseEntity<String> addChild(@RequestBody final CreateChildCommand child, @PathVariable("userId") final long id) throws ParseException {
 		if (!child.isSecondParent()) {
 			return childService.addChild(id, new ServiceLayerChild(child.getFirstname(), child.getLastname(), child.getPersonalCode(), child.isAdopted(), 
 					child.getBirthdate(), new Address(child.getCity(), child.getStreet(), child.getHouseNumber(), child.getFlatNumber())));
@@ -38,7 +39,7 @@ public class ChildrenController {
 	}
 	
 	@RequestMapping(method = RequestMethod.GET)
-	public List<CreateChildCommand> getChildren(@PathVariable("userId") final long id) {
+	public List<CreateChildCommand> getChildren(@PathVariable("userId") final long id) throws ParseException {
 		List<ServiceLayerChild> children = childService.getChildren(id);
 		List<CreateChildCommand> finalChildren = new ArrayList<>();
 		for (ServiceLayerChild child: children) {
@@ -65,13 +66,13 @@ public class ChildrenController {
 	
 	
 	@RequestMapping(path = "/{childId}", method = RequestMethod.GET)
-	public CreateChildCommand getChildDetails(@PathVariable("userId") final long userId, @PathVariable("childId") final long childId) {
+	public CreateChildCommand getChildDetails(@PathVariable("userId") final long userId, @PathVariable("childId") final long childId) throws ParseException {
 		return childService.getChildDetails(userId, childId);
 	}
 	
 
 	@RequestMapping(path = "/{childId}", method = RequestMethod.PUT)
-	public void updateChild(@RequestBody final CreateChildCommand child, @PathVariable("userId") final long userId, @PathVariable("childId") final long childId) {
+	public void updateChild(@RequestBody final CreateChildCommand child, @PathVariable("userId") final long userId, @PathVariable("childId") final long childId) throws ParseException {
 		if (!(child.isSecondParent())) {
 			childService.updateChild(new ServiceLayerChild(child.getFirstname(), child.getLastname(), child.getPersonalCode(), child.isAdopted(), 
 					child.getBirthdate(), new Address(child.getCity(), child.getStreet(), child.getHouseNumber(), child.getFlatNumber())), userId, childId);

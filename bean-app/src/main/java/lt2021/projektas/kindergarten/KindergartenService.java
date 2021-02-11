@@ -23,7 +23,7 @@ public class KindergartenService {
 	public CreateKindergartenCommand getKindergarten(long kgId) {
 		Kindergarten kg = kgDao.findById(kgId).orElse(null);
 		if (kg != null) {
-			return new CreateKindergartenCommand(kg.getId(), kg.getName(), kg.getAddress(),
+			return new CreateKindergartenCommand(kg.getId(), kg.getName().toUpperCase(), kg.getAddress(),
 					kg.getSpotsInFirstAgeGroup(), kg.getSpotsInSecondAgeGroup());
 		} else {
 			return null;
@@ -33,7 +33,7 @@ public class KindergartenService {
 	@Transactional
 	public List<CreateKindergartenCommand> getAllKindergartens() {
 		return kgDao.findAll().stream()
-					.map(kg -> new CreateKindergartenCommand(kg.getId(), kg.getName(), kg.getAddress(), kg.getSpotsInFirstAgeGroup(), kg.getSpotsInSecondAgeGroup()))
+					.map(kg -> new CreateKindergartenCommand(kg.getId(), kg.getName().toUpperCase(), kg.getAddress(), kg.getSpotsInFirstAgeGroup(), kg.getSpotsInSecondAgeGroup()))
 					.collect(Collectors.toList());
 	}
 	
