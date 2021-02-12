@@ -38,6 +38,11 @@ public class KindergartenService {
 	}
 	
 	@Transactional
+	public void deleteKindergarten(long kgId) {
+		kgDao.deleteById(kgId);
+	}
+	
+	@Transactional
 	public void updateKindergarten(CreateKindergartenCommand kindergarten, long kgId) {
 		Kindergarten kg = kgDao.findById(kgId).orElse(null);
 		kg.setName(kindergarten.getName());

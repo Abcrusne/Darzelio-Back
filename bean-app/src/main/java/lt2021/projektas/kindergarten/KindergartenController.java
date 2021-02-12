@@ -42,9 +42,15 @@ public class KindergartenController {
 		kgService.updateKindergarten(kg, kgId);
 	}
 	
+	@RequestMapping(path = "/{kgId", method = RequestMethod.DELETE)
+	public void deleteKinderkarten(@PathVariable final long kgId) {
+		
+	}
+	
 	@RequestMapping(path = "/register", method = RequestMethod.POST)
 	public void addRegistration(@RequestBody final CreateRegistrationCommand reg) {
 		kgRegService.addRegistration(reg);
 	}
+	
 	
 }
