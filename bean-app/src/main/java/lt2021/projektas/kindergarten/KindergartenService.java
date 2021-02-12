@@ -38,8 +38,9 @@ public class KindergartenService {
 	}
 	
 	@Transactional
-	public void deleteKindergarten(long kgId) {
+	public List<CreateKindergartenCommand> deleteKindergarten(long kgId) {
 		kgDao.deleteById(kgId);
+		return getAllKindergartens();
 	}
 	
 	@Transactional
