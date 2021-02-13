@@ -94,6 +94,9 @@ public class UserController {
 		if (!(auth instanceof AnonymousAuthenticationToken)) {
 			User user = userService.findByEmail(auth.getName());
 			List<ServiceLayerChild> usersChildren = childService.getChildren(user.getId());
+			if (usersChildren == null) {
+				return null;
+			}
 			List<CreateChildCommand> finalChildren = new ArrayList<>();
 			for (ServiceLayerChild child: usersChildren) {
 				if (child.getSecondParentDetails() != null) {

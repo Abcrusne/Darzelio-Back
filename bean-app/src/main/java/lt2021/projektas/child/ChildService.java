@@ -35,15 +35,18 @@ public class ChildService {
 	public ResponseEntity<String> addChild(Long parentId, ServiceLayerChild child) throws ParseException {
 		User mainParent = userDao.findById(parentId).orElse(null);
 		if (new SimpleDateFormat("y-MM-dd").parse(child.getBirthdate()).after(new Date())) {
-			return new ResponseEntity<>("The birthdate can't be from the future", HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<>("Gimimo data negali būti iš ateities!", HttpStatus.BAD_REQUEST);
 		}
 		if (detailsDao.findByPersonalCode(child.getPersonalCode()).isPresent()) {
-			return new ResponseEntity<>("This personal code already exists", HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<>("Šis asmens kodas jau egzistuoja sistemoje!", HttpStatus.BAD_REQUEST);
 		} else if (child.getSecondParentDetails() != null) {
 			if (child.getSecondParentDetails().getPersonalCode() == child.getPersonalCode() || 
 					childDao.findByPersonalCode(child.getSecondParentDetails().getPersonalCode()).isPresent()) {
-				return new ResponseEntity<>("This personal code already exists", HttpStatus.BAD_REQUEST);
+				return new ResponseEntity<>("Šis asmens kodas jau egzistuoja sistemoje!", HttpStatus.BAD_REQUEST);
 			}
+		}
+		if (mainParent.getParentDetails() == null) {
+			return new ResponseEntity<>("Neužpildyta tėvo/globėjo registracijos forma!", HttpStatus.BAD_REQUEST);
 		}
 		if (mainParent != null) {
 			Set<Child> childrenSet = mainParent.getParentDetails().getChildren();
@@ -106,13 +109,16 @@ public class ChildService {
 			userDao.save(mainParent);
 			return new ResponseEntity<>("Child created", HttpStatus.OK);
 		}
-		return new ResponseEntity<>("Bad information passed", HttpStatus.BAD_REQUEST);
+		return new ResponseEntity<>("Pateikta bloga informacija. Patikrinkite duomenis ir bandykite dar kartą.", HttpStatus.BAD_REQUEST);
 	}
 
 	@Transactional
 	public List<ServiceLayerChild> getChildren(long parentId) throws ParseException {
 		User parent = userDao.findById(parentId).orElse(null);
 		if (parent != null) {
+			if (parent.getParentDetails() == null || parent.getParentDetails().getChildren() == null) {
+				return null;
+			}
 			Set<Child> children = parent.getParentDetails().getChildren();
 			List<ServiceLayerChild> childArray = new ArrayList<>();
 			for (Child ch : children) {
