@@ -50,7 +50,7 @@ public class ParentDetails {
 
 	@NotNull
 	@Min(value = 30000000000L, message = "Personal code must be valid")
-	@Max(value = 49999999999L, message = "Personal code must be valid")
+	@Max(value = 69999999999L, message = "Personal code must be valid")
 	@Column(length = 11, unique = true)
 	private long personalCode;
 
@@ -73,6 +73,7 @@ public class ParentDetails {
 	private boolean declaredResidenceSameAsLiving;
 
 	@Embedded
+	@Valid
 	@AttributeOverrides({ @AttributeOverride(name = "city", column = @Column(name = "declared_city")),
 			@AttributeOverride(name = "street", column = @Column(name = "declared_street")),
 			@AttributeOverride(name = "houseNumber", column = @Column(name = "declared_houseNumber")),

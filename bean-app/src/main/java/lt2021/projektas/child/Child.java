@@ -17,6 +17,7 @@ import javax.persistence.ManyToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
@@ -40,8 +41,8 @@ public class Child {
 	private String lastname;
 
 	@NotNull
-	@Min(value = 30000000000L, message = "Personal code must be valid")
-	@Max(value = 49999999999L, message = "Personal code must be valid")
+	@Min(value = 50000000000L, message = "Personal code must be valid")
+	@Max(value = 69999999999L, message = "Personal code must be valid")
 	@Column(length = 11, unique = true)
 	private long personalCode;
 	
@@ -52,6 +53,7 @@ public class Child {
 	private Date birthdate;
 
 	@Embedded
+	@Valid
 	private Address livingAddress;
 
 	@ManyToMany(cascade = CascadeType.ALL)
