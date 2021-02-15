@@ -1,5 +1,6 @@
 package lt2021.projektas.userRegister;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -7,8 +8,12 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
+
+import lt2021.projektas.parentdetails.ParentDetails;
 
 @Entity
 public class User {
@@ -17,24 +22,27 @@ public class User {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@NotBlank
+	@NotBlank(message = "first name can't be blank")
 	private String firstname;
 
-	@NotBlank
+	@NotBlank(message = "last name can't be blank")
 	private String lastname;
 
 	@NotBlank
 	@Column(unique = true)
-	@Email
+	@Email(message = "email format needs to be correct")
 	private String email;
 	
 	@Enumerated(EnumType.STRING)
 	private UserRole role;
 
 	// @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=\\S+$).{8,}$")
-	@NotBlank
+	@NotBlank(message = "password can't be blank")
 	private String password;
-
+	
+	@OneToOne(cascade= CascadeType.ALL)
+	@JoinColumn(name="parentDetails_id")
+	private ParentDetails parentDetails;
 //	@NotNull
 //	private String confirmPassword;
 
@@ -97,5 +105,15 @@ public class User {
 	public void setPassword(String password) {
 		this.password = password;
 	}
+
+	public ParentDetails getParentDetails() {
+		return parentDetails;
+	}
+
+	public void setParentDetails(ParentDetails parentDetails) {
+		this.parentDetails = parentDetails;
+	}
+	
+	
 
 }

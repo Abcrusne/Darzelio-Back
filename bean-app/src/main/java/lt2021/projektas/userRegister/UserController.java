@@ -1,5 +1,7 @@
 package lt2021.projektas.userRegister;
 
+import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.validation.Valid;
@@ -19,6 +21,9 @@ import org.springframework.web.bind.annotation.RestController;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import lt2021.projektas.child.ChildService;
+import lt2021.projektas.child.CreateChildCommand;
+import lt2021.projektas.child.ServiceLayerChild;
 
 @RestController
 @Api(value = "users")
@@ -27,6 +32,8 @@ public class UserController {
 
 	@Autowired
 	private UserService userService;
+	
+	@Autowired ChildService childService;
 
 	@RequestMapping(method = RequestMethod.GET)
 	@ApiOperation(value = "Get users list", notes = "Returns all users")
@@ -69,6 +76,50 @@ public class UserController {
 			return currentRole;
 		}
 		return "not logged";
+	}
+	
+	@RequestMapping(path = "/loggeduserid", method = RequestMethod.GET)
+	public Long getLoggedInUserId() {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		if (!(auth instanceof AnonymousAuthenticationToken)) {
+			User user = userService.findByEmail(auth.getName());
+			return user.getId();
+		} 
+		return null;
+	}
+	
+	@RequestMapping(path = "/getloggeduserchildren", method = RequestMethod.GET)
+	public List<CreateChildCommand> getLoggedInUserChildren() throws ParseException {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		if (!(auth instanceof AnonymousAuthenticationToken)) {
+			User user = userService.findByEmail(auth.getName());
+			List<ServiceLayerChild> usersChildren = childService.getChildren(user.getId());
+			if (usersChildren == null) {
+				return null;
+			}
+			List<CreateChildCommand> finalChildren = new ArrayList<>();
+			for (ServiceLayerChild child: usersChildren) {
+				if (child.getSecondParentDetails() != null) {
+					finalChildren.add(new CreateChildCommand(child.getId(), child.getFirstname(), child.getLastname(), child.getPersonalCode(), child.isAdopted(), 
+							child.getBirthdate(), child.getLivingAddress().getCity(), child.getLivingAddress().getStreet(), child.getLivingAddress().getHouseNumber(), 
+							child.getLivingAddress().getFlatNumber(), true, child.getSecondParentDetails().getId(), child.getSecondParentDetails().getFirstname(), 
+							child.getSecondParentDetails().getLastname(), child.getSecondParentDetails().getEmail(), child.getSecondParentDetails().getPhone(), 
+							child.getSecondParentDetails().getPersonalCode(), child.getSecondParentDetails().getLivingAddress().getCity(), 
+							child.getSecondParentDetails().getLivingAddress().getStreet(), child.getSecondParentDetails().getLivingAddress().getHouseNumber(), 
+							child.getSecondParentDetails().getLivingAddress().getFlatNumber(), child.getSecondParentDetails().getNumberOfKids(), 
+							child.getSecondParentDetails().isStudying(), child.getSecondParentDetails().getStudyingInstitution(), child.getSecondParentDetails().isHasDisability(), 
+							child.getSecondParentDetails().isDeclaredResidenceSameAsLiving(), child.getSecondParentDetails().getDeclaredAddress().getCity(), 
+							child.getSecondParentDetails().getDeclaredAddress().getStreet(), child.getSecondParentDetails().getDeclaredAddress().getHouseNumber(), 
+							child.getSecondParentDetails().getDeclaredAddress().getFlatNumber()));
+				} else {
+					finalChildren.add(new CreateChildCommand(child.getId(), child.getFirstname(), child.getLastname(), child.getPersonalCode(), child.isAdopted(), 
+							child.getBirthdate(), child.getLivingAddress().getCity(), child.getLivingAddress().getStreet(), child.getLivingAddress().getHouseNumber(), 
+							child.getLivingAddress().getFlatNumber(), false, 0L, "", "", "", "", 0L, "", "", "", "", 0, false, "", false, false, "", "", "", ""));
+				}
+			}
+			return finalChildren;
+		}
+		return null;
 	}
 
 }

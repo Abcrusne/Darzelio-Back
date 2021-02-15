@@ -1,27 +1,30 @@
 {
   "files": {
-    "main.css": "/bean-app/static/css/main.ea53e0f1.chunk.css",
-    "main.js": "/bean-app/static/js/main.5a683422.chunk.js",
-    "main.js.map": "/bean-app/static/js/main.5a683422.chunk.js.map",
-    "runtime-main.js": "/bean-app/static/js/runtime-main.88626820.js",
-    "runtime-main.js.map": "/bean-app/static/js/runtime-main.88626820.js.map",
+
+    "main.css": "/bean-app/static/css/main.aa628569.chunk.css",
+    "main.js": "/bean-app/static/js/main.902e75d1.chunk.js",
+    "main.js.map": "/bean-app/static/js/main.902e75d1.chunk.js.map",
+    "runtime-main.js": "/bean-app/static/js/runtime-main.e1a29414.js",
+    "runtime-main.js.map": "/bean-app/static/js/runtime-main.e1a29414.js.map",
     "static/css/2.437d98bc.chunk.css": "/bean-app/static/css/2.437d98bc.chunk.css",
-    "static/js/2.96ca176e.chunk.js": "/bean-app/static/js/2.96ca176e.chunk.js",
-    "static/js/2.96ca176e.chunk.js.map": "/bean-app/static/js/2.96ca176e.chunk.js.map",
-    "static/js/3.621210b6.chunk.js": "/bean-app/static/js/3.621210b6.chunk.js",
-    "static/js/3.621210b6.chunk.js.map": "/bean-app/static/js/3.621210b6.chunk.js.map",
+    "static/js/2.d9430546.chunk.js": "/bean-app/static/js/2.d9430546.chunk.js",
+    "static/js/2.d9430546.chunk.js.map": "/bean-app/static/js/2.d9430546.chunk.js.map",
+    "static/js/3.55d078bb.chunk.js": "/bean-app/static/js/3.55d078bb.chunk.js",
+    "static/js/3.55d078bb.chunk.js.map": "/bean-app/static/js/3.55d078bb.chunk.js.map",
     "index.html": "/bean-app/index.html",
-    "precache-manifest.7a38cf0483acc3a33c4f8676c0d2c78c.js": "/bean-app/precache-manifest.7a38cf0483acc3a33c4f8676c0d2c78c.js",
+    "precache-manifest.172e37b72b68daaadbe0e328bc99940a.js": "/bean-app/precache-manifest.172e37b72b68daaadbe0e328bc99940a.js",
     "service-worker.js": "/bean-app/service-worker.js",
     "static/css/2.437d98bc.chunk.css.map": "/bean-app/static/css/2.437d98bc.chunk.css.map",
-    "static/css/main.ea53e0f1.chunk.css.map": "/bean-app/static/css/main.ea53e0f1.chunk.css.map",
-    "static/js/2.96ca176e.chunk.js.LICENSE.txt": "/bean-app/static/js/2.96ca176e.chunk.js.LICENSE.txt"
+    "static/css/main.aa628569.chunk.css.map": "/bean-app/static/css/main.aa628569.chunk.css.map",
+    "static/js/2.d9430546.chunk.js.LICENSE.txt": "/bean-app/static/js/2.d9430546.chunk.js.LICENSE.txt"
+
   },
   "entrypoints": [
-    "static/js/runtime-main.88626820.js",
+    "static/js/runtime-main.e1a29414.js",
     "static/css/2.437d98bc.chunk.css",
-    "static/js/2.96ca176e.chunk.js",
-    "static/css/main.ea53e0f1.chunk.css",
-    "static/js/main.5a683422.chunk.js"
+    "static/js/2.d9430546.chunk.js",
+    "static/css/main.aa628569.chunk.css",
+    "static/js/main.902e75d1.chunk.js"
+
   ]
 }
