@@ -1,5 +1,6 @@
 {
   "files": {
+
     "main.css": "/bean-app/static/css/main.aa628569.chunk.css",
     "main.js": "/bean-app/static/js/main.902e75d1.chunk.js",
     "main.js.map": "/bean-app/static/js/main.902e75d1.chunk.js.map",
@@ -16,6 +17,7 @@
     "static/css/2.437d98bc.chunk.css.map": "/bean-app/static/css/2.437d98bc.chunk.css.map",
     "static/css/main.aa628569.chunk.css.map": "/bean-app/static/css/main.aa628569.chunk.css.map",
     "static/js/2.d9430546.chunk.js.LICENSE.txt": "/bean-app/static/js/2.d9430546.chunk.js.LICENSE.txt"
+
   },
   "entrypoints": [
     "static/js/runtime-main.e1a29414.js",
@@ -23,5 +25,6 @@
     "static/js/2.d9430546.chunk.js",
     "static/css/main.aa628569.chunk.css",
     "static/js/main.902e75d1.chunk.js"
+
   ]
 }
