@@ -41,7 +41,8 @@ public class ChildService {
 			return new ResponseEntity<>("Šis asmens kodas jau egzistuoja sistemoje!", HttpStatus.BAD_REQUEST);
 		} else if (child.getSecondParentDetails() != null) {
 			if (child.getSecondParentDetails().getPersonalCode() == child.getPersonalCode() || 
-					childDao.findByPersonalCode(child.getSecondParentDetails().getPersonalCode()).isPresent()) {
+					childDao.findByPersonalCode(child.getSecondParentDetails().getPersonalCode()).isPresent() || 
+					mainParent.getParentDetails().getPersonalCode() == child.getSecondParentDetails().getPersonalCode()) {
 				return new ResponseEntity<>("Šis asmens kodas jau egzistuoja sistemoje!", HttpStatus.BAD_REQUEST);
 			}
 		}
