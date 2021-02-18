@@ -3,6 +3,7 @@ package lt2021.projektas.kindergarten;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -48,8 +49,13 @@ public class KindergartenController {
 	}
 	
 	@RequestMapping(path = "/register", method = RequestMethod.POST)
-	public void addRegistration(@RequestBody final CreateRegistrationCommand reg) {
-		kgRegService.addRegistration(reg);
+	public ResponseEntity<String> addRegistration(@RequestBody final CreateRegistrationCommand reg) {
+		return kgRegService.addRegistration(reg);
+	}
+	
+	@RequestMapping(path = "/register", method = RequestMethod.GET)
+	public List<CreateRegistrationCommand> getAllRegistrations() {
+		return kgRegService.getAllRegistrations();
 	}
 	
 	

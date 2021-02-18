@@ -72,12 +72,12 @@ public class ChildrenController {
 	
 
 	@RequestMapping(path = "/{childId}", method = RequestMethod.PUT)
-	public void updateChild(@RequestBody final CreateChildCommand child, @PathVariable("userId") final long userId, @PathVariable("childId") final long childId) throws ParseException {
+	public ResponseEntity<String> updateChild(@RequestBody final CreateChildCommand child, @PathVariable("userId") final long userId, @PathVariable("childId") final long childId) throws ParseException {
 		if (!(child.isSecondParent())) {
-			childService.updateChild(new ServiceLayerChild(child.getFirstname(), child.getLastname(), child.getPersonalCode(), child.isAdopted(), 
+			return childService.updateChild(new ServiceLayerChild(child.getFirstname(), child.getLastname(), child.getPersonalCode(), child.isAdopted(), 
 					child.getBirthdate(), new Address(child.getCity(), child.getStreet(), child.getHouseNumber(), child.getFlatNumber())), userId, childId);
 		} else {
-			childService.updateChild(new ServiceLayerChild(child.getFirstname(), child.getLastname(), child.getPersonalCode(), child.isAdopted(), 
+			return childService.updateChild(new ServiceLayerChild(child.getFirstname(), child.getLastname(), child.getPersonalCode(), child.isAdopted(), 
 					child.getBirthdate(), new Address(child.getCity(), child.getStreet(), child.getHouseNumber(), child.getFlatNumber()), new ServiceLayerDetails(child.getSecondParentId(),
 							child.getSecondParentFirstname(), child.getSecondParentLastname(), child.getSecondParentEmail(), child.getSecondParentPhone(), child.getSecondParentPersonalCode(), 
 							new Address(child.getSecondParentCity(), child.getSecondParentStreet(), child.getSecondParentHouseNumber(), child.getSecondParentFlatNumber()), 

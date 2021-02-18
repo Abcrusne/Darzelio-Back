@@ -16,18 +16,22 @@ public class CreateRegistrationCommand {
 	
 	private String fifthPriority;
 	
+	private int rating;
+	
 	public CreateRegistrationCommand() {
 	}
 
 	public CreateRegistrationCommand(Long id, Long childId, String firstPriority, String secondPriority, String thirdPriority,
-			String fourthPriority, String fifthPriority) {
+			String fourthPriority, String fifthPriority, int rating) {
 		super();
 		this.id = id;
+		this.childId = childId;
 		this.firstPriority = firstPriority;
 		this.secondPriority = secondPriority;
 		this.thirdPriority = thirdPriority;
 		this.fourthPriority = fourthPriority;
 		this.fifthPriority = fifthPriority;
+		this.rating = rating;
 	}
 
 	public Long getId() {
@@ -84,6 +88,14 @@ public class CreateRegistrationCommand {
 
 	public void setChildId(Long childId) {
 		this.childId = childId;
+	}
+
+	public int getRating() {
+		return rating;
+	}
+
+	public void setRating(int rating) {
+		this.rating = rating;
 	}
 	
 	

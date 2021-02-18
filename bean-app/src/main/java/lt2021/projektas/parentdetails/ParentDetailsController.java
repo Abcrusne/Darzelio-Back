@@ -1,6 +1,7 @@
 package lt2021.projektas.parentdetails;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,22 +18,22 @@ public class ParentDetailsController {
 	@RequestMapping(method = RequestMethod.GET)
 	public CreateDetailsCommand getParentDetails(@PathVariable final long id) {
 		ServiceLayerDetails parent = detailsService.getParentDetails(id);
-		return new CreateDetailsCommand(id, parent.getFirstname(), parent.getLastname(), parent.getEmail(), parent.getPhone(), parent.getPersonalCode(), parent.getLivingAddress().getCity(), 
+		return new CreateDetailsCommand(parent.getId(), parent.getFirstname(), parent.getLastname(), parent.getEmail(), parent.getPhone(), parent.getPersonalCode(), parent.getLivingAddress().getCity(), 
 				parent.getLivingAddress().getStreet(), parent.getLivingAddress().getHouseNumber(), parent.getLivingAddress().getFlatNumber(), 
 				parent.getNumberOfKids(), parent.isStudying(), parent.getStudyingInstitution(), parent.isHasDisability(), parent.isDeclaredResidenceSameAsLiving(), 
 				parent.getDeclaredAddress().getCity(), parent.getDeclaredAddress().getStreet(), parent.getDeclaredAddress().getHouseNumber(), parent.getDeclaredAddress().getFlatNumber());
 	}
 	
 	@RequestMapping(method = RequestMethod.POST)
-	public void addParentDetails(@RequestBody final CreateDetailsCommand details, @PathVariable final long id) {
+	public ResponseEntity<String> addParentDetails(@RequestBody final CreateDetailsCommand details, @PathVariable final long id) {
 		if (details.isDeclaredResidenceSameAsLiving()) {
-			detailsService.addParentDetails(new ServiceLayerDetails(id, details.getFirstname(), details.getLastname(), details.getEmail(), details.getPhone(), details.getPersonalCode(),
+			return detailsService.addParentDetails(new ServiceLayerDetails(id, details.getFirstname(), details.getLastname(), details.getEmail(), details.getPhone(), details.getPersonalCode(),
 					new Address(details.getCity(), details.getStreet(), 
 					details.getHouseNumber(), details.getFlatNumber()), details.getNumberOfKids(), details.isStudying(), details.getStudyingInstitution(), 
 					details.isHasDisability(), details.isDeclaredResidenceSameAsLiving(), new Address(details.getCity(), details.getStreet(), 
 							details.getHouseNumber(), details.getFlatNumber())));
 		} else {
-			detailsService.addParentDetails(new ServiceLayerDetails(id, details.getFirstname(), details.getLastname(), details.getEmail(), details.getPhone(), details.getPersonalCode(),
+			return detailsService.addParentDetails(new ServiceLayerDetails(id, details.getFirstname(), details.getLastname(), details.getEmail(), details.getPhone(), details.getPersonalCode(),
 					new Address(details.getCity(), details.getStreet(), 
 					details.getHouseNumber(), details.getFlatNumber()), details.getNumberOfKids(), details.isStudying(), details.getStudyingInstitution(), 
 					details.isHasDisability(), details.isDeclaredResidenceSameAsLiving(), new Address(details.getDeclaredCity(), details.getDeclaredStreet(), 
@@ -42,8 +43,8 @@ public class ParentDetailsController {
 	}
 	
 	@RequestMapping(method = RequestMethod.PUT)
-	public void updateParentDetails(@RequestBody final CreateDetailsCommand details, @PathVariable final long id) {
-		detailsService.updateParentDetails(new ServiceLayerDetails(details.getId(), details.getFirstname(), details.getLastname(), details.getEmail(), details.getPhone(), details.getPersonalCode(),
+	public ResponseEntity<String> updateParentDetails(@RequestBody final CreateDetailsCommand details, @PathVariable final long id) {
+		return detailsService.updateParentDetails(new ServiceLayerDetails(details.getId(), details.getFirstname(), details.getLastname(), details.getEmail(), details.getPhone(), details.getPersonalCode(),
 				new Address(details.getCity(), details.getStreet(), 
 				details.getHouseNumber(), details.getFlatNumber()), details.getNumberOfKids(), details.isStudying(), details.getStudyingInstitution(), 
 				details.isHasDisability(), details.isDeclaredResidenceSameAsLiving(), new Address(details.getDeclaredCity(), details.getDeclaredStreet(), 

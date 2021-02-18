@@ -34,8 +34,11 @@ public class ChildService {
 	@Transactional
 	public ResponseEntity<String> addChild(Long parentId, ServiceLayerChild child) throws ParseException {
 		User mainParent = userDao.findById(parentId).orElse(null);
+		if (mainParent == null) {
+			return new ResponseEntity<String>("Tėvas/globėjas neregistruotas sistemoje", HttpStatus.BAD_REQUEST);
+		}
 		if (new SimpleDateFormat("y-MM-dd").parse(child.getBirthdate()).after(new Date())) {
-			return new ResponseEntity<>("Gimimo data negali būti iš ateities!", HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<String>("Gimimo data negali būti iš ateities!", HttpStatus.BAD_REQUEST);
 		}
 		if (detailsDao.findByPersonalCode(child.getPersonalCode()).isPresent()) {
 			return new ResponseEntity<>("Šis asmens kodas jau egzistuoja sistemoje!", HttpStatus.BAD_REQUEST);
@@ -43,7 +46,7 @@ public class ChildService {
 			if (child.getSecondParentDetails().getPersonalCode() == child.getPersonalCode() || 
 					childDao.findByPersonalCode(child.getSecondParentDetails().getPersonalCode()).isPresent() || 
 					mainParent.getParentDetails().getPersonalCode() == child.getSecondParentDetails().getPersonalCode()) {
-				return new ResponseEntity<>("Šis asmens kodas jau egzistuoja sistemoje!", HttpStatus.BAD_REQUEST);
+				return new ResponseEntity<String>("Šis asmens kodas jau egzistuoja sistemoje!", HttpStatus.BAD_REQUEST);
 			}
 		}
 		if (mainParent.getParentDetails() == null) {
@@ -108,9 +111,9 @@ public class ChildService {
 			}
 
 			userDao.save(mainParent);
-			return new ResponseEntity<>("Child created", HttpStatus.OK);
+			return new ResponseEntity<String>("Vaiko duomenys išsaugoti", HttpStatus.OK);
 		}
-		return new ResponseEntity<>("Pateikta bloga informacija. Patikrinkite duomenis ir bandykite dar kartą.", HttpStatus.BAD_REQUEST);
+		return new ResponseEntity<String>("Tėvas/globėjas neregistruotas sistemoje", HttpStatus.BAD_REQUEST);
 	}
 
 	@Transactional
@@ -188,12 +191,24 @@ public class ChildService {
 	}
 
 	@Transactional
-	public void updateChild(ServiceLayerChild updatedChild, long userId, long childId) throws ParseException {
+	public ResponseEntity<String> updateChild(ServiceLayerChild updatedChild, long userId, long childId) throws ParseException {
 		User mainParent = userDao.findById(userId).orElse(null);
 		if (mainParent != null) {
 			Child child = mainParent.getParentDetails().getChildren().stream().filter(ch -> ch.getId().equals(childId))
 					.findFirst().orElse(null);
+			if (detailsDao.findByPersonalCode(updatedChild.getPersonalCode()).isPresent()) {
+				return new ResponseEntity<String>("Vaiko asmens kodas jau užimtas", HttpStatus.BAD_REQUEST);
+			}
+			if (new SimpleDateFormat("y-MM-dd").parse(updatedChild.getBirthdate()).after(new Date())) {
+				return new ResponseEntity<String>("Gimimo data negali būti iš ateities!", HttpStatus.BAD_REQUEST);
+			}
 			if (updatedChild.getSecondParentDetails() != null) {
+				if (updatedChild.getPersonalCode() == updatedChild.getSecondParentDetails().getPersonalCode()) {
+					return new ResponseEntity<String>("Vaiko ir tėvo asmens kodai negali sutapti", HttpStatus.BAD_REQUEST);
+				}
+				if (childDao.findByPersonalCode(updatedChild.getSecondParentDetails().getPersonalCode()).isPresent()) {
+					return new ResponseEntity<String>("Tėvo asmens kodas jau užimtas", HttpStatus.BAD_REQUEST);
+				}
 				child.setFirstname(updatedChild.getFirstname());
 				child.setLastname(updatedChild.getLastname());
 				child.setPersonalCode(updatedChild.getPersonalCode());
@@ -218,6 +233,49 @@ public class ChildService {
 					secondParent.setDeclaredAddress(updatedChild.getSecondParentDetails().getDeclaredAddress());
 					detailsDao.save(secondParent);
 					childDao.save(child);
+					return new ResponseEntity<String>("Vaiko duomenys atnaujinti", HttpStatus.OK);
+				} else {
+					if (updatedChild.getSecondParentDetails().isDeclaredResidenceSameAsLiving()) {
+								secondParent = new ParentDetails(updatedChild.getSecondParentDetails().getFirstname(),
+								updatedChild.getSecondParentDetails().getLastname(), updatedChild.getSecondParentDetails().getEmail(),
+								updatedChild.getSecondParentDetails().getPhone(), updatedChild.getSecondParentDetails().getPersonalCode(),
+								updatedChild.getSecondParentDetails().getLivingAddress(),
+								updatedChild.getSecondParentDetails().getNumberOfKids(),
+								updatedChild.getSecondParentDetails().isStudying(),
+								updatedChild.getSecondParentDetails().getStudyingInstitution(),
+								updatedChild.getSecondParentDetails().isHasDisability(),
+								updatedChild.getSecondParentDetails().isDeclaredResidenceSameAsLiving(),
+								updatedChild.getSecondParentDetails().getLivingAddress());
+						var childrenSet = secondParent.getChildren();
+						childrenSet.add(child);
+						secondParent.setChildren(childrenSet);
+						var parentSet = child.getParents();
+						parentSet.add(secondParent);
+						child.setParents(parentSet);
+						detailsDao.save(secondParent);
+						childDao.save(child);
+						return new ResponseEntity<String>("Vaiko duomenys atnaujinti", HttpStatus.OK);
+					} else {
+						secondParent = new ParentDetails(updatedChild.getSecondParentDetails().getFirstname(),
+								updatedChild.getSecondParentDetails().getLastname(), updatedChild.getSecondParentDetails().getEmail(),
+								updatedChild.getSecondParentDetails().getPhone(), updatedChild.getSecondParentDetails().getPersonalCode(),
+								updatedChild.getSecondParentDetails().getLivingAddress(),
+								updatedChild.getSecondParentDetails().getNumberOfKids(),
+								updatedChild.getSecondParentDetails().isStudying(),
+								updatedChild.getSecondParentDetails().getStudyingInstitution(),
+								updatedChild.getSecondParentDetails().isHasDisability(),
+								updatedChild.getSecondParentDetails().isDeclaredResidenceSameAsLiving(),
+								updatedChild.getSecondParentDetails().getDeclaredAddress());
+						var childrenSet = secondParent.getChildren();
+						childrenSet.add(child);
+						secondParent.setChildren(childrenSet);
+						var parentSet = child.getParents();
+						parentSet.add(secondParent);
+						child.setParents(parentSet);
+						detailsDao.save(secondParent);
+						childDao.save(child);
+						return new ResponseEntity<String>("Vaiko duomenys atnaujinti", HttpStatus.OK);
+					}
 				}
 			} else {
 				child.setFirstname(updatedChild.getFirstname());
@@ -227,8 +285,10 @@ public class ChildService {
 				child.setBirthdate(new SimpleDateFormat("yyyy-MM-dd").parse(updatedChild.getBirthdate()));
 				child.setLivingAddress(updatedChild.getLivingAddress());
 				childDao.save(child);
+				return new ResponseEntity<String>("Vaiko duomenys atnaujinti", HttpStatus.OK);
 			}
 		}
+		return new ResponseEntity<String>("Tėvas/globėjas neregistruotas sistemoje", HttpStatus.BAD_REQUEST);
 	}
 
 	@Transactional
