@@ -15,7 +15,7 @@ public class KindergartenService {
 	
 	@Transactional
 	public void addKindergarten(CreateKindergartenCommand kindergarten) {
-		kgDao.save(new Kindergarten(kindergarten.getName(), kindergarten.getAddress(),
+		kgDao.save(new Kindergarten(kindergarten.getName().toUpperCase(), kindergarten.getAddress(),
 				kindergarten.getSpotsInFirstAgeGroup(), kindergarten.getSpotsInSecondAgeGroup()));
 	}
 	
@@ -23,7 +23,7 @@ public class KindergartenService {
 	public CreateKindergartenCommand getKindergarten(long kgId) {
 		Kindergarten kg = kgDao.findById(kgId).orElse(null);
 		if (kg != null) {
-			return new CreateKindergartenCommand(kg.getId(), kg.getName().toUpperCase(), kg.getAddress(),
+			return new CreateKindergartenCommand(kg.getId(), kg.getName(), kg.getAddress(),
 					kg.getSpotsInFirstAgeGroup(), kg.getSpotsInSecondAgeGroup());
 		} else {
 			return null;
@@ -46,7 +46,7 @@ public class KindergartenService {
 	@Transactional
 	public void updateKindergarten(CreateKindergartenCommand kindergarten, long kgId) {
 		Kindergarten kg = kgDao.findById(kgId).orElse(null);
-		kg.setName(kindergarten.getName());
+		kg.setName(kindergarten.getName().toUpperCase());
 		kg.setAddress(kindergarten.getAddress());
 		kg.setSpotsInFirstAgeGroup(kindergarten.getSpotsInFirstAgeGroup());
 		kg.setSpotsInSecondAgeGroup(kindergarten.getSpotsInSecondAgeGroup());

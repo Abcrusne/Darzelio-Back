@@ -64,4 +64,12 @@ public class KindergartenRegistrationService {
 					.collect(Collectors.toList());
 	}
 	
+	@Transactional
+	public List<CreateRegistrationCommand> getRegistrationsWithSpecifiedKindergarten(String kindergartenName) {
+		return kgRegDao.findRegistrationsWithSpecifiedKindergarten(kindergartenName).stream()
+					.map(kgReg -> new CreateRegistrationCommand(kgReg.getId(), kgReg.getChild().getId(), kgReg.getFirstPriority(), kgReg.getSecondPriority(),
+							kgReg.getThirdPriority(), kgReg.getFourthPriority(), kgReg.getFifthPriority(), kgReg.getRating()))
+					.collect(Collectors.toList());
+	}
+	
 }

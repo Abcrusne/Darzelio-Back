@@ -67,7 +67,7 @@ public class UserController {
 	@RequestMapping(path = "/{userId}", method = RequestMethod.PUT)
 	public void updateUser(@PathVariable final long userId, @Valid @RequestBody final CreateUserCommand user) {
 		userService.updateUser(new ServiceLayerUser(userId, user.getFirstname(), user.getLastname(), user.getEmail(),
-				user.getPassword(), user.getRole()));
+				user.getPassword(), user.getRole(), user.isMarkedForDeletion()));
 	}
 
 //	@ResponseStatus(HttpStatus.NO_CONTENT)

@@ -26,7 +26,7 @@ public class UserService implements UserDetailsService {
 		return userDao.findAll().stream()
 				.map(userFromService -> new ServiceLayerUser(userFromService.getId(), userFromService.getFirstname(),
 						userFromService.getLastname(), userFromService.getEmail(), userFromService.getPassword(),
-						userFromService.getRole()))
+						userFromService.getRole(), userFromService.isMarkedForDeletion()))
 				.collect(Collectors.toList());
 	}
 
@@ -35,7 +35,7 @@ public class UserService implements UserDetailsService {
 		var userFromService = userDao.findById(id).orElse(null);
 		return new ServiceLayerUser(userFromService.getId(), userFromService.getFirstname(),
 				userFromService.getLastname(), userFromService.getEmail(), userFromService.getPassword(),
-				userFromService.getRole());
+				userFromService.getRole(), userFromService.isMarkedForDeletion());
 	}
 
 	@Transactional

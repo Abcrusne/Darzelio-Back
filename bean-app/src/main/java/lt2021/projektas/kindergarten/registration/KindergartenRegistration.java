@@ -1,16 +1,21 @@
 package lt2021.projektas.kindergarten.registration;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToOne;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import lt2021.projektas.child.Child;
+import lt2021.projektas.kindergarten.queue.KindergartenQueue;
 
 @Entity
 public class KindergartenRegistration {
@@ -36,6 +41,9 @@ public class KindergartenRegistration {
 	
 	@NotNull
 	private int rating;
+	
+	@ManyToMany(mappedBy = "registrations", cascade = CascadeType.ALL)
+	private Set<KindergartenQueue> queues;
 
 	public KindergartenRegistration() {
 	}
@@ -50,6 +58,7 @@ public class KindergartenRegistration {
 		this.fourthPriority = fourthPriority;
 		this.fifthPriority = fifthPriority;
 		this.rating = 0;
+		this.queues = new HashSet<>();
 	}
 
 	public Long getId() {
@@ -114,6 +123,14 @@ public class KindergartenRegistration {
 
 	public void setRating(int rating) {
 		this.rating = rating;
+	}
+
+	public Set<KindergartenQueue> getQueues() {
+		return queues;
+	}
+
+	public void setQueues(Set<KindergartenQueue> queues) {
+		this.queues = queues;
 	}
 	
 	

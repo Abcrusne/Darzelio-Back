@@ -1,12 +1,20 @@
 package lt2021.projektas.kindergarten;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinTable;
+import javax.persistence.OneToMany;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+
+import lt2021.projektas.kindergarten.queue.KindergartenQueue;
 
 @Entity
 public class Kindergarten {
@@ -28,6 +36,10 @@ public class Kindergarten {
 	@NotNull
 	private int spotsInSecondAgeGroup;
 	
+	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+	@JoinTable(name = "kindergarten_queues")
+	private Set<KindergartenQueue> queues;
+	
 	public Kindergarten() {
 	}
 
@@ -38,6 +50,7 @@ public class Kindergarten {
 		this.address = address;
 		this.spotsInFirstAgeGroup = spotsInFirstAgeGroup;
 		this.spotsInSecondAgeGroup = spotsInSecondAgeGroup;
+		this.queues = new HashSet<>();
 	}
 
 	public Long getId() {
@@ -79,5 +92,17 @@ public class Kindergarten {
 	public void setSpotsInSecondAgeGroup(int spotsInSecondAgeGroup) {
 		this.spotsInSecondAgeGroup = spotsInSecondAgeGroup;
 	}
+
+	public Set<KindergartenQueue> getQueues() {
+		return queues;
+	}
+
+	public void setQueues(Set<KindergartenQueue> queues) {
+		this.queues = queues;
+	}
+
+	
+	
+	
 
 }

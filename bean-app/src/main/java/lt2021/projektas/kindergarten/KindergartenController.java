@@ -8,8 +8,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import lt2021.projektas.kindergarten.admission.AdmissionService;
 import lt2021.projektas.kindergarten.registration.CreateRegistrationCommand;
 import lt2021.projektas.kindergarten.registration.KindergartenRegistrationService;
 
@@ -22,6 +24,9 @@ public class KindergartenController {
 	
 	@Autowired
 	private KindergartenRegistrationService kgRegService;
+	
+	@Autowired
+	private AdmissionService admissionService;
 	
 	@RequestMapping(path = "/{kgId}", method = RequestMethod.GET)
 	public CreateKindergartenCommand getKindergarten(@PathVariable final long kgId) {
@@ -56,6 +61,21 @@ public class KindergartenController {
 	@RequestMapping(path = "/register", method = RequestMethod.GET)
 	public List<CreateRegistrationCommand> getAllRegistrations() {
 		return kgRegService.getAllRegistrations();
+	}
+	
+	@RequestMapping(path = "/findbyname", method = RequestMethod.GET)
+	public List<CreateRegistrationCommand> getRegistrationsWithKindergartenPriority(@RequestParam String kindergartenName) {
+		return kgRegService.getRegistrationsWithSpecifiedKindergarten(kindergartenName);
+	}
+	
+	@RequestMapping(path = "/startadmissions", method = RequestMethod.POST)
+	public void startAdmissionProcess() {
+		admissionService.createNewAdmissionProcess();
+	}
+	
+	@RequestMapping(path ="/updateadmission/{admissionId}", method = RequestMethod.POST)
+	public void updateAdmissionProcess(@PathVariable final long admissionId) {
+		admissionService.updateAdmissionProcess(admissionId);
 	}
 	
 	
