@@ -45,6 +45,8 @@ public class User {
 	private ParentDetails parentDetails;
 //	@NotNull
 //	private String confirmPassword;
+	
+	private boolean markedForDeletion;
 
 	public User() {
 		super();
@@ -56,6 +58,7 @@ public class User {
 		this.lastname = lastname;
 		this.email = email;
 		this.role = role;
+		this.markedForDeletion = false;
 	}
 
 	public Long getId() {
@@ -112,6 +115,14 @@ public class User {
 
 	public void setParentDetails(ParentDetails parentDetails) {
 		this.parentDetails = parentDetails;
+	}
+
+	public boolean isMarkedForDeletion() {
+		return markedForDeletion;
+	}
+
+	public void setMarkedForDeletion(boolean markedForDeletion) {
+		this.markedForDeletion = markedForDeletion;
 	}
 	
 	
