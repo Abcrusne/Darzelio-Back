@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -81,6 +83,20 @@ public class UserService implements UserDetailsService {
 	@Transactional(readOnly = true)
 	public User findByEmail(String email) {
 		return userDao.findByEmail(email);
+	}
+	
+	@Transactional
+	public ResponseEntity<String> changePassword(User user, String oldPassword, String newPassword) {
+		PasswordEncoder encoder = new MessageDigestPasswordEncoder("SHA-256");
+		if (oldPassword.equals(newPassword)) {
+			return new ResponseEntity<String>("Senas ir naujas slaptažodis negali sutapti", HttpStatus.BAD_REQUEST);
+		}
+		if (encoder.matches(oldPassword, user.getPassword())) {
+			user.setPassword(encoder.encode(newPassword));
+			userDao.save(user);
+			return new ResponseEntity<String>("Slaptažodis pakeistas", HttpStatus.OK);
+		}
+		return new ResponseEntity<String>("Neteisingai įvestas senas slaptažodis", HttpStatus.BAD_REQUEST);
 	}
 
 }

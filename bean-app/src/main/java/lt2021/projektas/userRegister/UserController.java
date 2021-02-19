@@ -8,8 +8,11 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -138,10 +141,33 @@ public class UserController {
 		}
 		return null;
 	}
-
+	
+	
+	
+	
 	@RequestMapping(path = "/getparentdetails", method = RequestMethod.GET)
+	//@PreAuthorize("hasRole('PARENT')")
+	//@Secured("PARENT")
+	//@PostAuthorize("hasRole('PARENT')")
 	public CreateDetailsCommand getLoggedParentDetails() {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		//System.out.println("???????????? cookie authority:" + auth.getAuthorities() + " ??????????????");
+		//System.out.println("???????????? cookie authority:" + auth.toString() + " ??????????????");
+		//var test = ((org.springframework.security.core.userdetails.User) auth.getPrincipal()).getAuthorities();
+		/*
+		 * for (GrantedAuthority i: test) { for (GrantedAuthority t:
+		 * auth.getAuthorities()) { System.out.println("????????????? User authority: "
+		 * + i.toString() + " ????????????????");
+		 * System.out.println("????????????? Token authority: " + t.toString() +
+		 * " ????????????????"); System.out.println("????????????? Check if equals: " +
+		 * i.equals(t) + " ??????????????"); } }
+		 */
+		//System.out.println("???????????? User authorities hash:" + test.hashCode() + " ??????????????");
+		//System.out.println("???????????? Token authorities hash:" + auth.getAuthorities().hashCode() + " ??????????????");
+		//System.out.println("???????????? Check if equal from principal: " + (test.equals(auth.getAuthorities())) + " ?????????????");
+		//System.out.println("???????????? cookie authority:" + userService.loadUserByUsername(auth.getName()).toString() + " ??????????????");
+		//System.out.println("???????????? userService authority:" + userService.loadUserByUsername(auth.getName()).getAuthorities() + " ????????????????");
+		//System.out.println("???????????? Check if equal: " + (auth.getAuthorities().equals(userService.loadUserByUsername(auth.getName()).getAuthorities())) + " ?????????????");
 		if (!(auth instanceof AnonymousAuthenticationToken)) {
 			var user = userService.findByEmail(auth.getName());
 			if (user.getParentDetails() != null) {
@@ -158,6 +184,17 @@ public class UserController {
 			return null;
 		}
 		return null;
+	}
+	
+	
+	@RequestMapping(path = "/changePassword", method = RequestMethod.POST)
+	public ResponseEntity<String> changePassword(@RequestBody final PasswordChange passwordChange) {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		if (!(auth instanceof AnonymousAuthenticationToken)) {
+			var user = userService.findByEmail(auth.getName());
+			return userService.changePassword(user, passwordChange.getOldPassword(), passwordChange.getNewPassword());
+		}
+		return new ResponseEntity<String>("Vartotojas nerastas. Prisijunkite iš naujo", HttpStatus.BAD_REQUEST);
 	}
 
 }
