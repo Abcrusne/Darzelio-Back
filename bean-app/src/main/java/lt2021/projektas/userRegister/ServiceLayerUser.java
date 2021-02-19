@@ -15,6 +15,8 @@ public class ServiceLayerUser {
   
 	private String password;
 //		private String confirmPassword;
+	
+	private boolean markedForDeletion;
 
 	public ServiceLayerUser() {
 		super();
@@ -31,7 +33,7 @@ public class ServiceLayerUser {
 	}
 
 
-	public ServiceLayerUser(Long id, String firstname, String lastname, String email, String password, UserRole role) {
+	public ServiceLayerUser(Long id, String firstname, String lastname, String email, String password, UserRole role, boolean markedForDeletion) {
 		super();
 		this.id = id;
 		this.firstname = firstname;
@@ -39,6 +41,7 @@ public class ServiceLayerUser {
 		this.email = email;
 		this.role = role;
 		this.password = password;
+		this.markedForDeletion = markedForDeletion;
 	}
 
 	public Long getId() {
@@ -88,5 +91,17 @@ public class ServiceLayerUser {
 	public void setPassword(String password) {
 		this.password = password;
 	}
+
+
+	public boolean isMarkedForDeletion() {
+		return markedForDeletion;
+	}
+
+
+	public void setMarkedForDeletion(boolean markedForDeletion) {
+		this.markedForDeletion = markedForDeletion;
+	}
+	
+	
 
 }
