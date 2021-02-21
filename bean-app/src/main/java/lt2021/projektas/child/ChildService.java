@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import lt2021.projektas.kindergarten.registration.KindergartenRegistrationService;
 import lt2021.projektas.parentdetails.ParentDetails;
 import lt2021.projektas.parentdetails.ParentDetailsDao;
 import lt2021.projektas.parentdetails.ServiceLayerDetails;
@@ -29,7 +30,10 @@ public class ChildService {
 	private UserDao userDao;
 
 	@Autowired
-	ParentDetailsDao detailsDao;
+	private ParentDetailsDao detailsDao;
+	
+	@Autowired
+	private KindergartenRegistrationService kgRegService;
 
 	@Transactional
 	public ResponseEntity<String> addChild(Long parentId, ServiceLayerChild child) throws ParseException {
@@ -232,7 +236,7 @@ public class ChildService {
 							updatedChild.getSecondParentDetails().isDeclaredResidenceSameAsLiving());
 					secondParent.setDeclaredAddress(updatedChild.getSecondParentDetails().getDeclaredAddress());
 					detailsDao.save(secondParent);
-					childDao.save(child);
+					kgRegService.updateRegistration(childDao.save(child));
 					return new ResponseEntity<String>("Vaiko duomenys atnaujinti", HttpStatus.OK);
 				} else {
 					if (updatedChild.getSecondParentDetails().isDeclaredResidenceSameAsLiving()) {
@@ -253,7 +257,7 @@ public class ChildService {
 						parentSet.add(secondParent);
 						child.setParents(parentSet);
 						detailsDao.save(secondParent);
-						childDao.save(child);
+						kgRegService.updateRegistration(childDao.save(child));
 						return new ResponseEntity<String>("Vaiko duomenys atnaujinti", HttpStatus.OK);
 					} else {
 						secondParent = new ParentDetails(updatedChild.getSecondParentDetails().getFirstname(),
@@ -273,7 +277,7 @@ public class ChildService {
 						parentSet.add(secondParent);
 						child.setParents(parentSet);
 						detailsDao.save(secondParent);
-						childDao.save(child);
+						kgRegService.updateRegistration(childDao.save(child));
 						return new ResponseEntity<String>("Vaiko duomenys atnaujinti", HttpStatus.OK);
 					}
 				}
@@ -284,7 +288,7 @@ public class ChildService {
 				child.setAdopted(updatedChild.isAdopted());
 				child.setBirthdate(new SimpleDateFormat("yyyy-MM-dd").parse(updatedChild.getBirthdate()));
 				child.setLivingAddress(updatedChild.getLivingAddress());
-				childDao.save(child);
+				kgRegService.updateRegistration(childDao.save(child));
 				return new ResponseEntity<String>("Vaiko duomenys atnaujinti", HttpStatus.OK);
 			}
 		}

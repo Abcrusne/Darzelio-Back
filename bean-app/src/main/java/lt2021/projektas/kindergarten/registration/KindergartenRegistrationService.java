@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import lt2021.projektas.child.Child;
 import lt2021.projektas.child.ChildDao;
 import lt2021.projektas.parentdetails.ParentDetailsDao;
 
@@ -41,8 +42,7 @@ public class KindergartenRegistrationService {
 				if (!(child.getParents().stream().filter(parent -> parent.isStudying()).findFirst().isEmpty())) {
 					registration.setRating(registration.getRating() + 1);
 				}
-				if (!(child.getParents().stream().filter(parent -> parent.isStudying()).findFirst().isEmpty()) && 
-						!(child.getParents().stream().filter(parent -> parent.getNumberOfKids() >= 3).findFirst().isEmpty())) {
+				if (!(child.getParents().stream().filter(parent -> parent.getNumberOfKids() >= 3).findFirst().isEmpty())) {
 					registration.setRating(registration.getRating() + 1);
 				}
 				if (!(child.getParents().stream().filter(parent -> parent.isHasDisability()).findFirst().isEmpty())) {
@@ -54,6 +54,30 @@ public class KindergartenRegistrationService {
 			return new ResponseEntity<String>("Šio vaiko registracija jau užpildyta!", HttpStatus.BAD_REQUEST);
 		}
 		return new ResponseEntity<String>("Vaikas nerastas sistemoje", HttpStatus.BAD_REQUEST);
+	}
+	
+	@Transactional
+	public void updateRegistration(Child updatedChild) {
+		var childRegistration = kgRegDao.findByChild(updatedChild).orElse(null);
+		if (childRegistration != null) {
+			childRegistration.setRating(0);
+			if (updatedChild.getLivingAddress().getCity().toLowerCase().equals("vilnius")) {
+				childRegistration.setRating(childRegistration.getRating() + 5);
+			}
+			if (updatedChild.isAdopted()) {
+				childRegistration.setRating(childRegistration.getRating() + 1);
+			}
+			if (!(updatedChild.getParents().stream().filter(parent -> parent.isStudying()).findFirst().isEmpty())) {
+				childRegistration.setRating(childRegistration.getRating() + 1);
+			}
+			if (!(updatedChild.getParents().stream().filter(parent -> parent.getNumberOfKids() >= 3).findFirst().isEmpty())) {
+				childRegistration.setRating(childRegistration.getRating() + 1);
+			}
+			if (!(updatedChild.getParents().stream().filter(parent -> parent.isHasDisability()).findFirst().isEmpty())) {
+				childRegistration.setRating(childRegistration.getRating() + 1);
+			}
+			kgRegDao.save(childRegistration);
+		}
 	}
 	
 	@Transactional

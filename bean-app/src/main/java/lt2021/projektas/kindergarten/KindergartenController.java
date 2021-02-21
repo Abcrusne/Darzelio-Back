@@ -69,13 +69,13 @@ public class KindergartenController {
 	}
 	
 	@RequestMapping(path = "/startadmissions", method = RequestMethod.POST)
-	public void startAdmissionProcess() {
-		admissionService.createNewAdmissionProcess();
+	public ResponseEntity<String> startAdmissionProcess() {
+		return admissionService.createNewAdmissionProcess();
 	}
 	
-	@RequestMapping(path ="/updateadmission/{admissionId}", method = RequestMethod.POST)
-	public void updateAdmissionProcess(@PathVariable final long admissionId) {
-		admissionService.updateAdmissionProcess(admissionId);
+	@RequestMapping(path ="/updateadmission", method = RequestMethod.POST)
+	public void updateAdmissionProcess() {
+		admissionService.updateAdmissionProcess();
 	}
 	
 	
