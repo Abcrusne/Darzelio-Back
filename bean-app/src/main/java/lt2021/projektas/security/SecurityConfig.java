@@ -59,7 +59,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 					response.setHeader("Access-Control-Allow-Credentials", "true");
 					response.setHeader("Access-Control-Allow-Origin", request.getHeader("Origin"));
 					response.setHeader("Content-Type", "application/json;charset=UTF-8");
-					response.getWriter().print("{\"role\": \"" + SecurityContextHolder.getContext().getAuthentication().getAuthorities().toString() + "\"}");
+					String roleName = SecurityContextHolder.getContext().getAuthentication().getAuthorities().toString();
+					roleName = roleName.substring(6);
+					response.getWriter().print("{\"role\": \"[" + roleName + "\"}");
 				}
 			})
 			.failureHandler(new SimpleUrlAuthenticationFailureHandler())
