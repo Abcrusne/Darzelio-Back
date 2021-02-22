@@ -3,6 +3,7 @@ package lt2021.projektas.kindergarten.queue;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,139 +19,133 @@ import lt2021.projektas.kindergarten.registration.KindergartenRegistrationDao;
 
 @Service
 public class QueueService {
-	
+
 	@Autowired
 	private QueueDao queueDao;
-	
+
 	@Autowired
 	private AdmissionService admissionService;
-	
+
 	@Autowired
 	private AdmissionDao admissionDao;
-	
+
 	@Autowired
 	private KindergartenDao kindergartenDao;
-	
+
 	@Autowired
 	private KindergartenRegistrationDao registrationDao;
-	
+
 	@Transactional
-	public List<KindergartenQueue> createKindergartenQueues(AdmissionProcess admissionProcess) {
-		//var kindergartensInAdmission = admissionProcess.get
+	public void updateKindergartenQueues() {
+		var admission = admissionDao.findAll().stream().filter(ad -> ad.isActive()).findFirst().orElse(null);
 		var kindergartens = kindergartenDao.findAll();
 		Date today = new Date();
-		for (Kindergarten kg: kindergartens) {
-			if (kg.getQueues().size() == 0) {
-				var preSchoolQueue = new KindergartenQueue(admissionProcess, kg, AgeGroup.PRESCHOOL);
-				var kgQueue = new KindergartenQueue(admissionProcess, kg, AgeGroup.KINDERGARTEN);
-				if (kg.getSpotsInFirstAgeGroup() > 0 && kg.getSpotsInSecondAgeGroup() > 0) {
-					var registrations = registrationDao.findRegistrationsWithSpecifiedKindergarten(kg.getName());
-					for (KindergartenRegistration kgReg: registrations) {
-						var timeDiff = today.getTime() - kgReg.getChild().getBirthdate().getTime();
-						var timeDiffDays = TimeUnit.MILLISECONDS.toDays(timeDiff);
-						var yearDiff = timeDiffDays / 365;
-						if (yearDiff >= 2 && yearDiff < 3) {
-							var currentRegistrations = preSchoolQueue.getRegistrations();
-							currentRegistrations.add(kgReg);
-							preSchoolQueue.setRegistrations(currentRegistrations);
-							var regQueues = kgReg.getQueues();
-							regQueues.add(preSchoolQueue);
-							kgReg.setQueues(regQueues);
-						} else if (yearDiff >= 3 && yearDiff <= 6) {
-							var currentRegistrations = kgQueue.getRegistrations();
-							currentRegistrations.add(kgReg);
-							kgQueue.setRegistrations(currentRegistrations);
-							var regQueues = kgReg.getQueues();
-							regQueues.add(kgQueue);
-							kgReg.setQueues(regQueues);
-						}
-					}
-				} else if (kg.getSpotsInFirstAgeGroup() == 0) {
-					var registrations = registrationDao.findRegistrationsWithSpecifiedKindergarten(kg.getName());
-					for (KindergartenRegistration kgReg: registrations) {
-						var timeDiff = today.getTime() - kgReg.getChild().getBirthdate().getTime();
-						var timeDiffDays = TimeUnit.MILLISECONDS.toDays(timeDiff);
-						var yearDiff = timeDiffDays / 365;
-						if (yearDiff >= 3 && yearDiff <= 6) {
-							var currentRegistrations = kgQueue.getRegistrations();
-							currentRegistrations.add(kgReg);
-							kgQueue.setRegistrations(currentRegistrations);
-							var regQueues = kgReg.getQueues();
-							regQueues.add(kgQueue);
-							kgReg.setQueues(regQueues);
-						}
-					}
-				} else if (kg.getSpotsInSecondAgeGroup() == 0) {
-					var registrations = registrationDao.findRegistrationsWithSpecifiedKindergarten(kg.getName());
-					for (KindergartenRegistration kgReg: registrations) {
-						var timeDiff = today.getTime() - kgReg.getChild().getBirthdate().getTime();
-						var timeDiffDays = TimeUnit.MILLISECONDS.toDays(timeDiff);
-						var yearDiff = timeDiffDays / 365;
-						if (yearDiff >= 2 && yearDiff < 3) {
-							var currentRegistrations = preSchoolQueue.getRegistrations();
-							currentRegistrations.add(kgReg);
-							preSchoolQueue.setRegistrations(currentRegistrations);
-							var regQueues = kgReg.getQueues();
-							regQueues.add(preSchoolQueue);
-							kgReg.setQueues(regQueues);
-						}
-					}
-				}
-				var kgQueues = kg.getQueues();
-				kgQueues.add(preSchoolQueue);
-				kgQueues.add(kgQueue);
-				kg.setQueues(kgQueues);
-				kindergartenDao.save(kg);
-			} else {
-				for (KindergartenQueue kgQueue: kg.getQueues()) {
-					if (kgQueue.getAgeGroup().equals(AgeGroup.PRESCHOOL)) {
-						var registrations = registrationDao.findRegistrationsWithSpecifiedKindergarten(kg.getName());
-						for (KindergartenRegistration kgReg: registrations) {
-							if (!(kgQueue.getRegistrations().contains(kgReg))) {
-								var timeDiff = today.getTime() - kgReg.getChild().getBirthdate().getTime();
-								var timeDiffDays = TimeUnit.MILLISECONDS.toDays(timeDiff);
-								var yearDiff = timeDiffDays / 365;
-								if (yearDiff >= 2 && yearDiff < 3) {
-									var currentRegistrations = kgQueue.getRegistrations();
-									currentRegistrations.add(kgReg);
-									kgQueue.setRegistrations(currentRegistrations);
-									var regQueues = kgReg.getQueues();
-									regQueues.add(kgQueue);
-									kgReg.setQueues(regQueues);
-									queueDao.save(kgQueue);
+		if (admission != null) {
+			if (admission.isActive()) {
+				this.createKindergartenQueues(admission);
+				for (Kindergarten kg : kindergartens) {
+					var kgQueues = kg.getQueues().stream()
+							.filter(queue -> queue.getAdmissionProcess().equals(admission))
+							.collect(Collectors.toList());
+					for (KindergartenQueue kgQueue : kgQueues) {
+						if (!(kgQueue.isApproved())) {
+							if (kgQueue.getAgeGroup().equals(AgeGroup.PRESCHOOL)) {
+								var registrations = registrationDao
+										.findRegistrationsWithSpecifiedKindergarten(kg.getName());
+								for (KindergartenRegistration kgReg : registrations) {
+									var timeDiff = today.getTime() - kgReg.getChild().getBirthdate().getTime();
+									var timeDiffDays = TimeUnit.MILLISECONDS.toDays(timeDiff);
+									var yearDiff = timeDiffDays / 365;
+									if (yearDiff >= 2 && yearDiff < 3) {
+										var currentRegistrations = kgQueue.getRegistrations();
+										currentRegistrations.add(kgReg);
+										kgQueue.setRegistrations(currentRegistrations);
+										var regQueues = kgReg.getQueues();
+										regQueues.add(kgQueue);
+										kgReg.setQueues(regQueues);
+									}
 								}
-							}
-						}
-					} else if (kgQueue.getAgeGroup().equals(AgeGroup.KINDERGARTEN)) {
-						var registrations = registrationDao.findRegistrationsWithSpecifiedKindergarten(kg.getName());
-						for (KindergartenRegistration kgReg: registrations) {
-							if (!(kgQueue.getRegistrations().contains(kgReg))) {
-								var timeDiff = today.getTime() - kgReg.getChild().getBirthdate().getTime();
-								var timeDiffDays = TimeUnit.MILLISECONDS.toDays(timeDiff);
-								var yearDiff = timeDiffDays / 365;
-								if (yearDiff >= 3 && yearDiff <= 6) {
-									System.out.println("?????????????? YEAR CHECK PASSED ????????????");
-									var currentRegistrations = kgQueue.getRegistrations();
-									currentRegistrations.add(kgReg);
-									kgQueue.setRegistrations(currentRegistrations);
-									var regQueues = kgReg.getQueues();
-									regQueues.add(kgQueue);
-									kgReg.setQueues(regQueues);
-									queueDao.save(kgQueue);
+							} else if (kgQueue.getAgeGroup().equals(AgeGroup.KINDERGARTEN)) {
+								var registrations = registrationDao
+										.findRegistrationsWithSpecifiedKindergarten(kg.getName());
+								for (KindergartenRegistration kgReg : registrations) {
+									var timeDiff = today.getTime() - kgReg.getChild().getBirthdate().getTime();
+									var timeDiffDays = TimeUnit.MILLISECONDS.toDays(timeDiff);
+									var yearDiff = timeDiffDays / 365;
+									if (yearDiff >= 3 && yearDiff <= 6) {
+										var currentRegistrations = kgQueue.getRegistrations();
+										currentRegistrations.add(kgReg);
+										kgQueue.setRegistrations(currentRegistrations);
+										var regQueues = kgReg.getQueues();
+										regQueues.add(kgQueue);
+										kgReg.setQueues(regQueues);
+									}
 								}
 							}
 						}
 					}
-					/*
-					 * var kgQueues = kg.getQueues(); kgQueues.add(kgQueue);
-					 * kg.setQueues(kgQueues);
-					 * kindergartenDao.save(kg);
-					 */
+					kindergartenDao.save(kg);
 				}
 			}
 		}
-		return queueDao.findAll();
 	}
-	
-	
+
+	@Transactional
+	public List<KindergartenQueue> getCurrentAdmissionProcessQueues() {
+		var admission = admissionDao.findAll().stream().filter(ad -> ad.isActive()).findFirst().orElse(null);
+		updateKindergartenQueues();
+		if (admission != null) {
+			return admission.getQueues().stream().collect(Collectors.toList());
+		}
+		return null;
+	}
+
+	@Transactional
+	public List<KindergartenQueue> createKindergartenQueues(AdmissionProcess admissionProcess) {
+
+		var kindergartens = kindergartenDao.findAll();
+
+		for (Kindergarten kg : kindergartens) {
+			if (kg.getQueues().stream().filter(queue -> queue.getAdmissionProcess().equals(admissionProcess))
+					.findFirst().orElse(null) == null) {
+				var preSchoolQueue = new KindergartenQueue(admissionProcess, kg, AgeGroup.PRESCHOOL);
+				var kgQueue = new KindergartenQueue(admissionProcess, kg, AgeGroup.KINDERGARTEN);
+				if (kg.getSpotsInFirstAgeGroup() > 0 && kg.getSpotsInSecondAgeGroup() > 0) {
+					var kgQueues = kg.getQueues();
+					kgQueues.add(preSchoolQueue);
+					kgQueues.add(kgQueue);
+					kg.setQueues(kgQueues);
+				} else if (kg.getSpotsInFirstAgeGroup() == 0) {
+					var kgQueues = kg.getQueues();
+					kgQueues.add(kgQueue);
+					kg.setQueues(kgQueues);
+				} else if (kg.getSpotsInSecondAgeGroup() == 0) {
+					var kgQueues = kg.getQueues();
+					kgQueues.add(preSchoolQueue);
+					kg.setQueues(kgQueues);
+				}
+				kindergartenDao.save(kg);
+			} else {
+				var adQueues = kg.getQueues().stream()
+						.filter(queue -> queue.getAdmissionProcess().equals(admissionProcess))
+						.collect(Collectors.toList());
+				if (adQueues.stream().filter(queue -> queue.getAgeGroup().equals(AgeGroup.PRESCHOOL)).findAny()
+						.orElse(null) == null && kg.getSpotsInFirstAgeGroup() > 0) {
+					var preSchoolQueue = new KindergartenQueue(admissionProcess, kg, AgeGroup.PRESCHOOL);
+					var kgQueues = kg.getQueues();
+					kgQueues.add(preSchoolQueue);
+					kg.setQueues(kgQueues);
+				} else if (adQueues.stream().filter(queue -> queue.getAgeGroup().equals(AgeGroup.KINDERGARTEN))
+						.findAny().orElse(null) == null && kg.getSpotsInSecondAgeGroup() > 0) {
+					var kgQueue = new KindergartenQueue(admissionProcess, kg, AgeGroup.KINDERGARTEN);
+					var kgQueues = kg.getQueues();
+					kgQueues.add(kgQueue);
+					kg.setQueues(kgQueues);
+				}
+				kindergartenDao.save(kg);
+			}
+		}
+		return queueDao.findByAdmissionProcess(admissionProcess);
+	}
+
 }

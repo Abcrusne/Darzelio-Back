@@ -1,5 +1,7 @@
 package lt2021.projektas.kindergarten.admission;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,23 +26,26 @@ public class AdmissionService {
 		if (admissionDao.findAll().stream().filter(ad -> ad.isActive()).findFirst().orElse(null) != null) {
 			return new ResponseEntity<String>("Yra dar neužbaigtas priėmimo procesas", HttpStatus.BAD_REQUEST);
 		}
-		var admission = new AdmissionProcess();
-		var queues = queueService.createKindergartenQueues(admissionDao.save(admission)).stream()
+		var admission = admissionDao.save(new AdmissionProcess());
+		var queues = queueService.createKindergartenQueues(admission).stream()
 				.collect(Collectors.toSet());
 		admission.setQueues(queues);
 		admissionDao.save(admission);
-		return new ResponseEntity<String>("Sėkmingai pradėtas naujas priėmimo procesas", HttpStatus.OK);
+		return new ResponseEntity<String>(new SimpleDateFormat("yyyy-MM-dd").format(admission.getStartDate()).toString(), HttpStatus.OK);
 	}
 	
+	
 	@Transactional
-	public void updateAdmissionProcess() {
+	public ResponseEntity<String> closeAdmissionProcess() {
 		var admission = admissionDao.findAll().stream().filter(ad -> ad.isActive()).findFirst().orElse(null);
 		if (admission != null) {
-			var queues = queueService.createKindergartenQueues(admission).stream()
-					.collect(Collectors.toSet());
-			admission.setQueues(queues);
+			admission.setActive(false);
+			admission.setEndDate(new Date());
+			queueService.updateKindergartenQueues();
 			admissionDao.save(admission);
+			return new ResponseEntity<String>(new SimpleDateFormat("yyyy-MM-dd").format(admission.getEndDate()).toString(), HttpStatus.OK);
 		}
+		return new ResponseEntity<String>("Nėra pradėto priėmimo proceso", HttpStatus.BAD_REQUEST);
 	}
 
 }

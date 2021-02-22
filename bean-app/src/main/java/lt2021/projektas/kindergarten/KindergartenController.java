@@ -1,6 +1,7 @@
 package lt2021.projektas.kindergarten;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lt2021.projektas.kindergarten.admission.AdmissionService;
+import lt2021.projektas.kindergarten.queue.QueueService;
+import lt2021.projektas.kindergarten.queue.QueueTableObject;
 import lt2021.projektas.kindergarten.registration.CreateRegistrationCommand;
 import lt2021.projektas.kindergarten.registration.KindergartenRegistrationService;
 
@@ -27,6 +30,9 @@ public class KindergartenController {
 	
 	@Autowired
 	private AdmissionService admissionService;
+	
+	@Autowired
+	private QueueService queueService;
 	
 	@RequestMapping(path = "/{kgId}", method = RequestMethod.GET)
 	public CreateKindergartenCommand getKindergarten(@PathVariable final long kgId) {
@@ -63,19 +69,23 @@ public class KindergartenController {
 		return kgRegService.getAllRegistrations();
 	}
 	
-	@RequestMapping(path = "/findbyname", method = RequestMethod.GET)
-	public List<CreateRegistrationCommand> getRegistrationsWithKindergartenPriority(@RequestParam String kindergartenName) {
-		return kgRegService.getRegistrationsWithSpecifiedKindergarten(kindergartenName);
-	}
 	
-	@RequestMapping(path = "/startadmissions", method = RequestMethod.POST)
+	@RequestMapping(path = "/startadmission", method = RequestMethod.POST)
 	public ResponseEntity<String> startAdmissionProcess() {
 		return admissionService.createNewAdmissionProcess();
 	}
 	
-	@RequestMapping(path ="/updateadmission", method = RequestMethod.POST)
-	public void updateAdmissionProcess() {
-		admissionService.updateAdmissionProcess();
+	
+	@RequestMapping(path = "/stopadmission", method = RequestMethod.POST)
+	public ResponseEntity<String> stopAdmission() {
+		return admissionService.closeAdmissionProcess();
+	}
+	
+	@RequestMapping(path = "/admissionqueues", method = RequestMethod.GET)
+	public List<QueueTableObject> getCurrentAdmissionQueues() {
+		return queueService.getCurrentAdmissionProcessQueues().stream()
+				.map(queue -> new QueueTableObject(queue.getId(), queue.getKindergarten().getName(), queue.getAgeGroup().toString(), queue.getRegistrations().size()))
+				.collect(Collectors.toList());
 	}
 	
 	
