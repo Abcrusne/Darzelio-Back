@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lt2021.projektas.kindergarten.admission.AdmissionService;
@@ -81,9 +80,9 @@ public class KindergartenController {
 		return admissionService.closeAdmissionProcess();
 	}
 	
-	@RequestMapping(path = "/admissionqueues", method = RequestMethod.GET)
-	public List<QueueTableObject> getCurrentAdmissionQueues() {
-		return queueService.getCurrentAdmissionProcessQueues().stream()
+	@RequestMapping(path = "/admissions/{admissionId}/admissionqueues", method = RequestMethod.GET)
+	public List<QueueTableObject> getCurrentAdmissionQueues(@PathVariable final long admissionId) {
+		return queueService.getCurrentAdmissionProcessQueues(admissionId).stream()
 				.map(queue -> new QueueTableObject(queue.getId(), queue.getKindergarten().getName(), queue.getAgeGroup().toString(), queue.getRegistrations().size()))
 				.collect(Collectors.toList());
 	}

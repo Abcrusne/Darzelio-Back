@@ -36,8 +36,8 @@ public class QueueService {
 	private KindergartenRegistrationDao registrationDao;
 
 	@Transactional
-	public void updateKindergartenQueues() {
-		var admission = admissionDao.findAll().stream().filter(ad -> ad.isActive()).findFirst().orElse(null);
+	public void updateKindergartenQueues(long admissionId) {
+		var admission = admissionDao.findById(admissionId).orElse(null);
 		var kindergartens = kindergartenDao.findAll();
 		Date today = new Date();
 		if (admission != null) {
@@ -91,9 +91,9 @@ public class QueueService {
 	}
 
 	@Transactional
-	public List<KindergartenQueue> getCurrentAdmissionProcessQueues() {
-		var admission = admissionDao.findAll().stream().filter(ad -> ad.isActive()).findFirst().orElse(null);
-		updateKindergartenQueues();
+	public List<KindergartenQueue> getCurrentAdmissionProcessQueues(long admissionId) {
+		var admission = admissionDao.findById(admissionId).orElse(null);
+		updateKindergartenQueues(admissionId);
 		if (admission != null) {
 			return admission.getQueues().stream().collect(Collectors.toList());
 		}

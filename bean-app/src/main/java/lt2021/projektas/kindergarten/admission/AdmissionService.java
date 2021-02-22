@@ -41,7 +41,7 @@ public class AdmissionService {
 		if (admission != null) {
 			admission.setActive(false);
 			admission.setEndDate(new Date());
-			queueService.updateKindergartenQueues();
+			queueService.updateKindergartenQueues(admission.getId());
 			admissionDao.save(admission);
 			return new ResponseEntity<String>(new SimpleDateFormat("yyyy-MM-dd").format(admission.getEndDate()).toString(), HttpStatus.OK);
 		}
