@@ -141,6 +141,14 @@ public class Child {
 	public void setAdopted(boolean isAdopted) {
 		this.isAdopted = isAdopted;
 	}
+
+	public KindergartenRegistration getRegistrationForm() {
+		return registrationForm;
+	}
+
+	public void setRegistrationForm(KindergartenRegistration registrationForm) {
+		this.registrationForm = registrationForm;
+	}
 	
 	
 

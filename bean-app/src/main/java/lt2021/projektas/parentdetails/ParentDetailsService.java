@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lt2021.projektas.child.ChildDao;
+import lt2021.projektas.kindergarten.registration.KindergartenRegistrationService;
 import lt2021.projektas.userRegister.User;
 import lt2021.projektas.userRegister.UserDao;
 
@@ -19,7 +20,11 @@ public class ParentDetailsService {
 	@Autowired
 	private UserDao userDao;
 	
-	@Autowired ChildDao childDao;
+	@Autowired 
+	private ChildDao childDao;
+	
+	@Autowired
+	private KindergartenRegistrationService kgRegService;
 	
 	@Transactional
 	public ServiceLayerDetails getParentDetails(long id) {
@@ -69,6 +74,9 @@ public class ParentDetailsService {
 				details.setDeclaredResidenceSameAsLiving(parentDetails.isDeclaredResidenceSameAsLiving());
 				details.setDeclaredAddress(parentDetails.getDeclaredAddress());
 				detailsDao.save(details);
+				if (details.getChildren().stream().filter(child -> child.getRegistrationForm() != null).findAny().orElse(null) != null) {
+					details.getChildren().stream().forEach(child -> kgRegService.updateRegistration(child));
+				}
 				return new ResponseEntity<String>("Duomenys sekmingai pakeisti", HttpStatus.OK);
 			}
 			return new ResponseEntity<String>("Tėvo/globėjo duomenys neužpildyti", HttpStatus.BAD_REQUEST);
