@@ -36,7 +36,7 @@ public class AdmissionService {
 	public void updateAdmissionProcess() {
 		var admission = admissionDao.findAll().stream().filter(ad -> ad.isActive()).findFirst().orElse(null);
 		if (admission != null) {
-			var queues = queueService.createKindergartenQueues(admissionDao.save(admission)).stream()
+			var queues = queueService.createKindergartenQueues(admission).stream()
 					.collect(Collectors.toSet());
 			admission.setQueues(queues);
 			admissionDao.save(admission);
