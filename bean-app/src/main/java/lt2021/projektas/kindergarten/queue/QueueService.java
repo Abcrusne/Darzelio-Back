@@ -153,5 +153,12 @@ public class QueueService {
 		}
 		return queueDao.findByAdmissionProcess(admissionProcess);
 	}
+	
+	public int getNumberOfRegistrationsWithNullAdmission(AdmissionProcess admission) {
+		if (admission != null) {
+			return registrationDao.findRegistrationsbyAdmission(admission).size();
+		}
+		return registrationDao.findRegistrationsWithNullAdmission().size();
+	}
 
 }

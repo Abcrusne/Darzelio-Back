@@ -34,7 +34,7 @@ public class AdmissionService {
 						new SimpleDateFormat("yyyy-MM-dd").format(admission.getStartDate()),
 						(admission.getEndDate() != null ? new SimpleDateFormat("yyyy-MM-dd").format(admission.getEndDate()) : ""),
 						admission.isActive(),
-						admission.getQueues().stream().map(queue -> queue.getRegistrations().size()).reduce(0, (acc, elem) -> acc + elem),
+						admission.isActive() ? queueService.getNumberOfRegistrationsWithNullAdmission(null) : queueService.getNumberOfRegistrationsWithNullAdmission(admission),
 						admission.getQueues().stream().map(queue -> queue.getAgeGroup().equals(AgeGroup.PRESCHOOL) ?
 								queue.getKindergarten().getSpotsInFirstAgeGroup() : queue.getKindergarten().getSpotsInSecondAgeGroup()).reduce(0, (acc, elem) -> acc + elem),
 						admission.getQueues().stream().allMatch(queue -> queue.isApproved())))
