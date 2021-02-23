@@ -16,6 +16,7 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 import lt2021.projektas.kindergarten.queue.KindergartenQueue;
+import lt2021.projektas.kindergarten.registration.KindergartenRegistration;
 
 @Entity
 public class AdmissionProcess {
@@ -36,6 +37,14 @@ public class AdmissionProcess {
 			)
 	private Set<KindergartenQueue> queues;
 	
+	@OneToMany(cascade = CascadeType.ALL)
+	@JoinTable(
+			name="Admission_registrations",
+			joinColumns = @JoinColumn(name = "admission_id", referencedColumnName = "id"),
+			inverseJoinColumns = @JoinColumn(name = "registration_id", referencedColumnName = "id")
+			)
+	private Set<KindergartenRegistration> registrations;
+	
 	private boolean active;
 	
 	public AdmissionProcess() {
@@ -43,6 +52,7 @@ public class AdmissionProcess {
 		this.startDate = new Date();
 		this.active = true;
 		this.queues = new HashSet<>();
+		this.registrations = new HashSet<>();
 	}
 
 	public Long getId() {
@@ -83,6 +93,14 @@ public class AdmissionProcess {
 
 	public void setActive(boolean active) {
 		this.active = active;
+	}
+
+	public Set<KindergartenRegistration> getRegistrations() {
+		return registrations;
+	}
+
+	public void setRegistrations(Set<KindergartenRegistration> registrations) {
+		this.registrations = registrations;
 	}
 
 	

@@ -10,11 +10,13 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import lt2021.projektas.kindergarten.queue.KindergartenQueue;
+import lt2021.projektas.kindergarten.registration.KindergartenRegistration;
 
 @Entity
 public class Kindergarten {
@@ -39,6 +41,7 @@ public class Kindergarten {
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
 	@JoinTable(name = "kindergarten_queues")
 	private Set<KindergartenQueue> queues;
+	
 	
 	public Kindergarten() {
 	}
@@ -101,8 +104,6 @@ public class Kindergarten {
 		this.queues = queues;
 	}
 
-	
-	
-	
+
 
 }

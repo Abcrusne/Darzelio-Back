@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import lt2021.projektas.kindergarten.admission.AdmissionService;
+import lt2021.projektas.kindergarten.admission.AdmissionTableObject;
 import lt2021.projektas.kindergarten.queue.QueueService;
 import lt2021.projektas.kindergarten.queue.QueueTableObject;
 import lt2021.projektas.kindergarten.registration.CreateRegistrationCommand;
@@ -78,6 +79,11 @@ public class KindergartenController {
 	@RequestMapping(path = "/stopadmission", method = RequestMethod.POST)
 	public ResponseEntity<String> stopAdmission() {
 		return admissionService.closeAdmissionProcess();
+	}
+	
+	@RequestMapping(path = "/admissions", method = RequestMethod.GET)
+	public List<AdmissionTableObject> getAllAdmissions() {
+		return admissionService.getAllAdmissionProcesses();
 	}
 	
 	@RequestMapping(path = "/admissions/{admissionId}/admissionqueues", method = RequestMethod.GET)

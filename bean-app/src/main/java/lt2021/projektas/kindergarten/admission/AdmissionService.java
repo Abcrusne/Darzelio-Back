@@ -2,6 +2,7 @@ package lt2021.projektas.kindergarten.admission;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import lt2021.projektas.kindergarten.queue.AgeGroup;
 import lt2021.projektas.kindergarten.queue.QueueService;
 
 @Service
@@ -20,6 +22,24 @@ public class AdmissionService {
 	
 	@Autowired
 	private QueueService queueService;
+	
+	@Transactional
+	public List<AdmissionTableObject> getAllAdmissionProcesses() {
+		var adm = admissionDao.findAll().stream().filter(ad -> ad.isActive()).findFirst().orElse(null);
+		if (adm != null) {
+			queueService.updateKindergartenQueues(adm.getId());
+		}
+		return admissionDao.findAll().stream()
+				.map(admission -> new AdmissionTableObject(admission.getId(),
+						new SimpleDateFormat("yyyy-MM-dd").format(admission.getStartDate()),
+						(admission.getEndDate() != null ? new SimpleDateFormat("yyyy-MM-dd").format(admission.getEndDate()) : ""),
+						admission.isActive(),
+						admission.getQueues().stream().map(queue -> queue.getRegistrations().size()).reduce(0, (acc, elem) -> acc + elem),
+						admission.getQueues().stream().map(queue -> queue.getAgeGroup().equals(AgeGroup.PRESCHOOL) ?
+								queue.getKindergarten().getSpotsInFirstAgeGroup() : queue.getKindergarten().getSpotsInSecondAgeGroup()).reduce(0, (acc, elem) -> acc + elem),
+						admission.getQueues().stream().allMatch(queue -> queue.isApproved())))
+				.collect(Collectors.toList());
+	}
 	
 	@Transactional
 	public ResponseEntity<String> createNewAdmissionProcess() {
@@ -42,6 +62,14 @@ public class AdmissionService {
 			admission.setActive(false);
 			admission.setEndDate(new Date());
 			queueService.updateKindergartenQueues(admission.getId());
+			var admissionRegistrations = admission.getRegistrations();
+			admission.getQueues().stream()
+				.flatMap(queue -> queue.getRegistrations().stream())
+				.forEach(reg ->  {
+					admissionRegistrations.add(reg);
+					reg.setAdmission(admission);
+				});
+			admission.setRegistrations(admissionRegistrations);
 			admissionDao.save(admission);
 			return new ResponseEntity<String>(new SimpleDateFormat("yyyy-MM-dd").format(admission.getEndDate()).toString(), HttpStatus.OK);
 		}

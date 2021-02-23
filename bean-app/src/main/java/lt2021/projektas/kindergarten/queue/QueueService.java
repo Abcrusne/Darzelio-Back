@@ -16,6 +16,7 @@ import lt2021.projektas.kindergarten.admission.AdmissionProcess;
 import lt2021.projektas.kindergarten.admission.AdmissionService;
 import lt2021.projektas.kindergarten.registration.KindergartenRegistration;
 import lt2021.projektas.kindergarten.registration.KindergartenRegistrationDao;
+import lt2021.projektas.kindergarten.registration.KindergartenRegistrationService;
 
 @Service
 public class QueueService {
@@ -48,8 +49,10 @@ public class QueueService {
 							.filter(queue -> queue.getAdmissionProcess().equals(admission))
 							.collect(Collectors.toList());
 					for (KindergartenQueue kgQueue : kgQueues) {
-						if (!(kgQueue.isApproved())) {
+						if (!kgQueue.isApproved()) {
+							System.out.println("????????????? QUEUE ISN'T APPROVED ??????????????");
 							if (kgQueue.getAgeGroup().equals(AgeGroup.PRESCHOOL)) {
+								System.out.println("????????????? PRESCHOOL CHECK PASSED ??????????????");
 								var registrations = registrationDao
 										.findRegistrationsWithSpecifiedKindergarten(kg.getName());
 								for (KindergartenRegistration kgReg : registrations) {
@@ -57,6 +60,7 @@ public class QueueService {
 									var timeDiffDays = TimeUnit.MILLISECONDS.toDays(timeDiff);
 									var yearDiff = timeDiffDays / 365;
 									if (yearDiff >= 2 && yearDiff < 3) {
+										System.out.println("????????????? PS AGE CHECK PASSED ??????????????");
 										var currentRegistrations = kgQueue.getRegistrations();
 										currentRegistrations.add(kgReg);
 										kgQueue.setRegistrations(currentRegistrations);
@@ -66,6 +70,7 @@ public class QueueService {
 									}
 								}
 							} else if (kgQueue.getAgeGroup().equals(AgeGroup.KINDERGARTEN)) {
+								System.out.println("????????????? KINDERGARTEN CHECK PASSED ??????????????");
 								var registrations = registrationDao
 										.findRegistrationsWithSpecifiedKindergarten(kg.getName());
 								for (KindergartenRegistration kgReg : registrations) {
@@ -73,6 +78,7 @@ public class QueueService {
 									var timeDiffDays = TimeUnit.MILLISECONDS.toDays(timeDiff);
 									var yearDiff = timeDiffDays / 365;
 									if (yearDiff >= 3 && yearDiff <= 6) {
+										System.out.println("????????????? KG AGE CHECK PASSED ??????????????");
 										var currentRegistrations = kgQueue.getRegistrations();
 										currentRegistrations.add(kgReg);
 										kgQueue.setRegistrations(currentRegistrations);

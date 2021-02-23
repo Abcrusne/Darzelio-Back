@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lt2021.projektas.child.Child;
 import lt2021.projektas.child.ChildDao;
-import lt2021.projektas.parentdetails.ParentDetailsDao;
 
 @Service
 public class KindergartenRegistrationService {
@@ -22,16 +21,13 @@ public class KindergartenRegistrationService {
 	@Autowired
 	private ChildDao childDao;
 	
-	@Autowired
-	private ParentDetailsDao detailsDao;
-	
 	
 	@Transactional
 	public ResponseEntity<String> addRegistration(CreateRegistrationCommand registrationForm) {
 		var child = childDao.findById(registrationForm.getChildId()).orElse(null);
 		if (child != null) {
-			if (kgRegDao.findByChild(child).orElse(null) == null) {
-				var registration = new KindergartenRegistration(child, registrationForm.getFirstPriority(), registrationForm.getSecondPriority(),
+			if (child.getRegistrationForms().stream().allMatch(reg -> reg.getAdmission() != null)) {
+				var registration = new KindergartenRegistration(child, registrationForm.getFirstPriority(), registrationForm.getSecondPriority(), 
 						registrationForm.getThirdPriority(), registrationForm.getFourthPriority(), registrationForm.getFifthPriority());
 				if (child.getLivingAddress().getCity().toLowerCase().equals("vilnius")) {
 					registration.setRating(registration.getRating() + 5);
@@ -48,6 +44,9 @@ public class KindergartenRegistrationService {
 				if (!(child.getParents().stream().filter(parent -> parent.isHasDisability()).findFirst().isEmpty())) {
 					registration.setRating(registration.getRating() + 1);
 				}
+				var registrations = child.getRegistrationForms();
+				registrations.add(registration);
+				child.setRegistrationForms(registrations);
 				kgRegDao.save(registration);
 				return new ResponseEntity<String>("Vaiko registracija išsaugota", HttpStatus.OK);
 			}
@@ -58,25 +57,28 @@ public class KindergartenRegistrationService {
 	
 	@Transactional
 	public void updateRegistration(Child updatedChild) {
-		var childRegistration = kgRegDao.findByChild(updatedChild).orElse(null);
-		if (childRegistration != null) {
-			childRegistration.setRating(0);
-			if (updatedChild.getLivingAddress().getCity().toLowerCase().equals("vilnius")) {
-				childRegistration.setRating(childRegistration.getRating() + 5);
+		var childRegistrations = kgRegDao.findByChild(updatedChild);
+		if (childRegistrations != null) {
+			var childRegistration = childRegistrations.stream().filter(reg -> reg.getAdmission() == null).findFirst().orElse(null);
+			if (childRegistration != null) {
+				childRegistration.setRating(0);
+				if (updatedChild.getLivingAddress().getCity().toLowerCase().equals("vilnius")) {
+					childRegistration.setRating(childRegistration.getRating() + 5);
+				}
+				if (updatedChild.isAdopted()) {
+					childRegistration.setRating(childRegistration.getRating() + 1);
+				}
+				if (!(updatedChild.getParents().stream().filter(parent -> parent.isStudying()).findFirst().isEmpty())) {
+					childRegistration.setRating(childRegistration.getRating() + 1);
+				}
+				if (!(updatedChild.getParents().stream().filter(parent -> parent.getNumberOfKids() >= 3).findFirst().isEmpty())) {
+					childRegistration.setRating(childRegistration.getRating() + 1);
+				}
+				if (!(updatedChild.getParents().stream().filter(parent -> parent.isHasDisability()).findFirst().isEmpty())) {
+					childRegistration.setRating(childRegistration.getRating() + 1);
+				}
+				kgRegDao.save(childRegistration);
 			}
-			if (updatedChild.isAdopted()) {
-				childRegistration.setRating(childRegistration.getRating() + 1);
-			}
-			if (!(updatedChild.getParents().stream().filter(parent -> parent.isStudying()).findFirst().isEmpty())) {
-				childRegistration.setRating(childRegistration.getRating() + 1);
-			}
-			if (!(updatedChild.getParents().stream().filter(parent -> parent.getNumberOfKids() >= 3).findFirst().isEmpty())) {
-				childRegistration.setRating(childRegistration.getRating() + 1);
-			}
-			if (!(updatedChild.getParents().stream().filter(parent -> parent.isHasDisability()).findFirst().isEmpty())) {
-				childRegistration.setRating(childRegistration.getRating() + 1);
-			}
-			kgRegDao.save(childRegistration);
 		}
 	}
 	
