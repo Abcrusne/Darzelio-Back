@@ -34,7 +34,7 @@ public class AdmissionService {
 						new SimpleDateFormat("yyyy-MM-dd").format(admission.getStartDate()),
 						(admission.getEndDate() != null ? new SimpleDateFormat("yyyy-MM-dd").format(admission.getEndDate()) : ""),
 						admission.isActive(),
-						admission.isActive() ? queueService.getNumberOfRegistrationsWithNullAdmission(null) : queueService.getNumberOfRegistrationsWithNullAdmission(admission),
+						admission.isActive() ? queueService.getNumberOfRegistrationsByAdmission(null) : queueService.getNumberOfRegistrationsByAdmission(admission),
 						admission.getQueues().stream().map(queue -> queue.getAgeGroup().equals(AgeGroup.PRESCHOOL) ?
 								queue.getKindergarten().getSpotsInFirstAgeGroup() : queue.getKindergarten().getSpotsInSecondAgeGroup()).reduce(0, (acc, elem) -> acc + elem),
 						admission.getQueues().stream().allMatch(queue -> queue.isApproved())))
@@ -46,11 +46,11 @@ public class AdmissionService {
 		if (admissionDao.findAll().stream().filter(ad -> ad.isActive()).findFirst().orElse(null) != null) {
 			return new ResponseEntity<String>("Yra dar neužbaigtas priėmimo procesas", HttpStatus.BAD_REQUEST);
 		}
+		if (admissionDao.findAll().stream().anyMatch(ad -> !(ad.getQueues().stream().allMatch(queue -> queue.isApproved())))) {
+			return new ResponseEntity<String>("Yra priėmimų su nepatvirtintomis eilėmis", HttpStatus.BAD_REQUEST);
+		}
 		var admission = admissionDao.save(new AdmissionProcess());
-		var queues = queueService.createKindergartenQueues(admission).stream()
-				.collect(Collectors.toSet());
-		admission.setQueues(queues);
-		admissionDao.save(admission);
+		queueService.createKindergartenQueues(admission);
 		return new ResponseEntity<String>(new SimpleDateFormat("yyyy-MM-dd").format(admission.getStartDate()).toString(), HttpStatus.OK);
 	}
 	
@@ -59,9 +59,9 @@ public class AdmissionService {
 	public ResponseEntity<String> closeAdmissionProcess() {
 		var admission = admissionDao.findAll().stream().filter(ad -> ad.isActive()).findFirst().orElse(null);
 		if (admission != null) {
+			queueService.updateKindergartenQueues(admission.getId());
 			admission.setActive(false);
 			admission.setEndDate(new Date());
-			queueService.updateKindergartenQueues(admission.getId());
 			var admissionRegistrations = admission.getRegistrations();
 			admission.getQueues().stream()
 				.flatMap(queue -> queue.getRegistrations().stream())

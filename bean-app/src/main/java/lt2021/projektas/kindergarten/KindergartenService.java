@@ -7,11 +7,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import lt2021.projektas.kindergarten.registration.KindergartenRegistrationDao;
+
 @Service
 public class KindergartenService {
 	
 	@Autowired
 	private KindergartenDao kgDao;
+	
+	@Autowired
+	private KindergartenRegistrationDao registrationDao;
 	
 	@Transactional
 	public void addKindergarten(CreateKindergartenCommand kindergarten) {
@@ -46,6 +51,25 @@ public class KindergartenService {
 	@Transactional
 	public void updateKindergarten(CreateKindergartenCommand kindergarten, long kgId) {
 		Kindergarten kg = kgDao.findById(kgId).orElse(null);
+		var registrations = registrationDao.findRegistrationsWithSpecifiedKindergarten(kg.getName());
+		registrations.forEach(reg -> {
+			if (reg.getFirstPriority().equals(kg.getName())) {
+				reg.setFirstPriority(kindergarten.getName().toUpperCase());
+			}
+			if (reg.getSecondPriority().equals(kg.getName())) {
+				reg.setSecondPriority(kindergarten.getName().toUpperCase());
+			}
+			if (reg.getThirdPriority().equals(kg.getName())) {
+				reg.setThirdPriority(kindergarten.getName().toUpperCase());
+			}
+			if (reg.getFourthPriority().equals(kg.getName())) {
+				reg.setFourthPriority(kindergarten.getName().toUpperCase());
+			}
+			if (reg.getFifthPriority().equals(kg.getName())) {
+				reg.setFifthPriority(kindergarten.getName().toUpperCase());
+			}
+			registrationDao.save(reg);
+		});
 		kg.setName(kindergarten.getName().toUpperCase());
 		kg.setAddress(kindergarten.getAddress());
 		kg.setSpotsInFirstAgeGroup(kindergarten.getSpotsInFirstAgeGroup());

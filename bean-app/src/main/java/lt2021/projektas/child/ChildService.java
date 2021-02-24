@@ -236,7 +236,7 @@ public class ChildService {
 							updatedChild.getSecondParentDetails().isDeclaredResidenceSameAsLiving());
 					secondParent.setDeclaredAddress(updatedChild.getSecondParentDetails().getDeclaredAddress());
 					detailsDao.save(secondParent);
-					kgRegService.updateRegistration(childDao.save(child));
+					kgRegService.updateRegistration(childDao.save(child).getId());
 					return new ResponseEntity<String>("Vaiko duomenys atnaujinti", HttpStatus.OK);
 				} else {
 					if (updatedChild.getSecondParentDetails().isDeclaredResidenceSameAsLiving()) {
@@ -257,7 +257,7 @@ public class ChildService {
 						parentSet.add(secondParent);
 						child.setParents(parentSet);
 						detailsDao.save(secondParent);
-						kgRegService.updateRegistration(childDao.save(child));
+						kgRegService.updateRegistration(childDao.save(child).getId());
 						return new ResponseEntity<String>("Vaiko duomenys atnaujinti", HttpStatus.OK);
 					} else {
 						secondParent = new ParentDetails(updatedChild.getSecondParentDetails().getFirstname(),
@@ -277,7 +277,7 @@ public class ChildService {
 						parentSet.add(secondParent);
 						child.setParents(parentSet);
 						detailsDao.save(secondParent);
-						kgRegService.updateRegistration(childDao.save(child));
+						kgRegService.updateRegistration(childDao.save(child).getId());
 						return new ResponseEntity<String>("Vaiko duomenys atnaujinti", HttpStatus.OK);
 					}
 				}
@@ -288,7 +288,7 @@ public class ChildService {
 				child.setAdopted(updatedChild.isAdopted());
 				child.setBirthdate(new SimpleDateFormat("yyyy-MM-dd").parse(updatedChild.getBirthdate()));
 				child.setLivingAddress(updatedChild.getLivingAddress());
-				kgRegService.updateRegistration(childDao.save(child));
+				kgRegService.updateRegistration(childDao.save(child).getId());
 				return new ResponseEntity<String>("Vaiko duomenys atnaujinti", HttpStatus.OK);
 			}
 		}

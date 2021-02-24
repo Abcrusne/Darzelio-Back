@@ -56,7 +56,8 @@ public class KindergartenRegistrationService {
 	}
 	
 	@Transactional
-	public void updateRegistration(Child updatedChild) {
+	public void updateRegistration(long childId) {
+		var updatedChild = childDao.findById(childId).orElse(null);
 		var childRegistrations = kgRegDao.findByChild(updatedChild);
 		if (childRegistrations != null) {
 			var childRegistration = childRegistrations.stream().filter(reg -> reg.getAdmission() == null).findFirst().orElse(null);

@@ -74,7 +74,7 @@ public class ParentDetailsService {
 				details.setDeclaredResidenceSameAsLiving(parentDetails.isDeclaredResidenceSameAsLiving());
 				details.setDeclaredAddress(parentDetails.getDeclaredAddress());
 				detailsDao.save(details);
-				details.getChildren().stream().forEach(child -> kgRegService.updateRegistration(child));
+				details.getChildren().stream().forEach(child -> kgRegService.updateRegistration(child.getId()));
 				return new ResponseEntity<String>("Duomenys sekmingai pakeisti", HttpStatus.OK);
 			}
 			return new ResponseEntity<String>("Tėvo/globėjo duomenys neužpildyti", HttpStatus.BAD_REQUEST);

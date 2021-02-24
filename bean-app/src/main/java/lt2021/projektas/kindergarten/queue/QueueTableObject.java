@@ -6,16 +6,21 @@ public class QueueTableObject {
 	private String kindergartenName;
 	private String ageGroup;
 	private int submissions;
+	private int freeSpots;
+	private boolean confirmed;
 	
 	public QueueTableObject() {
-	};
+	}
 
-	public QueueTableObject(long id, String kindergartenName, String ageGroup, int submissions) {
+	public QueueTableObject(long id, String kindergartenName, String ageGroup, int submissions, int freeSpots,
+			boolean confirmed) {
 		super();
 		this.id = id;
 		this.kindergartenName = kindergartenName;
 		this.ageGroup = ageGroup;
 		this.submissions = submissions;
+		this.freeSpots = freeSpots;
+		this.confirmed = confirmed;
 	}
 
 	public long getId() {
@@ -48,7 +53,25 @@ public class QueueTableObject {
 
 	public void setSubmissions(int submissions) {
 		this.submissions = submissions;
+	}
+
+	public int getFreeSpots() {
+		return freeSpots;
+	}
+
+	public void setFreeSpots(int freeSpots) {
+		this.freeSpots = freeSpots;
+	}
+
+	public boolean isConfirmed() {
+		return confirmed;
+	}
+
+	public void setConfirmed(boolean confirmed) {
+		this.confirmed = confirmed;
 	};
+
+	
 	
 	
 	

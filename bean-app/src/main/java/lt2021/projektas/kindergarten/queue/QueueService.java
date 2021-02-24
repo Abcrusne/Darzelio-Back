@@ -6,6 +6,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,7 +18,6 @@ import lt2021.projektas.kindergarten.admission.AdmissionProcess;
 import lt2021.projektas.kindergarten.admission.AdmissionService;
 import lt2021.projektas.kindergarten.registration.KindergartenRegistration;
 import lt2021.projektas.kindergarten.registration.KindergartenRegistrationDao;
-import lt2021.projektas.kindergarten.registration.KindergartenRegistrationService;
 
 @Service
 public class QueueService {
@@ -40,7 +41,7 @@ public class QueueService {
 	public void updateKindergartenQueues(long admissionId) {
 		var admission = admissionDao.findById(admissionId).orElse(null);
 		var kindergartens = kindergartenDao.findAll();
-		Date today = new Date();
+
 		if (admission != null) {
 			if (admission.isActive()) {
 				this.createKindergartenQueues(admission);
@@ -49,48 +50,46 @@ public class QueueService {
 							.filter(queue -> queue.getAdmissionProcess().equals(admission))
 							.collect(Collectors.toList());
 					for (KindergartenQueue kgQueue : kgQueues) {
-						if (!kgQueue.isApproved()) {
-							System.out.println("????????????? QUEUE ISN'T APPROVED ??????????????");
-							if (kgQueue.getAgeGroup().equals(AgeGroup.PRESCHOOL)) {
-								System.out.println("????????????? PRESCHOOL CHECK PASSED ??????????????");
-								var registrations = registrationDao
-										.findRegistrationsWithSpecifiedKindergarten(kg.getName());
-								for (KindergartenRegistration kgReg : registrations) {
-									var timeDiff = today.getTime() - kgReg.getChild().getBirthdate().getTime();
-									var timeDiffDays = TimeUnit.MILLISECONDS.toDays(timeDiff);
-									var yearDiff = timeDiffDays / 365;
-									if (yearDiff >= 2 && yearDiff < 3) {
-										System.out.println("????????????? PS AGE CHECK PASSED ??????????????");
-										var currentRegistrations = kgQueue.getRegistrations();
-										currentRegistrations.add(kgReg);
-										kgQueue.setRegistrations(currentRegistrations);
-										var regQueues = kgReg.getQueues();
-										regQueues.add(kgQueue);
-										kgReg.setQueues(regQueues);
-									}
-								}
-							} else if (kgQueue.getAgeGroup().equals(AgeGroup.KINDERGARTEN)) {
-								System.out.println("????????????? KINDERGARTEN CHECK PASSED ??????????????");
-								var registrations = registrationDao
-										.findRegistrationsWithSpecifiedKindergarten(kg.getName());
-								for (KindergartenRegistration kgReg : registrations) {
-									var timeDiff = today.getTime() - kgReg.getChild().getBirthdate().getTime();
-									var timeDiffDays = TimeUnit.MILLISECONDS.toDays(timeDiff);
-									var yearDiff = timeDiffDays / 365;
-									if (yearDiff >= 3 && yearDiff <= 6) {
-										System.out.println("????????????? KG AGE CHECK PASSED ??????????????");
-										var currentRegistrations = kgQueue.getRegistrations();
-										currentRegistrations.add(kgReg);
-										kgQueue.setRegistrations(currentRegistrations);
-										var regQueues = kgReg.getQueues();
-										regQueues.add(kgQueue);
-										kgReg.setQueues(regQueues);
-									}
-								}
-							}
-						}
+						updateKindergartenAdmissionQueue(kgQueue, kg);
 					}
 					kindergartenDao.save(kg);
+				}
+			}
+		}
+	}
+
+	public void updateKindergartenAdmissionQueue(KindergartenQueue kgQueue, Kindergarten kg) {
+		Date today = new Date();
+		if (!kgQueue.isApproved()) {
+			if (kgQueue.getAgeGroup().equals(AgeGroup.PRESCHOOL)) {
+				var registrations = registrationDao.findRegistrationsWithSpecifiedKindergarten(kg.getName());
+				for (KindergartenRegistration kgReg : registrations) {
+					var timeDiff = today.getTime() - kgReg.getChild().getBirthdate().getTime();
+					var timeDiffDays = TimeUnit.MILLISECONDS.toDays(timeDiff);
+					var yearDiff = timeDiffDays / 365;
+					if (yearDiff >= 2 && yearDiff < 3) {
+						var currentRegistrations = kgQueue.getRegistrations();
+						currentRegistrations.add(kgReg);
+						kgQueue.setRegistrations(currentRegistrations);
+						var regQueues = kgReg.getQueues();
+						regQueues.add(kgQueue);
+						kgReg.setQueues(regQueues);
+					}
+				}
+			} else if (kgQueue.getAgeGroup().equals(AgeGroup.KINDERGARTEN)) {
+				var registrations = registrationDao.findRegistrationsWithSpecifiedKindergarten(kg.getName());
+				for (KindergartenRegistration kgReg : registrations) {
+					var timeDiff = today.getTime() - kgReg.getChild().getBirthdate().getTime();
+					var timeDiffDays = TimeUnit.MILLISECONDS.toDays(timeDiff);
+					var yearDiff = timeDiffDays / 365;
+					if (yearDiff >= 3 && yearDiff <= 6) {
+						var currentRegistrations = kgQueue.getRegistrations();
+						currentRegistrations.add(kgReg);
+						kgQueue.setRegistrations(currentRegistrations);
+						var regQueues = kgReg.getQueues();
+						regQueues.add(kgQueue);
+						kgReg.setQueues(regQueues);
+					}
 				}
 			}
 		}
@@ -107,13 +106,12 @@ public class QueueService {
 	}
 
 	@Transactional
-	public List<KindergartenQueue> createKindergartenQueues(AdmissionProcess admissionProcess) {
+	public AdmissionProcess createKindergartenQueues(AdmissionProcess admissionProcess) {
 
 		var kindergartens = kindergartenDao.findAll();
-
+		var admissionQueues = admissionProcess.getQueues();
 		for (Kindergarten kg : kindergartens) {
-			if (kg.getQueues().stream().filter(queue -> queue.getAdmissionProcess().equals(admissionProcess))
-					.findFirst().orElse(null) == null) {
+			if (!(kg.getQueues().stream().anyMatch(queue -> queue.getAdmissionProcess().equals(admissionProcess)))) {
 				var preSchoolQueue = new KindergartenQueue(admissionProcess, kg, AgeGroup.PRESCHOOL);
 				var kgQueue = new KindergartenQueue(admissionProcess, kg, AgeGroup.KINDERGARTEN);
 				if (kg.getSpotsInFirstAgeGroup() > 0 && kg.getSpotsInSecondAgeGroup() > 0) {
@@ -121,14 +119,18 @@ public class QueueService {
 					kgQueues.add(preSchoolQueue);
 					kgQueues.add(kgQueue);
 					kg.setQueues(kgQueues);
+					admissionQueues.add(preSchoolQueue);
+					admissionQueues.add(kgQueue);
 				} else if (kg.getSpotsInFirstAgeGroup() == 0) {
 					var kgQueues = kg.getQueues();
 					kgQueues.add(kgQueue);
 					kg.setQueues(kgQueues);
+					admissionQueues.add(kgQueue);
 				} else if (kg.getSpotsInSecondAgeGroup() == 0) {
 					var kgQueues = kg.getQueues();
 					kgQueues.add(preSchoolQueue);
 					kg.setQueues(kgQueues);
+					admissionQueues.add(preSchoolQueue);
 				}
 				kindergartenDao.save(kg);
 			} else {
@@ -141,24 +143,42 @@ public class QueueService {
 					var kgQueues = kg.getQueues();
 					kgQueues.add(preSchoolQueue);
 					kg.setQueues(kgQueues);
+					admissionQueues.add(preSchoolQueue);
 				} else if (adQueues.stream().filter(queue -> queue.getAgeGroup().equals(AgeGroup.KINDERGARTEN))
 						.findAny().orElse(null) == null && kg.getSpotsInSecondAgeGroup() > 0) {
 					var kgQueue = new KindergartenQueue(admissionProcess, kg, AgeGroup.KINDERGARTEN);
 					var kgQueues = kg.getQueues();
 					kgQueues.add(kgQueue);
 					kg.setQueues(kgQueues);
+					admissionQueues.add(kgQueue);
 				}
 				kindergartenDao.save(kg);
 			}
 		}
-		return queueDao.findByAdmissionProcess(admissionProcess);
+		admissionProcess.setQueues(admissionQueues);
+		return admissionDao.save(admissionProcess);
 	}
-	
-	public int getNumberOfRegistrationsWithNullAdmission(AdmissionProcess admission) {
+
+	public int getNumberOfRegistrationsByAdmission(AdmissionProcess admission) {
 		if (admission != null) {
 			return registrationDao.findRegistrationsbyAdmission(admission).size();
 		}
 		return registrationDao.findRegistrationsWithNullAdmission().size();
+	}
+
+	@Transactional
+	public ResponseEntity<String> approveAdmissionQueue(long admissionId, long queueId) {
+		var queue = queueDao.findById(queueId).orElse(null);
+		var admission = admissionDao.findById(admissionId).orElse(null);
+		if (queue != null) {
+			if (!admission.isActive()) {
+				queue.setApproved(true);
+				queueDao.save(queue);
+				return new ResponseEntity<String>("Eilė patvirtinta", HttpStatus.OK);
+			}
+			return new ResponseEntity<String>("Priėmimas dar neuždarytas", HttpStatus.BAD_REQUEST);
+		}
+		return new ResponseEntity<String>("Eilė nerasta", HttpStatus.BAD_REQUEST);
 	}
 
 }
