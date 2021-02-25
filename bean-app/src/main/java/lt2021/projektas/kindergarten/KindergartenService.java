@@ -26,8 +26,6 @@ public class KindergartenService {
 	public void addKindergarten(CreateKindergartenCommand kindergarten) {
 		queueService.createNewQueuesForKindergarten(new Kindergarten(kindergarten.getName().toUpperCase(), kindergarten.getAddress(),
 				kindergarten.getSpotsInFirstAgeGroup(), kindergarten.getSpotsInSecondAgeGroup()));
-		
-		
 	}
 	
 	@Transactional
