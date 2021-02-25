@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -83,44 +84,34 @@ public class KindergartenController {
 	 * Admission CRUD
 	 */
 	
-	@RequestMapping(path = "/startadmission", method = RequestMethod.POST)
-	public ResponseEntity<String> startAdmissionProcess() {
-		return admissionService.createNewAdmissionProcess();
+	
+	@RequestMapping(path = "/admission/registrations", method = RequestMethod.GET)
+	public List<RegistrationTableObject> getAdmissionRegistrations() {
+		return admissionService.getSortedAdmissionRegistrations();
 	}
 	
-	
-	@RequestMapping(path = "/stopadmission", method = RequestMethod.POST)
-	public ResponseEntity<String> stopAdmission() {
-		return admissionService.closeAdmissionProcess();
+	@RequestMapping(path = "/admission/registrations/confirm", method = RequestMethod.POST)
+	public void confirmAdmissionRegistrations() {
+		admissionService.confirmRegistrations();
 	}
 	
-	@RequestMapping(path = "/admissions", method = RequestMethod.GET)
-	public List<AdmissionTableObject> getAllAdmissions() {
-		return admissionService.getAllAdmissionProcesses();
+	@RequestMapping(path = "/admission/lock", method = RequestMethod.POST)
+	public void lockAdmission() {
+		admissionService.lockAdmission();
+	}
+	
+	@RequestMapping(path = "/admission/unlock", method = RequestMethod.POST)
+	public void unlockAdmission() {
+		admissionService.unlockAdmission();
 	}
 	
 	/*
 	 * Admission queue CRUD
 	 */
 	
-	@RequestMapping(path = "/admissions/{admissionId}/queues", method = RequestMethod.GET)
-	public List<QueueTableObject> getCurrentAdmissionQueues(@PathVariable final long admissionId) {
-		return queueService.getCurrentAdmissionProcessQueues(admissionId).stream()
-				.map(queue -> new QueueTableObject(queue.getId(), queue.getKindergarten().getName(), queue.getAgeGroup().toString(),
-						queue.getRegistrations().size(),
-						queue.getAgeGroup() == AgeGroup.PRESCHOOL ? queue.getKindergarten().getSpotsInFirstAgeGroup() : queue.getKindergarten().getSpotsInSecondAgeGroup(),
-								queue.isApproved()))
-				.collect(Collectors.toList());
-	}
-	
-	@RequestMapping(path = "/admissions/{admissionId}/queues/{queueId}/confirm", method = RequestMethod.POST)
-	public ResponseEntity<String> approveAdmissionQueue(@PathVariable("admissionId") final long admissionId, @PathVariable("queueId") final long queueId) {
-		return queueService.approveAdmissionQueue(admissionId, queueId);
-	}
-	
-	@RequestMapping(path = "/admissions/{admissionId}/queues/{queueId}/registrations", method = RequestMethod.GET)
-	public List<RegistrationTableObject> getAdmissionQueueRegistrations(@PathVariable("admissionId") final long admissionId, @PathVariable("queueId") final long queueId) {
-		return queueService.getQueueRegistrations(admissionId, queueId);
+	@RequestMapping(path = "/admission/queues", method = RequestMethod.GET)
+	public List<QueueTableObject> getAdmissionQueues() {
+		return queueService.getAllAdmissionQueues();
 	}
 	
 	

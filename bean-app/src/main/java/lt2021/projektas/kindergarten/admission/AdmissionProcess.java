@@ -26,10 +26,7 @@ public class AdmissionProcess {
 	private Long id;
 	
 	@Temporal(TemporalType.DATE)
-	private Date startDate;
-	
-	@Temporal(TemporalType.DATE)
-	private Date endDate;
+	private Date lastUpdatedAt;
 	
 	@OneToMany(cascade = CascadeType.ALL)
 	@JoinTable(
@@ -49,7 +46,7 @@ public class AdmissionProcess {
 	
 	public AdmissionProcess() {
 		super();
-		this.startDate = new Date();
+		this.lastUpdatedAt = new Date();
 		this.active = true;
 		this.queues = new HashSet<>();
 		this.registrations = new HashSet<>();
@@ -61,22 +58,6 @@ public class AdmissionProcess {
 
 	public void setId(Long id) {
 		this.id = id;
-	}
-
-	public Date getStartDate() {
-		return startDate;
-	}
-
-	public void setStartDate(Date startDate) {
-		this.startDate = startDate;
-	}
-
-	public Date getEndDate() {
-		return endDate;
-	}
-
-	public void setEndDate(Date endDate) {
-		this.endDate = endDate;
 	}
 
 	public Set<KindergartenQueue> getQueues() {
@@ -101,6 +82,14 @@ public class AdmissionProcess {
 
 	public void setRegistrations(Set<KindergartenRegistration> registrations) {
 		this.registrations = registrations;
+	}
+
+	public Date getLastUpdatedAt() {
+		return lastUpdatedAt;
+	}
+
+	public void setLastUpdatedAt(Date lastUpdatedAt) {
+		this.lastUpdatedAt = lastUpdatedAt;
 	}
 
 	

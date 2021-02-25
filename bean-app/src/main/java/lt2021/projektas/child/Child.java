@@ -14,7 +14,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.validation.Valid;
@@ -60,13 +60,8 @@ public class Child {
 	@JoinTable(name = "Parents_Children", joinColumns = @JoinColumn(name = "Child_id"), inverseJoinColumns = @JoinColumn(name = "Parent_details_id"))
 	private Set<ParentDetails> parents;
 	
-	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-	@JoinTable(
-			name = "child_registrations", 
-			joinColumns = @JoinColumn(name = "child_id"),
-			inverseJoinColumns = @JoinColumn(name = "registration_id")
-			)
-	private Set<KindergartenRegistration> registrationForms;
+	@OneToOne(mappedBy = "child")
+	private KindergartenRegistration registrationForm;
 
 	public Child() {
 	}
@@ -81,7 +76,6 @@ public class Child {
 		this.birthdate = birthdate;
 		this.livingAddress = livingAddress;
 		this.parents = new HashSet<>();
-		this.registrationForms = new HashSet<>();
 	}
 
 	public Long getId() {
@@ -148,13 +142,15 @@ public class Child {
 		this.isAdopted = isAdopted;
 	}
 
-	public Set<KindergartenRegistration> getRegistrationForms() {
-		return registrationForms;
+	public KindergartenRegistration getRegistrationForm() {
+		return registrationForm;
 	}
 
-	public void setRegistrationForms(Set<KindergartenRegistration> registrationForms) {
-		this.registrationForms = registrationForms;
+	public void setRegistrationForm(KindergartenRegistration registrationForm) {
+		this.registrationForm = registrationForm;
 	}
+
+	
 
 	
 }

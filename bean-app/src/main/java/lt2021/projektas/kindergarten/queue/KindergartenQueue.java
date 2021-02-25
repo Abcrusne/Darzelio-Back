@@ -41,7 +41,6 @@ public class KindergartenQueue {
 	@Enumerated(EnumType.STRING)
 	private AgeGroup ageGroup;
 	
-	private boolean approved;
 	
 	public KindergartenQueue() {
 		// TODO Auto-generated constructor stub
@@ -52,7 +51,6 @@ public class KindergartenQueue {
 		this.admissionProcess = admissionProcess;
 		this.kindergarten = kindergarten;
 		this.ageGroup = ageGroup;
-		this.approved = false;
 		this.registrations = new HashSet<>();
 	}
 
@@ -80,13 +78,6 @@ public class KindergartenQueue {
 		this.registrations = registrations;
 	}
 
-	public boolean isApproved() {
-		return approved;
-	}
-
-	public void setApproved(boolean approved) {
-		this.approved = approved;
-	}
 
 	public AdmissionProcess getAdmissionProcess() {
 		return admissionProcess;
@@ -103,8 +94,7 @@ public class KindergartenQueue {
 	public void setAgeGroup(AgeGroup ageGroup) {
 		this.ageGroup = ageGroup;
 	}
-	
-	
+
 	
 	
 }

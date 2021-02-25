@@ -9,8 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import lt2021.projektas.child.Child;
 import lt2021.projektas.child.ChildDao;
+import lt2021.projektas.kindergarten.queue.QueueService;
 
 @Service
 public class KindergartenRegistrationService {
@@ -21,12 +21,15 @@ public class KindergartenRegistrationService {
 	@Autowired
 	private ChildDao childDao;
 	
+	@Autowired
+	private QueueService queueService;
+	
 	
 	@Transactional
 	public ResponseEntity<String> addRegistration(CreateRegistrationCommand registrationForm) {
 		var child = childDao.findById(registrationForm.getChildId()).orElse(null);
 		if (child != null) {
-			if (child.getRegistrationForms().stream().allMatch(reg -> reg.getAdmission() != null)) {
+			if (child.getRegistrationForm() == null) {
 				var registration = new KindergartenRegistration(child, registrationForm.getFirstPriority(), registrationForm.getSecondPriority(), 
 						registrationForm.getThirdPriority(), registrationForm.getFourthPriority(), registrationForm.getFifthPriority());
 				if (child.getLivingAddress().getCity().toLowerCase().equals("vilnius")) {
@@ -44,10 +47,8 @@ public class KindergartenRegistrationService {
 				if (!(child.getParents().stream().filter(parent -> parent.isHasDisability()).findFirst().isEmpty())) {
 					registration.setRating(registration.getRating() + 1);
 				}
-				var registrations = child.getRegistrationForms();
-				registrations.add(registration);
-				child.setRegistrationForms(registrations);
-				kgRegDao.save(registration);
+				child.setRegistrationForm(registration);
+				queueService.addRegistrationToQueues(kgRegDao.save(registration));
 				return new ResponseEntity<String>("Vaiko registracija išsaugota", HttpStatus.OK);
 			}
 			return new ResponseEntity<String>("Šio vaiko registracija jau užpildyta!", HttpStatus.BAD_REQUEST);

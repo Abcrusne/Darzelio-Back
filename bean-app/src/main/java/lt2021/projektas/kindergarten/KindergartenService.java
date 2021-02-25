@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import lt2021.projektas.kindergarten.queue.QueueService;
 import lt2021.projektas.kindergarten.registration.KindergartenRegistrationDao;
 
 @Service
@@ -18,10 +19,15 @@ public class KindergartenService {
 	@Autowired
 	private KindergartenRegistrationDao registrationDao;
 	
+	@Autowired
+	private QueueService queueService;
+	
 	@Transactional
 	public void addKindergarten(CreateKindergartenCommand kindergarten) {
-		kgDao.save(new Kindergarten(kindergarten.getName().toUpperCase(), kindergarten.getAddress(),
+		queueService.createNewQueuesForKindergarten(new Kindergarten(kindergarten.getName().toUpperCase(), kindergarten.getAddress(),
 				kindergarten.getSpotsInFirstAgeGroup(), kindergarten.getSpotsInSecondAgeGroup()));
+		
+		
 	}
 	
 	@Transactional

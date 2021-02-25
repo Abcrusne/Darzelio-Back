@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.authority.AuthorityUtils;
@@ -23,7 +24,8 @@ public class UserService implements UserDetailsService {
 
 	@Transactional(readOnly = true)
 	public List<ServiceLayerUser> getUsers() {
-		return userDao.findAll().stream()
+		var users = userDao.findAll();
+		return users.stream()
 				.map(userFromService -> new ServiceLayerUser(userFromService.getId(), userFromService.getFirstname(),
 						userFromService.getLastname(), userFromService.getEmail(), userFromService.getPassword(),
 						userFromService.getRole(), userFromService.isMarkedForDeletion()))
@@ -56,11 +58,6 @@ public class UserService implements UserDetailsService {
 		updatedUser.setLastname(user.getLastname());
 		updatedUser.setEmail(user.getEmail().toLowerCase());
 		updatedUser.setRole(user.getRole());
-		@SuppressWarnings("deprecation")
-		PasswordEncoder encoder = new MessageDigestPasswordEncoder("SHA-256");
-		if (!(user.getPassword().equals(updatedUser.getPassword()))) {
-			updatedUser.setPassword(encoder.encode(user.getPassword()));
-		}
 		userDao.save(updatedUser);
 	}
 

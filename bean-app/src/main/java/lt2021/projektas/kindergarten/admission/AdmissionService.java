@@ -1,80 +1,153 @@
 package lt2021.projektas.kindergarten.admission;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lt2021.projektas.kindergarten.queue.AgeGroup;
 import lt2021.projektas.kindergarten.queue.QueueService;
+import lt2021.projektas.kindergarten.queue.RegistrationTableObject;
+import lt2021.projektas.kindergarten.registration.KindergartenRegistration;
+import lt2021.projektas.kindergarten.registration.KindergartenRegistrationDao;
 
 @Service
 public class AdmissionService {
-	
+
 	@Autowired
 	private AdmissionDao admissionDao;
-	
+
 	@Autowired
 	private QueueService queueService;
-	
+
+	@Autowired
+	private KindergartenRegistrationDao registrationDao;
+
 	@Transactional
-	public List<AdmissionTableObject> getAllAdmissionProcesses() {
-		var adm = admissionDao.findAll().stream().filter(ad -> ad.isActive()).findFirst().orElse(null);
-		if (adm != null) {
-			queueService.updateKindergartenQueues(adm.getId());
-		}
-		return admissionDao.findAll().stream()
-				.map(admission -> new AdmissionTableObject(admission.getId(),
-						new SimpleDateFormat("yyyy-MM-dd").format(admission.getStartDate()),
-						(admission.getEndDate() != null ? new SimpleDateFormat("yyyy-MM-dd").format(admission.getEndDate()) : ""),
-						admission.isActive(),
-						admission.isActive() ? queueService.getNumberOfRegistrationsByAdmission(null) : queueService.getNumberOfRegistrationsByAdmission(admission),
-						admission.getQueues().stream().map(queue -> queue.getAgeGroup().equals(AgeGroup.PRESCHOOL) ?
-								queue.getKindergarten().getSpotsInFirstAgeGroup() : queue.getKindergarten().getSpotsInSecondAgeGroup()).reduce(0, (acc, elem) -> acc + elem),
-						admission.getQueues().stream().allMatch(queue -> queue.isApproved())))
+	public List<RegistrationTableObject> getSortedAdmissionRegistrations() {
+		return sortAdmissionRegistrations().stream()
+				.map(reg -> new RegistrationTableObject(reg.getChild().getId(), reg.getChild().getFirstname(),
+						reg.getChild().getLastname(),
+						reg.getAcceptedKindergarten() == null ? "" : reg.getAcceptedKindergarten(),
+						reg.getChild().getPersonalCode(), reg.getRating(),
+						reg.getAcceptedKindergarten() == null ? false : true))
 				.collect(Collectors.toList());
 	}
-	
+
 	@Transactional
-	public ResponseEntity<String> createNewAdmissionProcess() {
-		if (admissionDao.findAll().stream().filter(ad -> ad.isActive()).findFirst().orElse(null) != null) {
-			return new ResponseEntity<String>("Yra dar neužbaigtas priėmimo procesas", HttpStatus.BAD_REQUEST);
-		}
-		if (admissionDao.findAll().stream().anyMatch(ad -> !(ad.getQueues().stream().allMatch(queue -> queue.isApproved())))) {
-			//return new ResponseEntity<String>("Yra priėmimų su nepatvirtintomis eilėmis", HttpStatus.BAD_REQUEST);
-		}
-		var admission = admissionDao.save(new AdmissionProcess());
-		queueService.createKindergartenQueues(admission);
-		return new ResponseEntity<String>(new SimpleDateFormat("yyyy-MM-dd").format(admission.getStartDate()).toString(), HttpStatus.OK);
-	}
-	
-	
-	@Transactional
-	public ResponseEntity<String> closeAdmissionProcess() {
-		var admission = admissionDao.findAll().stream().filter(ad -> ad.isActive()).findFirst().orElse(null);
-		if (admission != null) {
-			queueService.updateKindergartenQueues(admission.getId());
-			admission.setActive(false);
-			admission.setEndDate(new Date());
-			var admissionRegistrations = admission.getRegistrations();
-			admission.getQueues().stream()
-				.flatMap(queue -> queue.getRegistrations().stream())
-				.forEach(reg ->  {
-					admissionRegistrations.add(reg);
-					reg.setAdmission(admission);
-				});
-			admission.setRegistrations(admissionRegistrations);
-			queueService.calculateWhereAllRegistrationsLanded(admission.getId());
-			admissionDao.save(admission);
-			return new ResponseEntity<String>(new SimpleDateFormat("yyyy-MM-dd").format(admission.getEndDate()).toString(), HttpStatus.OK);
-		}
-		return new ResponseEntity<String>("Nėra pradėto priėmimo proceso", HttpStatus.BAD_REQUEST);
+	public List<KindergartenRegistration> sortAdmissionRegistrations() {
+		var admission = admissionDao.findAll().get(0);
+		var admissionRegistrations = admission.getRegistrations();
+		var sortedRegistrations = admissionRegistrations.stream().collect(Collectors.toList());
+		sortedRegistrations.sort((r1, r2) -> {
+			if (r1.getRating() == r2.getRating()) {
+				if (r1.getChild().getBirthdate().compareTo(r2.getChild().getBirthdate()) == 0) {
+					return r1.getChild().getLastname().compareTo(r2.getChild().getLastname());
+				} else {
+					return r1.getChild().getBirthdate().compareTo(r2.getChild().getBirthdate());
+				}
+			} else {
+				return r2.getRating() - r1.getRating();
+			}
+		});
+		return sortedRegistrations;
 	}
 
+	@Transactional
+	public void confirmRegistrations() {
+		var sortedRegistrations = sortAdmissionRegistrations();
+		for (KindergartenRegistration reg : sortedRegistrations) {
+			var firstPriorityQueue = reg.getQueues().stream()
+					.filter(q -> q.getKindergarten().getName().equals(reg.getFirstPriority())).findFirst().orElse(null);
+			var howManyAccepted = firstPriorityQueue.getRegistrations().stream().map(r -> r.getAcceptedKindergarten())
+					.filter(kg -> kg != null).count();
+			var freeSpots = firstPriorityQueue.getAgeGroup().equals(AgeGroup.PRESCHOOL)
+					? firstPriorityQueue.getKindergarten().getSpotsInFirstAgeGroup()
+					: firstPriorityQueue.getKindergarten().getSpotsInSecondAgeGroup();
+			if (howManyAccepted < freeSpots) {
+				reg.setAcceptedKindergarten(firstPriorityQueue.getKindergarten().getName());
+				registrationDao.save(reg);
+			} else {
+				var secondPriorityQueue = reg.getQueues().stream()
+						.filter(q -> q.getKindergarten().getName().equals(reg.getSecondPriority())).findFirst()
+						.orElse(null);
+				if (secondPriorityQueue != null) {
+					howManyAccepted = secondPriorityQueue.getRegistrations().stream()
+							.map(r -> r.getAcceptedKindergarten()).filter(kg -> kg != null).count();
+					freeSpots = secondPriorityQueue.getAgeGroup().equals(AgeGroup.PRESCHOOL)
+							? secondPriorityQueue.getKindergarten().getSpotsInFirstAgeGroup()
+							: secondPriorityQueue.getKindergarten().getSpotsInSecondAgeGroup();
+					if (howManyAccepted < freeSpots) {
+						reg.setAcceptedKindergarten(secondPriorityQueue.getKindergarten().getName());
+						registrationDao.save(reg);
+					} else {
+						var thirdPriorityQueue = reg.getQueues().stream()
+								.filter(q -> q.getKindergarten().getName().equals(reg.getThirdPriority())).findFirst()
+								.orElse(null);
+						if (thirdPriorityQueue != null) {
+							howManyAccepted = thirdPriorityQueue.getRegistrations().stream()
+									.map(r -> r.getAcceptedKindergarten()).filter(kg -> kg != null).count();
+							freeSpots = thirdPriorityQueue.getAgeGroup().equals(AgeGroup.PRESCHOOL)
+									? thirdPriorityQueue.getKindergarten().getSpotsInFirstAgeGroup()
+									: thirdPriorityQueue.getKindergarten().getSpotsInSecondAgeGroup();
+							if (howManyAccepted < freeSpots) {
+								reg.setAcceptedKindergarten(thirdPriorityQueue.getKindergarten().getName());
+								registrationDao.save(reg);
+							} else {
+								var fourthPriorityQueue = reg.getQueues().stream()
+										.filter(q -> q.getKindergarten().getName().equals(reg.getFourthPriority()))
+										.findFirst().orElse(null);
+								if (fourthPriorityQueue != null) {
+									howManyAccepted = fourthPriorityQueue.getRegistrations().stream()
+											.map(r -> r.getAcceptedKindergarten()).filter(kg -> kg != null).count();
+									freeSpots = fourthPriorityQueue.getAgeGroup().equals(AgeGroup.PRESCHOOL)
+											? fourthPriorityQueue.getKindergarten().getSpotsInFirstAgeGroup()
+											: fourthPriorityQueue.getKindergarten().getSpotsInSecondAgeGroup();
+									if (howManyAccepted < freeSpots) {
+										reg.setAcceptedKindergarten(fourthPriorityQueue.getKindergarten().getName());
+										registrationDao.save(reg);
+									} else {
+										var fifthPriorityQueue = reg.getQueues().stream().filter(
+												q -> q.getKindergarten().getName().equals(reg.getFifthPriority()))
+												.findFirst().orElse(null);
+										freeSpots = fifthPriorityQueue.getAgeGroup().equals(AgeGroup.PRESCHOOL)
+												? fifthPriorityQueue.getKindergarten().getSpotsInFirstAgeGroup()
+												: fifthPriorityQueue.getKindergarten().getSpotsInSecondAgeGroup();
+										if (fifthPriorityQueue != null) {
+											howManyAccepted = fifthPriorityQueue.getRegistrations().stream()
+													.map(r -> r.getAcceptedKindergarten()).filter(kg -> kg != null)
+													.count();
+											if (howManyAccepted < freeSpots) {
+												reg.setAcceptedKindergarten(
+														fifthPriorityQueue.getKindergarten().getName());
+												registrationDao.save(reg);
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	@Transactional
+	public void lockAdmission() {
+		var admission = admissionDao.findAll().get(0);
+		admission.setActive(false);
+		admissionDao.save(admission);
+	}
+	
+	@Transactional
+	public void unlockAdmission() {
+		var admission = admissionDao.findAll().get(0);
+		admission.setActive(true);
+		admissionDao.save(admission);
+	}
+
+	
 }
