@@ -16,6 +16,7 @@ import lt2021.projektas.kindergarten.admission.AdmissionTableObject;
 import lt2021.projektas.kindergarten.queue.AgeGroup;
 import lt2021.projektas.kindergarten.queue.QueueService;
 import lt2021.projektas.kindergarten.queue.QueueTableObject;
+import lt2021.projektas.kindergarten.queue.RegistrationTableObject;
 import lt2021.projektas.kindergarten.registration.CreateRegistrationCommand;
 import lt2021.projektas.kindergarten.registration.KindergartenRegistrationService;
 
@@ -115,6 +116,11 @@ public class KindergartenController {
 	@RequestMapping(path = "/admissions/{admissionId}/queues/{queueId}/confirm", method = RequestMethod.POST)
 	public ResponseEntity<String> approveAdmissionQueue(@PathVariable("admissionId") final long admissionId, @PathVariable("queueId") final long queueId) {
 		return queueService.approveAdmissionQueue(admissionId, queueId);
+	}
+	
+	@RequestMapping(path = "/admissions/{admissionId}/queues/{queueId}/registrations", method = RequestMethod.GET)
+	public List<RegistrationTableObject> getAdmissionQueueRegistrations(@PathVariable("admissionId") final long admissionId, @PathVariable("queueId") final long queueId) {
+		return queueService.getQueueRegistrations(admissionId, queueId);
 	}
 	
 	

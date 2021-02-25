@@ -47,7 +47,7 @@ public class AdmissionService {
 			return new ResponseEntity<String>("Yra dar neužbaigtas priėmimo procesas", HttpStatus.BAD_REQUEST);
 		}
 		if (admissionDao.findAll().stream().anyMatch(ad -> !(ad.getQueues().stream().allMatch(queue -> queue.isApproved())))) {
-			return new ResponseEntity<String>("Yra priėmimų su nepatvirtintomis eilėmis", HttpStatus.BAD_REQUEST);
+			//return new ResponseEntity<String>("Yra priėmimų su nepatvirtintomis eilėmis", HttpStatus.BAD_REQUEST);
 		}
 		var admission = admissionDao.save(new AdmissionProcess());
 		queueService.createKindergartenQueues(admission);
@@ -70,6 +70,7 @@ public class AdmissionService {
 					reg.setAdmission(admission);
 				});
 			admission.setRegistrations(admissionRegistrations);
+			queueService.calculateWhereAllRegistrationsLanded(admission.getId());
 			admissionDao.save(admission);
 			return new ResponseEntity<String>(new SimpleDateFormat("yyyy-MM-dd").format(admission.getEndDate()).toString(), HttpStatus.OK);
 		}

@@ -27,7 +27,7 @@ public class KindergartenRegistration {
 	private Long id;
 
 	@ManyToOne
-	private Child child;	
+	private Child child;
 
 	@NotBlank
 	private String firstPriority;
@@ -39,15 +39,17 @@ public class KindergartenRegistration {
 	private String fourthPriority;
 
 	private String fifthPriority;
-	
+
 	@NotNull
 	private int rating;
-	
+
 	@ManyToMany(mappedBy = "registrations", cascade = CascadeType.ALL)
 	private Set<KindergartenQueue> queues;
-	
+
 	@ManyToOne
 	private AdmissionProcess admission;
+
+	private String acceptedKindergarten;
 
 	public KindergartenRegistration() {
 	}
@@ -145,8 +147,12 @@ public class KindergartenRegistration {
 		this.fifthPriority = fifthPriority;
 	}
 
-	
-	
-	
+	public String getAcceptedKindergarten() {
+		return acceptedKindergarten;
+	}
+
+	public void setAcceptedKindergarten(String acceptedKindergarten) {
+		this.acceptedKindergarten = acceptedKindergarten;
+	}
 
 }
