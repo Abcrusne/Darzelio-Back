@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lt2021.projektas.child.ChildDao;
+import lt2021.projektas.kindergarten.admission.AdmissionDao;
 import lt2021.projektas.kindergarten.queue.QueueService;
 
 @Service
@@ -23,6 +24,9 @@ public class KindergartenRegistrationService {
 	
 	@Autowired
 	private QueueService queueService;
+	
+	@Autowired
+	private AdmissionDao admissionDao;
 	
 	
 	@Transactional
@@ -57,11 +61,11 @@ public class KindergartenRegistrationService {
 	}
 	
 	@Transactional
-	public void updateRegistration(long childId) {
+	public void updateRegistrationOnParentOrChildInfoChange(long childId) {
 		var updatedChild = childDao.findById(childId).orElse(null);
 		var childRegistrations = kgRegDao.findByChild(updatedChild);
 		if (childRegistrations != null) {
-			var childRegistration = childRegistrations.stream().filter(reg -> reg.getAdmission() == null).findFirst().orElse(null);
+			var childRegistration = childRegistrations.stream().filter(reg -> reg.getAcceptedKindergarten() == null).findFirst().orElse(null);
 			if (childRegistration != null) {
 				childRegistration.setRating(0);
 				if (updatedChild.getLivingAddress().getCity().toLowerCase().equals("vilnius")) {
@@ -85,6 +89,23 @@ public class KindergartenRegistrationService {
 	}
 	
 	@Transactional
+	public void updateRegistration(CreateRegistrationCommand updatedRegistration) {
+		//var admission = admissionDao.findAll().get(0);
+		var registration = kgRegDao.findById(updatedRegistration.getId()).orElse(null);
+		registration.setFirstPriority(updatedRegistration.getFirstPriority());
+		registration.setSecondPriority(updatedRegistration.getSecondPriority());
+		registration.setThirdPriority(updatedRegistration.getThirdPriority());
+		registration.setFourthPriority(updatedRegistration.getFourthPriority());
+		registration.setFifthPriority(updatedRegistration.getFifthPriority());
+		registration.getQueues().forEach(queue -> {
+			var regs = queue.getRegistrations();
+			regs.remove(registration);
+			queue.setRegistrations(regs);
+		});
+		queueService.addRegistrationToQueues(registration);
+	}
+	
+	@Transactional
 	public List<CreateRegistrationCommand> getAllRegistrations() {
 		return kgRegDao.findAll().stream()
 					.map(reg -> new CreateRegistrationCommand(reg.getId(), reg.getChild().getId(), reg.getFirstPriority(), 
@@ -98,6 +119,26 @@ public class KindergartenRegistrationService {
 					.map(kgReg -> new CreateRegistrationCommand(kgReg.getId(), kgReg.getChild().getId(), kgReg.getFirstPriority(), kgReg.getSecondPriority(),
 							kgReg.getThirdPriority(), kgReg.getFourthPriority(), kgReg.getFifthPriority(), kgReg.getRating()))
 					.collect(Collectors.toList());
+	}
+	
+	@Transactional
+	public void deleteRegistration(long childId) {
+		var admission = admissionDao.findAll().get(0);
+		var child = childDao.findById(childId).orElse(null);
+		var registration = child.getRegistrationForm();
+		if (registration != null) {
+			child.setRegistrationForm(null);
+			registration.getQueues().forEach(queue -> {
+				var regs = queue.getRegistrations();
+				regs.remove(registration);
+				queue.setRegistrations(regs);
+			});
+			var adRegs = admission.getRegistrations();
+			adRegs.remove(registration);
+			admission.setRegistrations(adRegs);
+			admissionDao.save(admission);
+			kgRegDao.delete(registration);
+		}
 	}
 	
 }

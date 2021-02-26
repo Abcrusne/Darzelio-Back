@@ -80,6 +80,11 @@ public class KindergartenController {
 		return kgRegService.getAllRegistrations();
 	}
 	
+	@RequestMapping(path = "/register/{registrationId}/update", method = RequestMethod.PUT)
+	public void updateRegistration(@RequestBody final CreateRegistrationCommand reg) {
+		kgRegService.updateRegistration(reg);
+	}
+	
 	/*
 	 * Admission CRUD
 	 */
@@ -88,6 +93,11 @@ public class KindergartenController {
 	@RequestMapping(path = "/admission/registrations", method = RequestMethod.GET)
 	public List<RegistrationTableObject> getAdmissionRegistrations() {
 		return admissionService.getSortedAdmissionRegistrations();
+	}
+	
+	@RequestMapping(path = "/admission/registrations/{childId}/delete", method = RequestMethod.DELETE)
+	public void deleteAdmissionRegistration(@PathVariable("childId") long childId) {
+		kgRegService.deleteRegistration(childId);
 	}
 	
 	@RequestMapping(path = "/admission/registrations/confirm", method = RequestMethod.POST)
