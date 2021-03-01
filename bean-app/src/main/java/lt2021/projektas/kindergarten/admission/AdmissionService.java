@@ -9,6 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import lt2021.projektas.child.ChildDao;
 import lt2021.projektas.kindergarten.queue.AgeGroup;
 import lt2021.projektas.kindergarten.queue.QueueService;
 import lt2021.projektas.kindergarten.queue.RegistrationTableItem;
@@ -27,26 +28,63 @@ public class AdmissionService {
 
 	@Autowired
 	private KindergartenRegistrationDao registrationDao;
+	
+	@Autowired 
+	private ChildDao childDao;
 
 	@Transactional
-	public RegistrationTableObject getSortedAdmissionRegistrations(int pageNumber) {
+	public RegistrationTableObject getSortedAdmissionRegistrations(int pageNumber, String sortby) {
 		if (pageNumber == -1) {
 			pageNumber = 1;
 		}
 		var totalRegs = registrationDao.registrationWithAdmissionCount();
 		double pageCount = Math.ceil((double)totalRegs / 15.0);
 		var admissionRegistrations = registrationDao.findRegistrationsWithAdmission(PageRequest.of(pageNumber - 1, 15));
-		admissionRegistrations.sort((r1, r2) -> {
-			if (r1.getRating() == r2.getRating()) {
-				if (r1.getChild().getBirthdate().compareTo(r2.getChild().getBirthdate()) == 0) {
-					return r1.getChild().getLastname().compareTo(r2.getChild().getLastname());
+		if (sortby.equals("lastname")) {
+			admissionRegistrations.sort((r1, r2) -> {
+				if (r1.getChild().getLastname().compareTo(r2.getChild().getLastname()) == 0) {
+					if (r1.getRating() == r2.getRating()) {
+						return r1.getChild().getBirthdate().compareTo(r2.getChild().getBirthdate());
+					} else {
+						return r2.getRating() - r1.getRating();
+					}
 				} else {
-					return r1.getChild().getBirthdate().compareTo(r2.getChild().getBirthdate());
+					return r1.getChild().getLastname().compareTo(r2.getChild().getLastname());
 				}
-			} else {
-				return r2.getRating() - r1.getRating();
-			}
-		});
+			});
+		} else if (sortby.equals("accepted")) {
+			admissionRegistrations.sort((r1, r2) -> {
+				if (r1.getAcceptedKindergarten() != null && r2.getAcceptedKindergarten() != null) {
+					if (r1.getRating() == r2.getRating()) {
+						if (r1.getChild().getBirthdate().compareTo(r2.getChild().getBirthdate()) == 0) {
+							return r1.getChild().getLastname().compareTo(r2.getChild().getLastname());
+						} else {
+							return r1.getChild().getBirthdate().compareTo(r2.getChild().getBirthdate());
+						}
+					} else {
+						return r2.getRating() - r1.getRating();
+					}
+				} else {
+					if (r1.getAcceptedKindergarten() == null) {
+						return 1;
+					} else {
+						return -1;
+					}
+				}
+			});
+		} else {
+			admissionRegistrations.sort((r1, r2) -> {
+				if (r1.getRating() == r2.getRating()) {
+					if (r1.getChild().getBirthdate().compareTo(r2.getChild().getBirthdate()) == 0) {
+						return r1.getChild().getLastname().compareTo(r2.getChild().getLastname());
+					} else {
+						return r1.getChild().getBirthdate().compareTo(r2.getChild().getBirthdate());
+					}
+				} else {
+					return r2.getRating() - r1.getRating();
+				}
+			});
+		}
 		var registrations = admissionRegistrations.stream()
 				.map(reg -> new RegistrationTableItem(reg.getChild().getId(), reg.getChild().getFirstname(),
 						reg.getChild().getLastname(),
@@ -152,6 +190,16 @@ public class AdmissionService {
 						}
 					}
 				}
+			}
+		}
+	}
+	
+	public void getChildDetailsFromRegistrationList(long childId) {
+		var child = childDao.findById(childId).orElse(null);
+		if (child != null) {
+			var mainParent = child.getParents().stream().filter(parent -> parent.getParent() != null).findFirst().orElse(null);
+			if (mainParent != null) {
+				
 			}
 		}
 	}

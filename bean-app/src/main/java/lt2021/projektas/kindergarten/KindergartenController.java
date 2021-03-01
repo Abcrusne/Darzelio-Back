@@ -89,12 +89,17 @@ public class KindergartenController {
 	
 	@RequestMapping(path = "/admission/registrations", method = RequestMethod.GET)
 	public RegistrationTableObject getAdmissionRegistrations() {
-		return admissionService.getSortedAdmissionRegistrations(-1);
+		return admissionService.getSortedAdmissionRegistrations(-1, "");
 	}
 	
 	@RequestMapping(path = "/admission/registrations", method = RequestMethod.GET, params = "page")
 	public RegistrationTableObject getAdmissionRegistrations(@RequestParam int page) {
-		return admissionService.getSortedAdmissionRegistrations(page);
+		return admissionService.getSortedAdmissionRegistrations(page, "");
+	}
+	
+	@RequestMapping(path = "/admission/registrations", method = RequestMethod.GET, params = {"page", "sortby"})
+	public RegistrationTableObject getAdmissionRegistrations(@RequestParam int page, @RequestParam String sortby) {
+		return admissionService.getSortedAdmissionRegistrations(page, sortby);
 	}
 	
 	@RequestMapping(path = "/admission/registrations/{childId}/delete", method = RequestMethod.DELETE)
