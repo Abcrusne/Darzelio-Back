@@ -1,5 +1,6 @@
 package lt2021.projektas.child;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -12,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import lt2021.projektas.kindergarten.registration.KindergartenRegistrationService;
 import lt2021.projektas.parentdetails.ParentDetails;
@@ -31,9 +34,12 @@ public class ChildService {
 
 	@Autowired
 	private ParentDetailsDao detailsDao;
-	
+
 	@Autowired
 	private KindergartenRegistrationService kgRegService;
+
+	@Autowired
+	private DBFileDao fileDao;
 
 	@Transactional
 	public ResponseEntity<String> addChild(Long parentId, ServiceLayerChild child) throws ParseException {
@@ -47,9 +53,10 @@ public class ChildService {
 		if (detailsDao.findByPersonalCode(child.getPersonalCode()).isPresent()) {
 			return new ResponseEntity<>("Šis asmens kodas jau egzistuoja sistemoje!", HttpStatus.BAD_REQUEST);
 		} else if (child.getSecondParentDetails() != null) {
-			if (child.getSecondParentDetails().getPersonalCode() == child.getPersonalCode() || 
-					childDao.findByPersonalCode(child.getSecondParentDetails().getPersonalCode()).isPresent() || 
-					mainParent.getParentDetails().getPersonalCode() == child.getSecondParentDetails().getPersonalCode()) {
+			if (child.getSecondParentDetails().getPersonalCode() == child.getPersonalCode()
+					|| childDao.findByPersonalCode(child.getSecondParentDetails().getPersonalCode()).isPresent()
+					|| mainParent.getParentDetails().getPersonalCode() == child.getSecondParentDetails()
+							.getPersonalCode()) {
 				return new ResponseEntity<String>("Šis asmens kodas jau egzistuoja sistemoje!", HttpStatus.BAD_REQUEST);
 			}
 		}
@@ -58,8 +65,9 @@ public class ChildService {
 		}
 		if (mainParent != null) {
 			Set<Child> childrenSet = mainParent.getParentDetails().getChildren();
-				Child newChild = new Child(child.getFirstname(), child.getLastname(), child.getPersonalCode(),
-						child.isAdopted(), new SimpleDateFormat("yyyy-MM-dd").parse(child.getBirthdate()), child.getLivingAddress());
+			Child newChild = new Child(child.getFirstname(), child.getLastname(), child.getPersonalCode(),
+					child.isAdopted(), new SimpleDateFormat("yyyy-MM-dd").parse(child.getBirthdate()),
+					child.getLivingAddress());
 			Set<ParentDetails> parentSet = newChild.getParents();
 			parentSet.add(mainParent.getParentDetails());
 			newChild.setParents(parentSet);
@@ -70,7 +78,8 @@ public class ChildService {
 					if (child.getSecondParentDetails().isDeclaredResidenceSameAsLiving()) {
 						ParentDetails secondParent = new ParentDetails(child.getSecondParentDetails().getFirstname(),
 								child.getSecondParentDetails().getLastname(), child.getSecondParentDetails().getEmail(),
-								child.getSecondParentDetails().getPhone(), child.getSecondParentDetails().getPersonalCode(),
+								child.getSecondParentDetails().getPhone(),
+								child.getSecondParentDetails().getPersonalCode(),
 								child.getSecondParentDetails().getLivingAddress(),
 								child.getSecondParentDetails().getNumberOfKids(),
 								child.getSecondParentDetails().isStudying(),
@@ -87,7 +96,8 @@ public class ChildService {
 					} else {
 						ParentDetails secondParent = new ParentDetails(child.getSecondParentDetails().getFirstname(),
 								child.getSecondParentDetails().getLastname(), child.getSecondParentDetails().getEmail(),
-								child.getSecondParentDetails().getPhone(), child.getSecondParentDetails().getPersonalCode(),
+								child.getSecondParentDetails().getPhone(),
+								child.getSecondParentDetails().getPersonalCode(),
 								child.getSecondParentDetails().getLivingAddress(),
 								child.getSecondParentDetails().getNumberOfKids(),
 								child.getSecondParentDetails().isStudying(),
@@ -131,7 +141,8 @@ public class ChildService {
 			List<ServiceLayerChild> childArray = new ArrayList<>();
 			for (Child ch : children) {
 				ServiceLayerChild child = new ServiceLayerChild(ch.getId(), ch.getFirstname(), ch.getLastname(),
-						ch.getPersonalCode(), ch.isAdopted(), new SimpleDateFormat("yyyy-MM-dd").format(ch.getBirthdate()), ch.getLivingAddress());
+						ch.getPersonalCode(), ch.isAdopted(),
+						new SimpleDateFormat("yyyy-MM-dd").format(ch.getBirthdate()), ch.getLivingAddress());
 				ParentDetails secondParent = ch.getParents().stream()
 						.filter(p -> !(p.getId().equals(parent.getParentDetails().getId()))).findFirst().orElse(null);
 				if (secondParent != null) {
@@ -163,8 +174,8 @@ public class ChildService {
 				if (secondParent != null) {
 					return new CreateChildCommand(currentChild.getId(), currentChild.getFirstname(),
 							currentChild.getLastname(), currentChild.getPersonalCode(), currentChild.isAdopted(),
-							new SimpleDateFormat("yyyy-MM-dd").format(currentChild.getBirthdate()), currentChild.getLivingAddress().getCity(),
-							currentChild.getLivingAddress().getStreet(),
+							new SimpleDateFormat("yyyy-MM-dd").format(currentChild.getBirthdate()),
+							currentChild.getLivingAddress().getCity(), currentChild.getLivingAddress().getStreet(),
 							currentChild.getLivingAddress().getHouseNumber(),
 							currentChild.getLivingAddress().getFlatNumber(), true, secondParent.getId(),
 							secondParent.getFirstname(), secondParent.getLastname(), secondParent.getEmail(),
@@ -180,8 +191,8 @@ public class ChildService {
 				} else {
 					return new CreateChildCommand(currentChild.getId(), currentChild.getFirstname(),
 							currentChild.getLastname(), currentChild.getPersonalCode(), currentChild.isAdopted(),
-							new SimpleDateFormat("yyyy-MM-dd").format(currentChild.getBirthdate()), currentChild.getLivingAddress().getCity(),
-							currentChild.getLivingAddress().getStreet(),
+							new SimpleDateFormat("yyyy-MM-dd").format(currentChild.getBirthdate()),
+							currentChild.getLivingAddress().getCity(), currentChild.getLivingAddress().getStreet(),
 							currentChild.getLivingAddress().getHouseNumber(),
 							currentChild.getLivingAddress().getFlatNumber(), false, 0L, "", "", "", "", 0L, "", "", "",
 							"", 0, false, "", false, false, "", "", "", "");
@@ -195,7 +206,8 @@ public class ChildService {
 	}
 
 	@Transactional
-	public ResponseEntity<String> updateChild(ServiceLayerChild updatedChild, long userId, long childId) throws ParseException {
+	public ResponseEntity<String> updateChild(ServiceLayerChild updatedChild, long userId, long childId)
+			throws ParseException {
 		User mainParent = userDao.findById(userId).orElse(null);
 		if (mainParent != null) {
 			Child child = mainParent.getParentDetails().getChildren().stream().filter(ch -> ch.getId().equals(childId))
@@ -208,7 +220,8 @@ public class ChildService {
 			}
 			if (updatedChild.getSecondParentDetails() != null) {
 				if (updatedChild.getPersonalCode() == updatedChild.getSecondParentDetails().getPersonalCode()) {
-					return new ResponseEntity<String>("Vaiko ir tėvo asmens kodai negali sutapti", HttpStatus.BAD_REQUEST);
+					return new ResponseEntity<String>("Vaiko ir tėvo asmens kodai negali sutapti",
+							HttpStatus.BAD_REQUEST);
 				}
 				if (childDao.findByPersonalCode(updatedChild.getSecondParentDetails().getPersonalCode()).isPresent()) {
 					return new ResponseEntity<String>("Tėvo asmens kodas jau užimtas", HttpStatus.BAD_REQUEST);
@@ -240,9 +253,11 @@ public class ChildService {
 					return new ResponseEntity<String>("Vaiko duomenys atnaujinti", HttpStatus.OK);
 				} else {
 					if (updatedChild.getSecondParentDetails().isDeclaredResidenceSameAsLiving()) {
-								secondParent = new ParentDetails(updatedChild.getSecondParentDetails().getFirstname(),
-								updatedChild.getSecondParentDetails().getLastname(), updatedChild.getSecondParentDetails().getEmail(),
-								updatedChild.getSecondParentDetails().getPhone(), updatedChild.getSecondParentDetails().getPersonalCode(),
+						secondParent = new ParentDetails(updatedChild.getSecondParentDetails().getFirstname(),
+								updatedChild.getSecondParentDetails().getLastname(),
+								updatedChild.getSecondParentDetails().getEmail(),
+								updatedChild.getSecondParentDetails().getPhone(),
+								updatedChild.getSecondParentDetails().getPersonalCode(),
 								updatedChild.getSecondParentDetails().getLivingAddress(),
 								updatedChild.getSecondParentDetails().getNumberOfKids(),
 								updatedChild.getSecondParentDetails().isStudying(),
@@ -261,8 +276,10 @@ public class ChildService {
 						return new ResponseEntity<String>("Vaiko duomenys atnaujinti", HttpStatus.OK);
 					} else {
 						secondParent = new ParentDetails(updatedChild.getSecondParentDetails().getFirstname(),
-								updatedChild.getSecondParentDetails().getLastname(), updatedChild.getSecondParentDetails().getEmail(),
-								updatedChild.getSecondParentDetails().getPhone(), updatedChild.getSecondParentDetails().getPersonalCode(),
+								updatedChild.getSecondParentDetails().getLastname(),
+								updatedChild.getSecondParentDetails().getEmail(),
+								updatedChild.getSecondParentDetails().getPhone(),
+								updatedChild.getSecondParentDetails().getPersonalCode(),
 								updatedChild.getSecondParentDetails().getLivingAddress(),
 								updatedChild.getSecondParentDetails().getNumberOfKids(),
 								updatedChild.getSecondParentDetails().isStudying(),
@@ -309,8 +326,27 @@ public class ChildService {
 				childList.remove(childToDelete);
 				details.setChildren(childList);
 				userDao.save(parent);
+				kgRegService.deleteRegistration(childId);
 				childDao.delete(childToDelete);
 			}
+		}
+	}
+
+	@Transactional
+	public ResponseEntity<String> uploadHealthRecord(MultipartFile file, long childId) {
+		var child = childDao.findById(childId).orElse(null);
+		String fileName = StringUtils.cleanPath(file.getOriginalFilename());
+		try {
+			if (!(fileName.contains(".."))) {
+				DBFile dbFile = new DBFile(fileName, file.getContentType(), file.getBytes());
+				child.setHealthRecord(dbFile);
+				fileDao.save(dbFile);
+				return new ResponseEntity<String>("Failas įkeltas sėkmingai", HttpStatus.OK);
+			} else {
+				return new ResponseEntity<String>("Blogas failo formatas", HttpStatus.BAD_REQUEST);
+			}
+		} catch (IOException ex) {
+			return new ResponseEntity<String>("Blogas failo formatas", HttpStatus.BAD_REQUEST);
 		}
 	}
 

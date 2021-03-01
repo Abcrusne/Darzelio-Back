@@ -91,5 +91,6 @@ public class ChildrenController {
 	public void deleteChild(@PathVariable("userId") final long userId, @PathVariable("childId") final long childId) {
 		childService.deleteChild(userId, childId);
 	}
+	
 
 }

@@ -1,20 +1,17 @@
 package lt2021.projektas.kindergarten;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lt2021.projektas.kindergarten.admission.AdmissionService;
-import lt2021.projektas.kindergarten.admission.AdmissionTableObject;
-import lt2021.projektas.kindergarten.queue.AgeGroup;
 import lt2021.projektas.kindergarten.queue.QueueService;
 import lt2021.projektas.kindergarten.queue.QueueTableObject;
 import lt2021.projektas.kindergarten.queue.RegistrationTableObject;
@@ -91,8 +88,13 @@ public class KindergartenController {
 	
 	
 	@RequestMapping(path = "/admission/registrations", method = RequestMethod.GET)
-	public List<RegistrationTableObject> getAdmissionRegistrations() {
-		return admissionService.getSortedAdmissionRegistrations();
+	public RegistrationTableObject getAdmissionRegistrations() {
+		return admissionService.getSortedAdmissionRegistrations(-1);
+	}
+	
+	@RequestMapping(path = "/admission/registrations", method = RequestMethod.GET, params = "page")
+	public RegistrationTableObject getAdmissionRegistrations(@RequestParam int page) {
+		return admissionService.getSortedAdmissionRegistrations(page);
 	}
 	
 	@RequestMapping(path = "/admission/registrations/{childId}/delete", method = RequestMethod.DELETE)

@@ -92,17 +92,19 @@ public class KindergartenRegistrationService {
 	public void updateRegistration(CreateRegistrationCommand updatedRegistration) {
 		//var admission = admissionDao.findAll().get(0);
 		var registration = kgRegDao.findById(updatedRegistration.getId()).orElse(null);
-		registration.setFirstPriority(updatedRegistration.getFirstPriority());
-		registration.setSecondPriority(updatedRegistration.getSecondPriority());
-		registration.setThirdPriority(updatedRegistration.getThirdPriority());
-		registration.setFourthPriority(updatedRegistration.getFourthPriority());
-		registration.setFifthPriority(updatedRegistration.getFifthPriority());
-		registration.getQueues().forEach(queue -> {
-			var regs = queue.getRegistrations();
-			regs.remove(registration);
-			queue.setRegistrations(regs);
-		});
-		queueService.addRegistrationToQueues(registration);
+		if (registration.getAcceptedKindergarten() == null) {
+			registration.setFirstPriority(updatedRegistration.getFirstPriority());
+			registration.setSecondPriority(updatedRegistration.getSecondPriority());
+			registration.setThirdPriority(updatedRegistration.getThirdPriority());
+			registration.setFourthPriority(updatedRegistration.getFourthPriority());
+			registration.setFifthPriority(updatedRegistration.getFifthPriority());
+			registration.getQueues().forEach(queue -> {
+				var regs = queue.getRegistrations();
+				regs.remove(registration);
+				queue.setRegistrations(regs);
+			});
+			queueService.addRegistrationToQueues(registration);
+		}
 	}
 	
 	@Transactional

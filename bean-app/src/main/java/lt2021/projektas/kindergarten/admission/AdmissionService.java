@@ -1,14 +1,17 @@
 package lt2021.projektas.kindergarten.admission;
 
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lt2021.projektas.kindergarten.queue.AgeGroup;
 import lt2021.projektas.kindergarten.queue.QueueService;
+import lt2021.projektas.kindergarten.queue.RegistrationTableItem;
 import lt2021.projektas.kindergarten.queue.RegistrationTableObject;
 import lt2021.projektas.kindergarten.registration.KindergartenRegistration;
 import lt2021.projektas.kindergarten.registration.KindergartenRegistrationDao;
@@ -26,14 +29,32 @@ public class AdmissionService {
 	private KindergartenRegistrationDao registrationDao;
 
 	@Transactional
-	public List<RegistrationTableObject> getSortedAdmissionRegistrations() {
-		return sortAdmissionRegistrations().stream()
-				.map(reg -> new RegistrationTableObject(reg.getChild().getId(), reg.getChild().getFirstname(),
+	public RegistrationTableObject getSortedAdmissionRegistrations(int pageNumber) {
+		if (pageNumber == -1) {
+			pageNumber = 1;
+		}
+		var totalRegs = registrationDao.registrationWithAdmissionCount();
+		double pageCount = Math.ceil((double)totalRegs / 15.0);
+		var admissionRegistrations = registrationDao.findRegistrationsWithAdmission(PageRequest.of(pageNumber - 1, 15));
+		admissionRegistrations.sort((r1, r2) -> {
+			if (r1.getRating() == r2.getRating()) {
+				if (r1.getChild().getBirthdate().compareTo(r2.getChild().getBirthdate()) == 0) {
+					return r1.getChild().getLastname().compareTo(r2.getChild().getLastname());
+				} else {
+					return r1.getChild().getBirthdate().compareTo(r2.getChild().getBirthdate());
+				}
+			} else {
+				return r2.getRating() - r1.getRating();
+			}
+		});
+		var registrations = admissionRegistrations.stream()
+				.map(reg -> new RegistrationTableItem(reg.getChild().getId(), reg.getChild().getFirstname(),
 						reg.getChild().getLastname(),
 						reg.getAcceptedKindergarten() == null ? "" : reg.getAcceptedKindergarten(),
 						reg.getChild().getPersonalCode(), reg.getRating(),
 						reg.getAcceptedKindergarten() == null ? false : true))
 				.collect(Collectors.toList());
+		return new RegistrationTableObject(pageNumber, pageCount, registrations);
 	}
 
 	@Transactional
@@ -139,6 +160,7 @@ public class AdmissionService {
 	public void lockAdmission() {
 		var admission = admissionDao.findAll().get(0);
 		admission.setActive(false);
+		admission.setLastUpdatedAt(new Date());
 		admissionDao.save(admission);
 	}
 	
@@ -146,7 +168,12 @@ public class AdmissionService {
 	public void unlockAdmission() {
 		var admission = admissionDao.findAll().get(0);
 		admission.setActive(true);
+		admission.setLastUpdatedAt(new Date());
 		admissionDao.save(admission);
+		var registrations = registrationDao.findRegistrationsWithoutAdmission();
+		registrations.forEach(reg -> {
+			queueService.addRegistrationToQueues(reg);
+		});
 	}
 
 	

@@ -63,31 +63,20 @@ public class QueueService {
 	@Transactional
 	public void addRegistrationToQueues(KindergartenRegistration kgReg) {
 		var admission = admissionDao.findAll().get(0);
-		Date today = new Date();
-		var timeDiff = today.getTime() - kgReg.getChild().getBirthdate().getTime();
-		var timeDiffDays = TimeUnit.MILLISECONDS.toDays(timeDiff);
-		var yearDiff = timeDiffDays / 365;
-		AgeGroup ageGroup = null;
-		if (yearDiff >= 2 && yearDiff < 3) {
-			ageGroup = AgeGroup.PRESCHOOL;
-		} else if (yearDiff >= 3 && yearDiff <= 6) {
-			ageGroup = AgeGroup.KINDERGARTEN;
-		}
-		var kindergarten = kindergartenDao.findByName(kgReg.getFirstPriority()).orElse(null);
-		if (kindergarten != null && ageGroup != null) {
-			var queue = queueDao.findQueueByKindergartenNameAndAgeGroup(kindergarten, ageGroup).orElse(null);
-			if (queue != null) {
-				var registrations = queue.getRegistrations();
-				registrations.add(kgReg);
-				queue.setRegistrations(registrations);
-				var queues = kgReg.getQueues();
-				queues.add(queue);
-				kgReg.setQueues(queues);
-				kindergartenDao.save(kindergarten);
+		if (admission.isActive()) {
+			Date today = new Date();
+			var timeDiff = today.getTime() - kgReg.getChild().getBirthdate().getTime();
+			var timeDiffDays = TimeUnit.MILLISECONDS.toDays(timeDiff);
+			var yearDiff = timeDiffDays / 365;
+			AgeGroup ageGroup = null;
+			if (yearDiff >= 2 && yearDiff < 3) {
+				ageGroup = AgeGroup.PRESCHOOL;
+			} else if (yearDiff >= 3 && yearDiff <= 6) {
+				ageGroup = AgeGroup.KINDERGARTEN;
 			}
-			kindergarten = kindergartenDao.findByName(kgReg.getSecondPriority()).orElse(null);
-			if (kindergarten != null) {
-				queue = queueDao.findQueueByKindergartenNameAndAgeGroup(kindergarten, ageGroup).orElse(null);
+			var kindergarten = kindergartenDao.findByName(kgReg.getFirstPriority()).orElse(null);
+			if (kindergarten != null && ageGroup != null) {
+				var queue = queueDao.findQueueByKindergartenNameAndAgeGroup(kindergarten, ageGroup).orElse(null);
 				if (queue != null) {
 					var registrations = queue.getRegistrations();
 					registrations.add(kgReg);
@@ -97,52 +86,67 @@ public class QueueService {
 					kgReg.setQueues(queues);
 					kindergartenDao.save(kindergarten);
 				}
-			}
-			kindergarten = kindergartenDao.findByName(kgReg.getThirdPriority()).orElse(null);
-			if (kindergarten != null) {
-				queue = queueDao.findQueueByKindergartenNameAndAgeGroup(kindergarten, ageGroup).orElse(null);
-				if (queue != null) {
-					var registrations = queue.getRegistrations();
-					registrations.add(kgReg);
-					queue.setRegistrations(registrations);
-					var queues = kgReg.getQueues();
-					queues.add(queue);
-					kgReg.setQueues(queues);
-					kindergartenDao.save(kindergarten);
+				kindergarten = kindergartenDao.findByName(kgReg.getSecondPriority()).orElse(null);
+				if (kindergarten != null) {
+					queue = queueDao.findQueueByKindergartenNameAndAgeGroup(kindergarten, ageGroup).orElse(null);
+					if (queue != null) {
+						var registrations = queue.getRegistrations();
+						registrations.add(kgReg);
+						queue.setRegistrations(registrations);
+						var queues = kgReg.getQueues();
+						queues.add(queue);
+						kgReg.setQueues(queues);
+						kindergartenDao.save(kindergarten);
+					}
 				}
-			}
-			kindergarten = kindergartenDao.findByName(kgReg.getFourthPriority()).orElse(null);
-			if (kindergarten != null) {
-				queue = queueDao.findQueueByKindergartenNameAndAgeGroup(kindergarten, ageGroup).orElse(null);
-				if (queue != null) {
-					var registrations = queue.getRegistrations();
-					registrations.add(kgReg);
-					queue.setRegistrations(registrations);
-					var queues = kgReg.getQueues();
-					queues.add(queue);
-					kgReg.setQueues(queues);
-					kindergartenDao.save(kindergarten);
+				kindergarten = kindergartenDao.findByName(kgReg.getThirdPriority()).orElse(null);
+				if (kindergarten != null) {
+					queue = queueDao.findQueueByKindergartenNameAndAgeGroup(kindergarten, ageGroup).orElse(null);
+					if (queue != null) {
+						var registrations = queue.getRegistrations();
+						registrations.add(kgReg);
+						queue.setRegistrations(registrations);
+						var queues = kgReg.getQueues();
+						queues.add(queue);
+						kgReg.setQueues(queues);
+						kindergartenDao.save(kindergarten);
+					}
 				}
-			}
-			kindergarten = kindergartenDao.findByName(kgReg.getFifthPriority()).orElse(null);
-			if (kindergarten != null) {
-				queue = queueDao.findQueueByKindergartenNameAndAgeGroup(kindergarten, ageGroup).orElse(null);
-				if (queue != null) {
-					var registrations = queue.getRegistrations();
-					registrations.add(kgReg);
-					queue.setRegistrations(registrations);
-					var queues = kgReg.getQueues();
-					queues.add(queue);
-					kgReg.setQueues(queues);
-					kindergartenDao.save(kindergarten);
+				kindergarten = kindergartenDao.findByName(kgReg.getFourthPriority()).orElse(null);
+				if (kindergarten != null) {
+					queue = queueDao.findQueueByKindergartenNameAndAgeGroup(kindergarten, ageGroup).orElse(null);
+					if (queue != null) {
+						var registrations = queue.getRegistrations();
+						registrations.add(kgReg);
+						queue.setRegistrations(registrations);
+						var queues = kgReg.getQueues();
+						queues.add(queue);
+						kgReg.setQueues(queues);
+						kindergartenDao.save(kindergarten);
+					}
 				}
+				kindergarten = kindergartenDao.findByName(kgReg.getFifthPriority()).orElse(null);
+				if (kindergarten != null) {
+					queue = queueDao.findQueueByKindergartenNameAndAgeGroup(kindergarten, ageGroup).orElse(null);
+					if (queue != null) {
+						var registrations = queue.getRegistrations();
+						registrations.add(kgReg);
+						queue.setRegistrations(registrations);
+						var queues = kgReg.getQueues();
+						queues.add(queue);
+						kgReg.setQueues(queues);
+						kindergartenDao.save(kindergarten);
+					}
+				}
+				var adRegistrations = admission.getRegistrations();
+				adRegistrations.add(kgReg);
+				admission.setRegistrations(adRegistrations);
+				kgReg.setAdmission(admission);
+				registrationDao.save(kgReg);
+				admissionDao.save(admission);
 			}
-			var adRegistrations = admission.getRegistrations();
-			adRegistrations.add(kgReg);
-			admission.setRegistrations(adRegistrations);
-			kgReg.setAdmission(admission);
+		} else {
 			registrationDao.save(kgReg);
-			admissionDao.save(admission);
 		}
 	}
 	

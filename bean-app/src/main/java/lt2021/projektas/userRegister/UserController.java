@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -174,6 +175,11 @@ public class UserController {
 			return userService.changePassword(user, passwordChange.getOldPassword(), passwordChange.getNewPassword());
 		}
 		return new ResponseEntity<String>("Vartotojas nerastas. Prisijunkite iš naujo", HttpStatus.BAD_REQUEST);
+	}
+	
+	@RequestMapping(path = "/pdf", method = RequestMethod.POST)
+	public ResponseEntity<String> uploadHealthRecord(@RequestParam("data") MultipartFile file, @RequestParam("id") long id) {
+		return childService.uploadHealthRecord(file, id);
 	}
 
 }

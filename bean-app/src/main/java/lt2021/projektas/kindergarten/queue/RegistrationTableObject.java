@@ -1,87 +1,48 @@
 package lt2021.projektas.kindergarten.queue;
 
+import java.util.List;
+
 public class RegistrationTableObject {
-
-	private long childId;
-	private String firstname;
-	private String lastname;
-	private String kindergartenName;
-	private long personalCode;
-	private int rating;
-	private boolean accepted;
-
+	
+	private int pageNumber;
+	private double pageCount;
+	private List<RegistrationTableItem> registrations;
+	
 	public RegistrationTableObject() {
+		// TODO Auto-generated constructor stub
 	}
 
-	public RegistrationTableObject(long childId, String firstname, String lastname,
-			String kindergartenName, long personalCode, int rating, boolean accepted) {
+	public RegistrationTableObject(int pageNumber, double pageCount, List<RegistrationTableItem> registrations) {
 		super();
-		this.childId = childId;
-		this.firstname = firstname;
-		this.lastname = lastname;
-		this.kindergartenName = kindergartenName;
-		this.personalCode = personalCode;
-		this.rating = rating;
-		this.accepted = accepted;
+		this.pageNumber = pageNumber;
+		this.pageCount = pageCount;
+		this.registrations = registrations;
 	}
 
-
-	public String getFirstname() {
-		return firstname;
+	public int getPageNumber() {
+		return pageNumber;
 	}
 
-	public void setFirstname(String firstname) {
-		this.firstname = firstname;
+	public void setPageNumber(int pageNumber) {
+		this.pageNumber = pageNumber;
 	}
 
-	public String getLastname() {
-		return lastname;
+	public double getPageCount() {
+		return pageCount;
 	}
 
-	public void setLastname(String lastname) {
-		this.lastname = lastname;
+	public void setPageCount(double pageCount) {
+		this.pageCount = pageCount;
 	}
 
-	public int getRating() {
-		return rating;
+	public List<RegistrationTableItem> getRegistrations() {
+		return registrations;
 	}
 
-	public void setRating(int rating) {
-		this.rating = rating;
+	public void setRegistrations(List<RegistrationTableItem> registrations) {
+		this.registrations = registrations;
 	}
-
-	public boolean isAccepted() {
-		return accepted;
-	}
-
-	public void setAccepted(boolean accepted) {
-		this.accepted = accepted;
-	}
-
-	public long getChildId() {
-		return childId;
-	}
-
-	public void setChildId(long childId) {
-		this.childId = childId;
-	}
-
-	public String getKindergartenName() {
-		return kindergartenName;
-	}
-
-	public void setKindergartenName(String kindergartenName) {
-		this.kindergartenName = kindergartenName;
-	}
-
-	public long getPersonalCode() {
-		return personalCode;
-	}
-
-	public void setPersonalCode(long personalCode) {
-		this.personalCode = personalCode;
-	}
-
+	
 	
 
 }

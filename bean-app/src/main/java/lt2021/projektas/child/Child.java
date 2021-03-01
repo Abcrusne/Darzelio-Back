@@ -62,6 +62,10 @@ public class Child {
 	
 	@OneToOne(mappedBy = "child")
 	private KindergartenRegistration registrationForm;
+	
+	@OneToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "file_id")
+	private DBFile healthRecord;
 
 	public Child() {
 	}
@@ -148,6 +152,14 @@ public class Child {
 
 	public void setRegistrationForm(KindergartenRegistration registrationForm) {
 		this.registrationForm = registrationForm;
+	}
+
+	public DBFile getHealthRecord() {
+		return healthRecord;
+	}
+
+	public void setHealthRecord(DBFile healthRecord) {
+		this.healthRecord = healthRecord;
 	}
 
 	
