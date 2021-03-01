@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lt2021.projektas.kindergarten.admission.AdmissionService;
+import lt2021.projektas.kindergarten.admission.ChildAndParentDetailsObject;
 import lt2021.projektas.kindergarten.queue.QueueService;
 import lt2021.projektas.kindergarten.queue.QueueTableObject;
 import lt2021.projektas.kindergarten.queue.RegistrationTableObject;
@@ -100,6 +101,11 @@ public class KindergartenController {
 	@RequestMapping(path = "/admission/registrations", method = RequestMethod.GET, params = {"page", "sortby"})
 	public RegistrationTableObject getAdmissionRegistrations(@RequestParam int page, @RequestParam String sortby) {
 		return admissionService.getSortedAdmissionRegistrations(page, sortby);
+	}
+	
+	@RequestMapping(path = "/admission/registrations/{childId}", method = RequestMethod.GET)
+	public ChildAndParentDetailsObject getChildAndParentDetails(@PathVariable final long childId) {
+		return admissionService.getChildDetailsFromRegistrationList(childId);
 	}
 	
 	@RequestMapping(path = "/admission/registrations/{childId}/delete", method = RequestMethod.DELETE)

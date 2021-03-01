@@ -194,14 +194,26 @@ public class AdmissionService {
 		}
 	}
 	
-	public void getChildDetailsFromRegistrationList(long childId) {
+	public ChildAndParentDetailsObject getChildDetailsFromRegistrationList(long childId) {
 		var child = childDao.findById(childId).orElse(null);
 		if (child != null) {
 			var mainParent = child.getParents().stream().filter(parent -> parent.getParent() != null).findFirst().orElse(null);
 			if (mainParent != null) {
-				
+				var secondParent = child.getParents().stream().filter(parent -> parent.getParent() == null).findFirst().orElse(null);
+				if (secondParent != null) {
+					return new ChildAndParentDetailsObject(childId, mainParent.getFirstname(), mainParent.getLastname(), mainParent.getEmail(), mainParent.getPhone(),
+							mainParent.getLivingAddress().toString(), mainParent.getNumberOfKids(), mainParent.isStudying(), mainParent.getStudyingInstitution(), mainParent.isHasDisability(),
+							child.getFirstname(), child.getLastname(), child.getLivingAddress().toString(), child.isAdopted(), true, secondParent.getFirstname(), secondParent.getLastname(),
+							secondParent.getNumberOfKids(), secondParent.isStudying(), secondParent.getStudyingInstitution(), secondParent.isHasDisability());
+				} else {
+					return new ChildAndParentDetailsObject(childId, mainParent.getFirstname(), mainParent.getLastname(), mainParent.getEmail(), mainParent.getPhone(),
+							mainParent.getLivingAddress().toString(), mainParent.getNumberOfKids(), mainParent.isStudying(), mainParent.getStudyingInstitution(), mainParent.isHasDisability(),
+							child.getFirstname(), child.getLastname(), child.getLivingAddress().toString(), child.isAdopted(), false, "", "",
+							0, false, "", false);
+				}
 			}
 		}
+		return null;
 	}
 	
 	@Transactional
@@ -218,10 +230,6 @@ public class AdmissionService {
 		admission.setActive(true);
 		admission.setLastUpdatedAt(new Date());
 		admissionDao.save(admission);
-		var registrations = registrationDao.findRegistrationsWithoutAdmission();
-		registrations.forEach(reg -> {
-			queueService.addRegistrationToQueues(reg);
-		});
 	}
 
 	

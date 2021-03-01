@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.authority.AuthorityUtils;
@@ -85,6 +84,7 @@ public class UserService implements UserDetailsService {
 	
 	@Transactional
 	public ResponseEntity<String> changePassword(User user, String oldPassword, String newPassword) {
+		@SuppressWarnings("deprecation")
 		PasswordEncoder encoder = new MessageDigestPasswordEncoder("SHA-256");
 		if (oldPassword.equals(newPassword)) {
 			return new ResponseEntity<String>("Senas ir naujas slaptažodis negali sutapti", HttpStatus.BAD_REQUEST);
