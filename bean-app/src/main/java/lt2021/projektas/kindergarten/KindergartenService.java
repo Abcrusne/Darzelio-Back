@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import lt2021.projektas.kindergarten.admission.AdmissionDao;
 import lt2021.projektas.kindergarten.queue.QueueService;
 import lt2021.projektas.kindergarten.registration.KindergartenRegistrationDao;
 
@@ -21,6 +22,9 @@ public class KindergartenService {
 	
 	@Autowired
 	private QueueService queueService;
+	
+	@Autowired
+	private AdmissionDao admissionDao;
 	
 	@Transactional
 	public void addKindergarten(CreateKindergartenCommand kindergarten) {
@@ -48,37 +52,49 @@ public class KindergartenService {
 	
 	@Transactional
 	public List<CreateKindergartenCommand> deleteKindergarten(long kgId) {
-		kgDao.deleteById(kgId);
+		var admission = admissionDao.findAll().get(0);
+		var kindergarten = kgDao.findById(kgId).orElse(null);
+		if (kindergarten != null) {
+			var adQueues = admission.getQueues();
+			kindergarten.getQueues().forEach(queue -> {
+				adQueues.remove(queue);
+				queue.setAdmissionProcess(null);
+			});
+			admission.setQueues(adQueues);
+		}
+		kgDao.delete(kindergarten);
 		return getAllKindergartens();
 	}
 	
 	@Transactional
 	public void updateKindergarten(CreateKindergartenCommand kindergarten, long kgId) {
 		Kindergarten kg = kgDao.findById(kgId).orElse(null);
-		var registrations = registrationDao.findRegistrationsWithSpecifiedKindergarten(kg.getName());
-		registrations.forEach(reg -> {
-			if (reg.getFirstPriority().equals(kg.getName())) {
-				reg.setFirstPriority(kindergarten.getName().toUpperCase());
-			}
-			if (reg.getSecondPriority().equals(kg.getName())) {
-				reg.setSecondPriority(kindergarten.getName().toUpperCase());
-			}
-			if (reg.getThirdPriority().equals(kg.getName())) {
-				reg.setThirdPriority(kindergarten.getName().toUpperCase());
-			}
-			if (reg.getFourthPriority().equals(kg.getName())) {
-				reg.setFourthPriority(kindergarten.getName().toUpperCase());
-			}
-			if (reg.getFifthPriority().equals(kg.getName())) {
-				reg.setFifthPriority(kindergarten.getName().toUpperCase());
-			}
-			registrationDao.save(reg);
-		});
+		if (!(kg.getName().equals(kindergarten.getName()))) {
+			var registrations = registrationDao.findRegistrationsWithSpecifiedKindergarten(kg.getName());
+			registrations.forEach(reg -> {
+				if (reg.getFirstPriority().equals(kg.getName())) {
+					reg.setFirstPriority(kindergarten.getName().toUpperCase());
+				}
+				if (reg.getSecondPriority().equals(kg.getName())) {
+					reg.setSecondPriority(kindergarten.getName().toUpperCase());
+				}
+				if (reg.getThirdPriority().equals(kg.getName())) {
+					reg.setThirdPriority(kindergarten.getName().toUpperCase());
+				}
+				if (reg.getFourthPriority().equals(kg.getName())) {
+					reg.setFourthPriority(kindergarten.getName().toUpperCase());
+				}
+				if (reg.getFifthPriority().equals(kg.getName())) {
+					reg.setFifthPriority(kindergarten.getName().toUpperCase());
+				}
+				registrationDao.save(reg);
+			});
+		}
 		kg.setName(kindergarten.getName().toUpperCase());
 		kg.setAddress(kindergarten.getAddress());
 		kg.setSpotsInFirstAgeGroup(kindergarten.getSpotsInFirstAgeGroup());
 		kg.setSpotsInSecondAgeGroup(kindergarten.getSpotsInSecondAgeGroup());
-		kgDao.save(kg);
+		queueService.createNewQueuesForKindergarten(kg);
 	}
 	
 }
