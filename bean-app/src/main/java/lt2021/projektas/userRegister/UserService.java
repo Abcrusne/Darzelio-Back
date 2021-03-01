@@ -58,6 +58,7 @@ public class UserService implements UserDetailsService {
 		updatedUser.setLastname(user.getLastname());
 		updatedUser.setEmail(user.getEmail().toLowerCase());
 		updatedUser.setRole(user.getRole());
+		updatedUser.setMarkedForDeletion(user.isMarkedForDeletion());
 		userDao.save(updatedUser);
 	}
 
