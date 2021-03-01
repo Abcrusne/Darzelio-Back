@@ -78,64 +78,17 @@ public class KindergartenController {
 		return kgRegService.getAllRegistrations();
 	}
 	
-	@RequestMapping(path = "/register/{registrationId}/update", method = RequestMethod.PUT)
+	@RequestMapping(path = "/register/{childId}", method = RequestMethod.GET)
+	public CreateRegistrationCommand getChildRegistration(@PathVariable("childId") final long childId) {
+		return kgRegService.getChildRegistration(childId);
+	}
+	
+	@RequestMapping(path = "/register/{childId}/update", method = RequestMethod.PUT)
 	public void updateRegistration(@RequestBody final CreateRegistrationCommand reg) {
 		kgRegService.updateRegistration(reg);
 	}
 	
-	/*
-	 * Admission CRUD
-	 */
-	
-	
-	@RequestMapping(path = "/admission/registrations", method = RequestMethod.GET)
-	public RegistrationTableObject getAdmissionRegistrations() {
-		return admissionService.getSortedAdmissionRegistrations(-1, "");
-	}
-	
-	@RequestMapping(path = "/admission/registrations", method = RequestMethod.GET, params = "page")
-	public RegistrationTableObject getAdmissionRegistrations(@RequestParam int page) {
-		return admissionService.getSortedAdmissionRegistrations(page, "");
-	}
-	
-	@RequestMapping(path = "/admission/registrations", method = RequestMethod.GET, params = {"page", "sortby"})
-	public RegistrationTableObject getAdmissionRegistrations(@RequestParam int page, @RequestParam String sortby) {
-		return admissionService.getSortedAdmissionRegistrations(page, sortby);
-	}
-	
-	@RequestMapping(path = "/admission/registrations/{childId}", method = RequestMethod.GET)
-	public ChildAndParentDetailsObject getChildAndParentDetails(@PathVariable final long childId) {
-		return admissionService.getChildDetailsFromRegistrationList(childId);
-	}
-	
-	@RequestMapping(path = "/admission/registrations/{childId}/delete", method = RequestMethod.DELETE)
-	public void deleteAdmissionRegistration(@PathVariable("childId") long childId) {
-		kgRegService.deleteRegistration(childId);
-	}
-	
-	@RequestMapping(path = "/admission/registrations/confirm", method = RequestMethod.POST)
-	public void confirmAdmissionRegistrations() {
-		admissionService.confirmRegistrations();
-	}
-	
-	@RequestMapping(path = "/admission/lock", method = RequestMethod.POST)
-	public void lockAdmission() {
-		admissionService.lockAdmission();
-	}
-	
-	@RequestMapping(path = "/admission/unlock", method = RequestMethod.POST)
-	public void unlockAdmission() {
-		admissionService.unlockAdmission();
-	}
-	
-	/*
-	 * Admission queue CRUD
-	 */
-	
-	@RequestMapping(path = "/admission/queues", method = RequestMethod.GET)
-	public List<QueueTableObject> getAdmissionQueues() {
-		return queueService.getAllAdmissionQueues();
-	}
+
 	
 	
 }

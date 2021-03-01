@@ -327,6 +327,9 @@ public class ChildService {
 				details.setChildren(childList);
 				userDao.save(parent);
 				kgRegService.deleteRegistration(childId);
+				if (childToDelete.getHealthRecord() != null) {
+					fileDao.delete(childToDelete.getHealthRecord());
+				}
 				childDao.delete(childToDelete);
 			}
 		}

@@ -6,6 +6,8 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +33,13 @@ public class AdmissionService {
 	
 	@Autowired 
 	private ChildDao childDao;
+	
+	private JavaMailSender emailSender;
+	
+	@Autowired
+	public AdmissionService(JavaMailSender emailSender) {
+		this.emailSender = emailSender;
+	}
 
 	@Transactional
 	public RegistrationTableObject getSortedAdmissionRegistrations(int pageNumber, String sortby) {
@@ -128,6 +137,17 @@ public class AdmissionService {
 			if (howManyAccepted < freeSpots) {
 				reg.setAcceptedKindergarten(firstPriorityQueue.getKindergarten().getName());
 				registrationDao.save(reg);
+				/*
+				var mainParent = reg.getChild().getParents().stream().filter(parent -> parent.getParent() != null).findFirst().orElse(null);
+				SimpleMailMessage message = new SimpleMailMessage();
+				message.setFrom("bean.vaidar.mailinformer@gmail.com");
+				message.setTo(mainParent.getEmail());
+				message.setSubject("Vaiko registracija į darželį");
+				message.setText("Sveiki, " + mainParent.getFirstname() + " " + mainParent.getLastname() + ", \n" + 
+				"Informuojame, jog jūsų vaikas: " + reg.getChild().getFirstname() + " " + reg.getChild().getLastname() + ", yra priimtas į darželį: " + reg.getAcceptedKindergarten() + 
+				".\n" + "Artimiausiu metu su jumis susisieks darželis dėl dokumentų pasirašymo.");
+				emailSender.send(message);
+				*/
 			} else {
 				var secondPriorityQueue = reg.getQueues().stream()
 						.filter(q -> q.getKindergarten().getName().equals(reg.getSecondPriority())).findFirst()

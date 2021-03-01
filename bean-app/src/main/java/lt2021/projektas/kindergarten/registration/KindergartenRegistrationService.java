@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lt2021.projektas.child.ChildDao;
 import lt2021.projektas.kindergarten.admission.AdmissionDao;
+import lt2021.projektas.kindergarten.queue.QueueDao;
 import lt2021.projektas.kindergarten.queue.QueueService;
 
 @Service
@@ -24,6 +25,9 @@ public class KindergartenRegistrationService {
 	
 	@Autowired
 	private QueueService queueService;
+	
+	@Autowired
+	private QueueDao queueDao;
 	
 	@Autowired
 	private AdmissionDao admissionDao;
@@ -116,6 +120,18 @@ public class KindergartenRegistrationService {
 	}
 	
 	@Transactional
+	public CreateRegistrationCommand getChildRegistration(long childId) {
+		var child = childDao.findById(childId).orElse(null);
+		if (child != null) {
+			var reg = kgRegDao.findByChild(child).orElse(null);
+			return new CreateRegistrationCommand(reg.getId(), reg.getChild().getId(), reg.getFirstPriority(), reg.getSecondPriority(),
+					reg.getThirdPriority(), reg.getFourthPriority(), reg.getFifthPriority(), reg.getRating());
+		} else {
+			return null;
+		}
+	}
+	
+	@Transactional
 	public List<CreateRegistrationCommand> getRegistrationsWithSpecifiedKindergarten(String kindergartenName) {
 		return kgRegDao.findRegistrationsWithSpecifiedKindergarten(kindergartenName).stream()
 					.map(kgReg -> new CreateRegistrationCommand(kgReg.getId(), kgReg.getChild().getId(), kgReg.getFirstPriority(), kgReg.getSecondPriority(),
@@ -129,16 +145,18 @@ public class KindergartenRegistrationService {
 		var child = childDao.findById(childId).orElse(null);
 		var registration = child.getRegistrationForm();
 		if (registration != null) {
-			child.setRegistrationForm(null);
+			
 			registration.getQueues().forEach(queue -> {
 				var regs = queue.getRegistrations();
 				regs.remove(registration);
 				queue.setRegistrations(regs);
+				queueDao.save(queue);
 			});
 			var adRegs = admission.getRegistrations();
 			adRegs.remove(registration);
 			admission.setRegistrations(adRegs);
 			admissionDao.save(admission);
+			child.setRegistrationForm(null);
 			kgRegDao.delete(registration);
 		}
 	}

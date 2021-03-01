@@ -1,6 +1,7 @@
 package lt2021.projektas.kindergarten.registration;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,7 +12,7 @@ import lt2021.projektas.child.Child;
 
 public interface KindergartenRegistrationDao extends JpaRepository<KindergartenRegistration, Long> {
 	
-	List<KindergartenRegistration> findByChild(Child child);
+	Optional<KindergartenRegistration> findByChild(Child child);
 	
 	@Query("select count(kgreg) from KindergartenRegistration kgreg where kgreg.admission is not null")
 	long registrationWithAdmissionCount();

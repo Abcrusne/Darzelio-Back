@@ -31,8 +31,7 @@ public class KindergartenQueue {
 	@ManyToOne
 	private Kindergarten kindergarten;
 	
-	@ManyToMany(cascade = CascadeType.ALL)
-	@JoinTable(name = "Queue_registrations", joinColumns = @JoinColumn(name = "queue_id"), inverseJoinColumns = @JoinColumn(name = "registration_id"))
+	@ManyToMany(mappedBy = "queues", cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.DETACH})
 	private Set<KindergartenRegistration> registrations;
 	
 	@ManyToOne
