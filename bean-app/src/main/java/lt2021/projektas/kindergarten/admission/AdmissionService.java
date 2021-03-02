@@ -1,12 +1,12 @@
 package lt2021.projektas.kindergarten.admission;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,13 +42,23 @@ public class AdmissionService {
 	}
 
 	@Transactional
-	public RegistrationTableObject getSortedAdmissionRegistrations(int pageNumber, String sortby) {
+	public RegistrationTableObject getSortedAdmissionRegistrations(int pageNumber, String sortby, String lastname) {
 		if (pageNumber == -1) {
 			pageNumber = 1;
 		}
-		var totalRegs = registrationDao.registrationWithAdmissionCount();
-		double pageCount = Math.ceil((double)totalRegs / 15.0);
-		var admissionRegistrations = registrationDao.findRegistrationsWithAdmission(PageRequest.of(pageNumber - 1, 15));
+		List<KindergartenRegistration> admissionRegistrations = new ArrayList<>();
+		double pageCount = 1;
+		if (lastname.length() == 0) {
+			admissionRegistrations = registrationDao.findRegistrationsWithAdmission(PageRequest.of(pageNumber - 1, 15));
+			var totalRegs = registrationDao.registrationWithAdmissionCount();
+			pageCount = Math.ceil((double)totalRegs / 15.0);
+		} else {
+			admissionRegistrations = registrationDao.findRegistrationByChildLastname(lastname);
+			var totalRegs = admissionRegistrations.size();
+			pageCount = Math.ceil((double)totalRegs / 15.0);
+		}
+		
+		
 		if (sortby.equals("lastname")) {
 			admissionRegistrations.sort((r1, r2) -> {
 				if (r1.getChild().getLastname().compareTo(r2.getChild().getLastname()) == 0) {
@@ -237,7 +247,7 @@ public class AdmissionService {
 	}
 	
 	@Transactional
-	public void lockAdmission() {
+	public void activateAdmission() {
 		var admission = admissionDao.findAll().get(0);
 		admission.setActive(false);
 		admission.setLastUpdatedAt(new Date());
@@ -245,11 +255,33 @@ public class AdmissionService {
 	}
 	
 	@Transactional
-	public void unlockAdmission() {
+	public void deactivateAdmission() {
 		var admission = admissionDao.findAll().get(0);
 		admission.setActive(true);
 		admission.setLastUpdatedAt(new Date());
 		admissionDao.save(admission);
+	}
+	
+	@Transactional
+	public void lockAdmission() {
+		var admission = admissionDao.findAll().get(0);
+		admission.setAdminLock(true);
+		admission.setLastUpdatedAt(new Date());
+		admissionDao.save(admission);
+	}
+	
+	@Transactional
+	public void unlockAdmission() {
+		var admission = admissionDao.findAll().get(0);
+		admission.setAdminLock(false);
+		admission.setLastUpdatedAt(new Date());
+		admissionDao.save(admission);
+	}
+	
+	@Transactional
+	public boolean areAdmissionsLocked() {
+		var admission = admissionDao.findAll().get(0);
+		return admission.isAdminLock();
 	}
 
 	

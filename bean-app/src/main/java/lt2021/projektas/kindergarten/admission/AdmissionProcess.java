@@ -44,10 +44,13 @@ public class AdmissionProcess {
 	
 	private boolean active;
 	
+	private boolean adminLock;
+	
 	public AdmissionProcess() {
 		super();
 		this.lastUpdatedAt = new Date();
 		this.active = true;
+		this.adminLock = false;
 		this.queues = new HashSet<>();
 		this.registrations = new HashSet<>();
 	}
@@ -90,6 +93,14 @@ public class AdmissionProcess {
 
 	public void setLastUpdatedAt(Date lastUpdatedAt) {
 		this.lastUpdatedAt = lastUpdatedAt;
+	}
+
+	public boolean isAdminLock() {
+		return adminLock;
+	}
+
+	public void setAdminLock(boolean adminLock) {
+		this.adminLock = adminLock;
 	}
 
 	

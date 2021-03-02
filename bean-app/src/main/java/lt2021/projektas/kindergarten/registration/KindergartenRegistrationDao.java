@@ -14,6 +14,9 @@ public interface KindergartenRegistrationDao extends JpaRepository<KindergartenR
 	
 	Optional<KindergartenRegistration> findByChild(Child child);
 	
+	@Query("select kgreg from KindergartenRegistration kgreg where lower(kgreg.child.lastname) like :lastname%")
+	List<KindergartenRegistration> findRegistrationByChildLastname(@Param("lastname") String lastname);
+	
 	@Query("select count(kgreg) from KindergartenRegistration kgreg where kgreg.admission is not null")
 	long registrationWithAdmissionCount();
 	

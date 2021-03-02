@@ -3,6 +3,8 @@ package lt2021.projektas.kindergarten.admission;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -29,17 +31,22 @@ public class AdmissionController {
 	
 	@RequestMapping(path = "/registrations", method = RequestMethod.GET)
 	public RegistrationTableObject getAdmissionRegistrations() {
-		return admissionService.getSortedAdmissionRegistrations(-1, "");
+		return admissionService.getSortedAdmissionRegistrations(-1, "", "");
 	}
 	
 	@RequestMapping(path = "/registrations", method = RequestMethod.GET, params = "page")
 	public RegistrationTableObject getAdmissionRegistrations(@RequestParam int page) {
-		return admissionService.getSortedAdmissionRegistrations(page, "");
+		return admissionService.getSortedAdmissionRegistrations(page, "", "");
 	}
 	
 	@RequestMapping(path = "/registrations", method = RequestMethod.GET, params = {"page", "sortby"})
 	public RegistrationTableObject getAdmissionRegistrations(@RequestParam int page, @RequestParam String sortby) {
-		return admissionService.getSortedAdmissionRegistrations(page, sortby);
+		return admissionService.getSortedAdmissionRegistrations(page, sortby, "");
+	}
+	
+	@RequestMapping(path = "/registrations", method = RequestMethod.GET, params = {"page", "sortby", "lastname"})
+	public RegistrationTableObject getAdmissionRegistrations(@RequestParam int page, @RequestParam String sortby, @RequestParam String lastname) {
+		return admissionService.getSortedAdmissionRegistrations(page, sortby, lastname.toLowerCase());
 	}
 	
 	@RequestMapping(path = "/registrations/{childId}", method = RequestMethod.GET)
@@ -48,13 +55,28 @@ public class AdmissionController {
 	}
 	
 	@RequestMapping(path = "/registrations/{childId}/delete", method = RequestMethod.DELETE)
-	public void deleteAdmissionRegistration(@PathVariable("childId") long childId) {
-		kgRegService.deleteRegistration(childId);
+	public ResponseEntity<String> deleteAdmissionRegistration(@PathVariable("childId") long childId) {
+		if (!admissionService.areAdmissionsLocked()) {
+			kgRegService.deleteRegistration(childId);
+			return new ResponseEntity<String>("Vartotojas ištrintas", HttpStatus.OK);
+		} else {
+			return new ResponseEntity<String>("Sąrašų redagavimas užrakintas sistemos administratoriaus", HttpStatus.BAD_REQUEST);
+		}
 	}
 	
 	@RequestMapping(path = "/registrations/confirm", method = RequestMethod.POST)
 	public void confirmAdmissionRegistrations() {
 		admissionService.confirmRegistrations();
+	}
+	
+	@RequestMapping(path = "/activate", method = RequestMethod.POST)
+	public void activateAdmission() {
+		admissionService.activateAdmission();
+	}
+	
+	@RequestMapping(path = "/deactivate", method = RequestMethod.POST)
+	public void deactivateAdmission() {
+		admissionService.deactivateAdmission();
 	}
 	
 	@RequestMapping(path = "/lock", method = RequestMethod.POST)
