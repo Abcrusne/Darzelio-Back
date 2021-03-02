@@ -56,7 +56,8 @@ public class AdmissionService {
 			totalRegs = registrationDao.registrationWithAdmissionCount();
 			pageCount = (int) Math.ceil((double) totalRegs / 15.0);
 		} else {
-			admissionRegistrations = registrationDao.findRegistrationByChildLastname(lastname, PageRequest.of(pageNumber - 1, 15));
+			admissionRegistrations = registrationDao.findRegistrationByChildLastname(lastname,
+					PageRequest.of(pageNumber - 1, 15));
 			totalRegs = admissionRegistrations.size();
 			pageCount = (int) Math.ceil((double) totalRegs / 15.0);
 		}
@@ -76,6 +77,16 @@ public class AdmissionService {
 		} else if (sortby.equals("accepted")) {
 			admissionRegistrations.sort((r1, r2) -> {
 				if (r1.getAcceptedKindergarten() != null && r2.getAcceptedKindergarten() != null) {
+					if (r1.getRating() == r2.getRating()) {
+						if (r1.getChild().getBirthdate().compareTo(r2.getChild().getBirthdate()) == 0) {
+							return r1.getChild().getLastname().compareTo(r2.getChild().getLastname());
+						} else {
+							return r1.getChild().getBirthdate().compareTo(r2.getChild().getBirthdate());
+						}
+					} else {
+						return r2.getRating() - r1.getRating();
+					}
+				} else if (r1.getAcceptedKindergarten() == null && r2.getAcceptedKindergarten() == null) {
 					if (r1.getRating() == r2.getRating()) {
 						if (r1.getChild().getBirthdate().compareTo(r2.getChild().getBirthdate()) == 0) {
 							return r1.getChild().getLastname().compareTo(r2.getChild().getLastname());
@@ -275,7 +286,7 @@ public class AdmissionService {
 		admission.setLastUpdatedAt(new Date());
 		admissionDao.save(admission);
 	}
-	
+
 	@Transactional
 	public AdmissionStatusObject admissionStatus() {
 		var admission = admissionDao.findAll().get(0);
@@ -299,33 +310,23 @@ public class AdmissionService {
 			spotsInFirstAgeGroup += kg.getSpotsInFirstAgeGroup();
 			spotsInSecondAgeGroup += kg.getSpotsInSecondAgeGroup();
 		}
-		return new AdmissionStatusObject(firstAgeGroupCount, secondAgeGroupCount, spotsInFirstAgeGroup, spotsInSecondAgeGroup, admission.isActive());
+		return new AdmissionStatusObject(firstAgeGroupCount, secondAgeGroupCount, spotsInFirstAgeGroup,
+				spotsInSecondAgeGroup, admission.isActive());
 	}
-	
+
 	/*
-	
-	@Transactional
-	public void lockAdmission() {
-		var admission = admissionDao.findAll().get(0);
-		admission.setAdminLock(true);
-		admission.setLastUpdatedAt(new Date());
-		admissionDao.save(admission);
-	}
-
-	@Transactional
-	public void unlockAdmission() {
-		var admission = admissionDao.findAll().get(0);
-		admission.setAdminLock(false);
-		admission.setLastUpdatedAt(new Date());
-		admissionDao.save(admission);
-	}
-
-	@Transactional
-	public boolean areAdmissionsLocked() {
-		var admission = admissionDao.findAll().get(0);
-		return admission.isAdminLock();
-	}
-	
-	*/
+	 * 
+	 * @Transactional public void lockAdmission() { var admission =
+	 * admissionDao.findAll().get(0); admission.setAdminLock(true);
+	 * admission.setLastUpdatedAt(new Date()); admissionDao.save(admission); }
+	 * 
+	 * @Transactional public void unlockAdmission() { var admission =
+	 * admissionDao.findAll().get(0); admission.setAdminLock(false);
+	 * admission.setLastUpdatedAt(new Date()); admissionDao.save(admission); }
+	 * 
+	 * @Transactional public boolean areAdmissionsLocked() { var admission =
+	 * admissionDao.findAll().get(0); return admission.isAdminLock(); }
+	 * 
+	 */
 
 }
