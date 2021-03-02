@@ -3,6 +3,7 @@ package lt2021.projektas.kindergarten.admission;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,8 +13,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lt2021.projektas.child.ChildDao;
+import lt2021.projektas.kindergarten.Kindergarten;
+import lt2021.projektas.kindergarten.KindergartenDao;
 import lt2021.projektas.kindergarten.queue.AgeGroup;
-import lt2021.projektas.kindergarten.queue.QueueService;
 import lt2021.projektas.kindergarten.queue.RegistrationTableItem;
 import lt2021.projektas.kindergarten.queue.RegistrationTableObject;
 import lt2021.projektas.kindergarten.registration.KindergartenRegistration;
@@ -26,7 +28,7 @@ public class AdmissionService {
 	private AdmissionDao admissionDao;
 
 	@Autowired
-	private QueueService queueService;
+	private KindergartenDao kindergartenDao;
 
 	@Autowired
 	private KindergartenRegistrationDao registrationDao;
@@ -54,7 +56,7 @@ public class AdmissionService {
 			totalRegs = registrationDao.registrationWithAdmissionCount();
 			pageCount = (int) Math.ceil((double) totalRegs / 15.0);
 		} else {
-			admissionRegistrations = registrationDao.findRegistrationByChildLastname(lastname);
+			admissionRegistrations = registrationDao.findRegistrationByChildLastname(lastname, PageRequest.of(pageNumber - 1, 15));
 			totalRegs = admissionRegistrations.size();
 			pageCount = (int) Math.ceil((double) totalRegs / 15.0);
 		}
@@ -273,7 +275,35 @@ public class AdmissionService {
 		admission.setLastUpdatedAt(new Date());
 		admissionDao.save(admission);
 	}
-
+	
+	@Transactional
+	public AdmissionStatusObject admissionStatus() {
+		var admission = admissionDao.findAll().get(0);
+		var kindergartens = kindergartenDao.findAll();
+		int firstAgeGroupCount = 0;
+		int secondAgeGroupCount = 0;
+		int spotsInFirstAgeGroup = 0;
+		int spotsInSecondAgeGroup = 0;
+		Date today = new Date();
+		for (KindergartenRegistration reg : admission.getRegistrations()) {
+			var timeDiff = today.getTime() - reg.getChild().getBirthdate().getTime();
+			var timeDiffDays = TimeUnit.MILLISECONDS.toDays(timeDiff);
+			var yearDiff = timeDiffDays / 365;
+			if (yearDiff >= 2 && yearDiff < 3) {
+				firstAgeGroupCount++;
+			} else if (yearDiff >= 3 && yearDiff <= 6) {
+				secondAgeGroupCount++;
+			}
+		}
+		for (Kindergarten kg : kindergartens) {
+			spotsInFirstAgeGroup += kg.getSpotsInFirstAgeGroup();
+			spotsInSecondAgeGroup += kg.getSpotsInSecondAgeGroup();
+		}
+		return new AdmissionStatusObject(firstAgeGroupCount, secondAgeGroupCount, spotsInFirstAgeGroup, spotsInSecondAgeGroup, admission.isActive());
+	}
+	
+	/*
+	
 	@Transactional
 	public void lockAdmission() {
 		var admission = admissionDao.findAll().get(0);
@@ -295,5 +325,7 @@ public class AdmissionService {
 		var admission = admissionDao.findAll().get(0);
 		return admission.isAdminLock();
 	}
+	
+	*/
 
 }
