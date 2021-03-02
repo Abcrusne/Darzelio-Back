@@ -102,6 +102,8 @@ public class AdmissionProcess {
 	public void setAdminLock(boolean adminLock) {
 		this.adminLock = adminLock;
 	}
+	
+	
 
 	
 	

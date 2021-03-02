@@ -58,6 +58,16 @@ public class KindergartenService {
 			var adQueues = admission.getQueues();
 			kindergarten.getQueues().forEach(queue -> {
 				adQueues.remove(queue);
+				var regs = queue.getRegistrations();
+				regs.forEach(r -> {
+					var queues = r.getQueues();
+					queues.remove(queue);
+					r.setQueues(queues);
+					registrationDao.save(r);
+				});
+				regs.clear();
+				queue.setRegistrations(regs);
+				queue.setKindergarten(null);
 				queue.setAdmissionProcess(null);
 			});
 			admission.setQueues(adQueues);

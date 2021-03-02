@@ -19,76 +19,79 @@ import lt2021.projektas.kindergarten.registration.KindergartenRegistrationServic
 @RestController
 @RequestMapping(value = "/api/kindergartens/admission")
 public class AdmissionController {
-	
+
 	@Autowired
 	private AdmissionService admissionService;
-	
+
 	@Autowired
 	private KindergartenRegistrationService kgRegService;
-	
+
 	@Autowired
 	private QueueService queueService;
-	
+
 	@RequestMapping(path = "/registrations", method = RequestMethod.GET)
 	public RegistrationTableObject getAdmissionRegistrations() {
 		return admissionService.getSortedAdmissionRegistrations(-1, "", "");
 	}
-	
+
 	@RequestMapping(path = "/registrations", method = RequestMethod.GET, params = "page")
 	public RegistrationTableObject getAdmissionRegistrations(@RequestParam int page) {
 		return admissionService.getSortedAdmissionRegistrations(page, "", "");
 	}
-	
-	@RequestMapping(path = "/registrations", method = RequestMethod.GET, params = {"page", "sortby"})
+
+	@RequestMapping(path = "/registrations", method = RequestMethod.GET, params = { "page", "sortby" })
 	public RegistrationTableObject getAdmissionRegistrations(@RequestParam int page, @RequestParam String sortby) {
 		return admissionService.getSortedAdmissionRegistrations(page, sortby, "");
 	}
-	
-	@RequestMapping(path = "/registrations", method = RequestMethod.GET, params = {"page", "sortby", "lastname"})
-	public RegistrationTableObject getAdmissionRegistrations(@RequestParam int page, @RequestParam String sortby, @RequestParam String lastname) {
+
+	@RequestMapping(path = "/registrations", method = RequestMethod.GET, params = { "page", "sortby", "lastname" })
+	public RegistrationTableObject getAdmissionRegistrations(@RequestParam int page, @RequestParam String sortby,
+			@RequestParam String lastname) {
 		return admissionService.getSortedAdmissionRegistrations(page, sortby, lastname.toLowerCase());
 	}
-	
+
 	@RequestMapping(path = "/registrations/{childId}", method = RequestMethod.GET)
 	public ChildAndParentDetailsObject getChildAndParentDetails(@PathVariable final long childId) {
 		return admissionService.getChildDetailsFromRegistrationList(childId);
 	}
-	
+
 	@RequestMapping(path = "/registrations/{childId}/delete", method = RequestMethod.DELETE)
 	public ResponseEntity<String> deleteAdmissionRegistration(@PathVariable("childId") long childId) {
 		if (!admissionService.areAdmissionsLocked()) {
 			kgRegService.deleteRegistration(childId);
 			return new ResponseEntity<String>("Vartotojas ištrintas", HttpStatus.OK);
 		} else {
-			return new ResponseEntity<String>("Sąrašų redagavimas užrakintas sistemos administratoriaus", HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<String>("Sąrašų redagavimas užrakintas sistemos administratoriaus",
+					HttpStatus.BAD_REQUEST);
 		}
+
 	}
-	
+
 	@RequestMapping(path = "/registrations/confirm", method = RequestMethod.POST)
 	public void confirmAdmissionRegistrations() {
 		admissionService.confirmRegistrations();
 	}
-	
+
 	@RequestMapping(path = "/activate", method = RequestMethod.POST)
 	public void activateAdmission() {
 		admissionService.activateAdmission();
 	}
-	
+
 	@RequestMapping(path = "/deactivate", method = RequestMethod.POST)
 	public void deactivateAdmission() {
 		admissionService.deactivateAdmission();
 	}
-	
+
 	@RequestMapping(path = "/lock", method = RequestMethod.POST)
 	public void lockAdmission() {
 		admissionService.lockAdmission();
 	}
-	
+
 	@RequestMapping(path = "/unlock", method = RequestMethod.POST)
 	public void unlockAdmission() {
 		admissionService.unlockAdmission();
 	}
-	
+
 	@RequestMapping(path = "/queues", method = RequestMethod.GET)
 	public List<QueueTableObject> getAdmissionQueues() {
 		return queueService.getAllAdmissionQueues();

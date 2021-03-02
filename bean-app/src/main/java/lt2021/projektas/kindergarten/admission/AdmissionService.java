@@ -30,12 +30,12 @@ public class AdmissionService {
 
 	@Autowired
 	private KindergartenRegistrationDao registrationDao;
-	
-	@Autowired 
+
+	@Autowired
 	private ChildDao childDao;
-	
+
 	private JavaMailSender emailSender;
-	
+
 	@Autowired
 	public AdmissionService(JavaMailSender emailSender) {
 		this.emailSender = emailSender;
@@ -52,14 +52,13 @@ public class AdmissionService {
 		if (lastname.length() == 0) {
 			admissionRegistrations = registrationDao.findRegistrationsWithAdmission(PageRequest.of(pageNumber - 1, 15));
 			totalRegs = registrationDao.registrationWithAdmissionCount();
-			pageCount = (int) Math.ceil((double)totalRegs / 15.0);
+			pageCount = (int) Math.ceil((double) totalRegs / 15.0);
 		} else {
 			admissionRegistrations = registrationDao.findRegistrationByChildLastname(lastname);
 			totalRegs = admissionRegistrations.size();
-			pageCount = (int) Math.ceil((double)totalRegs / 15.0);
+			pageCount = (int) Math.ceil((double) totalRegs / 15.0);
 		}
-		
-		
+
 		if (sortby.equals("lastname")) {
 			admissionRegistrations.sort((r1, r2) -> {
 				if (r1.getChild().getLastname().compareTo(r2.getChild().getLastname()) == 0) {
@@ -140,79 +139,85 @@ public class AdmissionService {
 		for (KindergartenRegistration reg : sortedRegistrations) {
 			var firstPriorityQueue = reg.getQueues().stream()
 					.filter(q -> q.getKindergarten().getName().equals(reg.getFirstPriority())).findFirst().orElse(null);
-			var howManyAccepted = firstPriorityQueue.getRegistrations().stream().map(r -> r.getAcceptedKindergarten())
-					.filter(kg -> kg != null).count();
-			var freeSpots = firstPriorityQueue.getAgeGroup().equals(AgeGroup.PRESCHOOL)
-					? firstPriorityQueue.getKindergarten().getSpotsInFirstAgeGroup()
-					: firstPriorityQueue.getKindergarten().getSpotsInSecondAgeGroup();
-			if (howManyAccepted < freeSpots) {
-				reg.setAcceptedKindergarten(firstPriorityQueue.getKindergarten().getName());
-				registrationDao.save(reg);
-				/*
-				var mainParent = reg.getChild().getParents().stream().filter(parent -> parent.getParent() != null).findFirst().orElse(null);
-				SimpleMailMessage message = new SimpleMailMessage();
-				message.setFrom("bean.vaidar.mailinformer@gmail.com");
-				message.setTo(mainParent.getEmail());
-				message.setSubject("Vaiko registracija į darželį");
-				message.setText("Sveiki, " + mainParent.getFirstname() + " " + mainParent.getLastname() + ", \n" + 
-				"Informuojame, jog jūsų vaikas: " + reg.getChild().getFirstname() + " " + reg.getChild().getLastname() + ", yra priimtas į darželį: " + reg.getAcceptedKindergarten() + 
-				".\n" + "Artimiausiu metu su jumis susisieks darželis dėl dokumentų pasirašymo.");
-				emailSender.send(message);
-				*/
-			} else {
-				var secondPriorityQueue = reg.getQueues().stream()
-						.filter(q -> q.getKindergarten().getName().equals(reg.getSecondPriority())).findFirst()
-						.orElse(null);
-				if (secondPriorityQueue != null) {
-					howManyAccepted = secondPriorityQueue.getRegistrations().stream()
-							.map(r -> r.getAcceptedKindergarten()).filter(kg -> kg != null).count();
-					freeSpots = secondPriorityQueue.getAgeGroup().equals(AgeGroup.PRESCHOOL)
-							? secondPriorityQueue.getKindergarten().getSpotsInFirstAgeGroup()
-							: secondPriorityQueue.getKindergarten().getSpotsInSecondAgeGroup();
-					if (howManyAccepted < freeSpots) {
-						reg.setAcceptedKindergarten(secondPriorityQueue.getKindergarten().getName());
-						registrationDao.save(reg);
-					} else {
-						var thirdPriorityQueue = reg.getQueues().stream()
-								.filter(q -> q.getKindergarten().getName().equals(reg.getThirdPriority())).findFirst()
-								.orElse(null);
-						if (thirdPriorityQueue != null) {
-							howManyAccepted = thirdPriorityQueue.getRegistrations().stream()
-									.map(r -> r.getAcceptedKindergarten()).filter(kg -> kg != null).count();
-							freeSpots = thirdPriorityQueue.getAgeGroup().equals(AgeGroup.PRESCHOOL)
-									? thirdPriorityQueue.getKindergarten().getSpotsInFirstAgeGroup()
-									: thirdPriorityQueue.getKindergarten().getSpotsInSecondAgeGroup();
-							if (howManyAccepted < freeSpots) {
-								reg.setAcceptedKindergarten(thirdPriorityQueue.getKindergarten().getName());
-								registrationDao.save(reg);
-							} else {
-								var fourthPriorityQueue = reg.getQueues().stream()
-										.filter(q -> q.getKindergarten().getName().equals(reg.getFourthPriority()))
-										.findFirst().orElse(null);
-								if (fourthPriorityQueue != null) {
-									howManyAccepted = fourthPriorityQueue.getRegistrations().stream()
-											.map(r -> r.getAcceptedKindergarten()).filter(kg -> kg != null).count();
-									freeSpots = fourthPriorityQueue.getAgeGroup().equals(AgeGroup.PRESCHOOL)
-											? fourthPriorityQueue.getKindergarten().getSpotsInFirstAgeGroup()
-											: fourthPriorityQueue.getKindergarten().getSpotsInSecondAgeGroup();
-									if (howManyAccepted < freeSpots) {
-										reg.setAcceptedKindergarten(fourthPriorityQueue.getKindergarten().getName());
-										registrationDao.save(reg);
-									} else {
-										var fifthPriorityQueue = reg.getQueues().stream().filter(
-												q -> q.getKindergarten().getName().equals(reg.getFifthPriority()))
-												.findFirst().orElse(null);
-										freeSpots = fifthPriorityQueue.getAgeGroup().equals(AgeGroup.PRESCHOOL)
-												? fifthPriorityQueue.getKindergarten().getSpotsInFirstAgeGroup()
-												: fifthPriorityQueue.getKindergarten().getSpotsInSecondAgeGroup();
-										if (fifthPriorityQueue != null) {
-											howManyAccepted = fifthPriorityQueue.getRegistrations().stream()
-													.map(r -> r.getAcceptedKindergarten()).filter(kg -> kg != null)
-													.count();
-											if (howManyAccepted < freeSpots) {
-												reg.setAcceptedKindergarten(
-														fifthPriorityQueue.getKindergarten().getName());
-												registrationDao.save(reg);
+			if (firstPriorityQueue != null) {
+				var howManyAccepted = firstPriorityQueue.getRegistrations().stream()
+						.map(r -> r.getAcceptedKindergarten()).filter(kg -> kg != null).count();
+				var freeSpots = firstPriorityQueue.getAgeGroup().equals(AgeGroup.PRESCHOOL)
+						? firstPriorityQueue.getKindergarten().getSpotsInFirstAgeGroup()
+						: firstPriorityQueue.getKindergarten().getSpotsInSecondAgeGroup();
+				if (howManyAccepted < freeSpots) {
+					reg.setAcceptedKindergarten(firstPriorityQueue.getKindergarten().getName());
+					registrationDao.save(reg);
+					/*
+					 * var mainParent = reg.getChild().getParents().stream().filter(parent ->
+					 * parent.getParent() != null).findFirst().orElse(null); SimpleMailMessage
+					 * message = new SimpleMailMessage();
+					 * message.setFrom("bean.vaidar.mailinformer@gmail.com");
+					 * message.setTo(mainParent.getEmail());
+					 * message.setSubject("Vaiko registracija į darželį");
+					 * message.setText("Sveiki, " + mainParent.getFirstname() + " " +
+					 * mainParent.getLastname() + ", \n" + "Informuojame, jog jūsų vaikas: " +
+					 * reg.getChild().getFirstname() + " " + reg.getChild().getLastname() +
+					 * ", yra priimtas į darželį: " + reg.getAcceptedKindergarten() + ".\n" +
+					 * "Artimiausiu metu su jumis susisieks darželis dėl dokumentų pasirašymo.");
+					 * emailSender.send(message);
+					 */
+				} else {
+					var secondPriorityQueue = reg.getQueues().stream()
+							.filter(q -> q.getKindergarten().getName().equals(reg.getSecondPriority())).findFirst()
+							.orElse(null);
+					if (secondPriorityQueue != null) {
+						howManyAccepted = secondPriorityQueue.getRegistrations().stream()
+								.map(r -> r.getAcceptedKindergarten()).filter(kg -> kg != null).count();
+						freeSpots = secondPriorityQueue.getAgeGroup().equals(AgeGroup.PRESCHOOL)
+								? secondPriorityQueue.getKindergarten().getSpotsInFirstAgeGroup()
+								: secondPriorityQueue.getKindergarten().getSpotsInSecondAgeGroup();
+						if (howManyAccepted < freeSpots) {
+							reg.setAcceptedKindergarten(secondPriorityQueue.getKindergarten().getName());
+							registrationDao.save(reg);
+						} else {
+							var thirdPriorityQueue = reg.getQueues().stream()
+									.filter(q -> q.getKindergarten().getName().equals(reg.getThirdPriority()))
+									.findFirst().orElse(null);
+							if (thirdPriorityQueue != null) {
+								howManyAccepted = thirdPriorityQueue.getRegistrations().stream()
+										.map(r -> r.getAcceptedKindergarten()).filter(kg -> kg != null).count();
+								freeSpots = thirdPriorityQueue.getAgeGroup().equals(AgeGroup.PRESCHOOL)
+										? thirdPriorityQueue.getKindergarten().getSpotsInFirstAgeGroup()
+										: thirdPriorityQueue.getKindergarten().getSpotsInSecondAgeGroup();
+								if (howManyAccepted < freeSpots) {
+									reg.setAcceptedKindergarten(thirdPriorityQueue.getKindergarten().getName());
+									registrationDao.save(reg);
+								} else {
+									var fourthPriorityQueue = reg.getQueues().stream()
+											.filter(q -> q.getKindergarten().getName().equals(reg.getFourthPriority()))
+											.findFirst().orElse(null);
+									if (fourthPriorityQueue != null) {
+										howManyAccepted = fourthPriorityQueue.getRegistrations().stream()
+												.map(r -> r.getAcceptedKindergarten()).filter(kg -> kg != null).count();
+										freeSpots = fourthPriorityQueue.getAgeGroup().equals(AgeGroup.PRESCHOOL)
+												? fourthPriorityQueue.getKindergarten().getSpotsInFirstAgeGroup()
+												: fourthPriorityQueue.getKindergarten().getSpotsInSecondAgeGroup();
+										if (howManyAccepted < freeSpots) {
+											reg.setAcceptedKindergarten(
+													fourthPriorityQueue.getKindergarten().getName());
+											registrationDao.save(reg);
+										} else {
+											var fifthPriorityQueue = reg.getQueues().stream().filter(
+													q -> q.getKindergarten().getName().equals(reg.getFifthPriority()))
+													.findFirst().orElse(null);
+											freeSpots = fifthPriorityQueue.getAgeGroup().equals(AgeGroup.PRESCHOOL)
+													? fifthPriorityQueue.getKindergarten().getSpotsInFirstAgeGroup()
+													: fifthPriorityQueue.getKindergarten().getSpotsInSecondAgeGroup();
+											if (fifthPriorityQueue != null) {
+												howManyAccepted = fifthPriorityQueue.getRegistrations().stream()
+														.map(r -> r.getAcceptedKindergarten()).filter(kg -> kg != null)
+														.count();
+												if (howManyAccepted < freeSpots) {
+													reg.setAcceptedKindergarten(
+															fifthPriorityQueue.getKindergarten().getName());
+													registrationDao.save(reg);
+												}
 											}
 										}
 									}
@@ -224,29 +229,35 @@ public class AdmissionService {
 			}
 		}
 	}
-	
+
 	public ChildAndParentDetailsObject getChildDetailsFromRegistrationList(long childId) {
 		var child = childDao.findById(childId).orElse(null);
 		if (child != null) {
-			var mainParent = child.getParents().stream().filter(parent -> parent.getParent() != null).findFirst().orElse(null);
+			var mainParent = child.getParents().stream().filter(parent -> parent.getParent() != null).findFirst()
+					.orElse(null);
 			if (mainParent != null) {
-				var secondParent = child.getParents().stream().filter(parent -> parent.getParent() == null).findFirst().orElse(null);
+				var secondParent = child.getParents().stream().filter(parent -> parent.getParent() == null).findFirst()
+						.orElse(null);
 				if (secondParent != null) {
-					return new ChildAndParentDetailsObject(childId, mainParent.getFirstname(), mainParent.getLastname(), mainParent.getEmail(), mainParent.getPhone(),
-							mainParent.getLivingAddress().toString(), mainParent.getNumberOfKids(), mainParent.isStudying(), mainParent.getStudyingInstitution(), mainParent.isHasDisability(),
-							child.getFirstname(), child.getLastname(), child.getLivingAddress().toString(), child.isAdopted(), true, secondParent.getFirstname(), secondParent.getLastname(),
-							secondParent.getNumberOfKids(), secondParent.isStudying(), secondParent.getStudyingInstitution(), secondParent.isHasDisability());
+					return new ChildAndParentDetailsObject(childId, mainParent.getFirstname(), mainParent.getLastname(),
+							mainParent.getEmail(), mainParent.getPhone(), mainParent.getLivingAddress().toString(),
+							mainParent.getNumberOfKids(), mainParent.isStudying(), mainParent.getStudyingInstitution(),
+							mainParent.isHasDisability(), child.getFirstname(), child.getLastname(),
+							child.getLivingAddress().toString(), child.isAdopted(), true, secondParent.getFirstname(),
+							secondParent.getLastname(), secondParent.getNumberOfKids(), secondParent.isStudying(),
+							secondParent.getStudyingInstitution(), secondParent.isHasDisability());
 				} else {
-					return new ChildAndParentDetailsObject(childId, mainParent.getFirstname(), mainParent.getLastname(), mainParent.getEmail(), mainParent.getPhone(),
-							mainParent.getLivingAddress().toString(), mainParent.getNumberOfKids(), mainParent.isStudying(), mainParent.getStudyingInstitution(), mainParent.isHasDisability(),
-							child.getFirstname(), child.getLastname(), child.getLivingAddress().toString(), child.isAdopted(), false, "", "",
-							0, false, "", false);
+					return new ChildAndParentDetailsObject(childId, mainParent.getFirstname(), mainParent.getLastname(),
+							mainParent.getEmail(), mainParent.getPhone(), mainParent.getLivingAddress().toString(),
+							mainParent.getNumberOfKids(), mainParent.isStudying(), mainParent.getStudyingInstitution(),
+							mainParent.isHasDisability(), child.getFirstname(), child.getLastname(),
+							child.getLivingAddress().toString(), child.isAdopted(), false, "", "", 0, false, "", false);
 				}
 			}
 		}
 		return null;
 	}
-	
+
 	@Transactional
 	public void activateAdmission() {
 		var admission = admissionDao.findAll().get(0);
@@ -254,7 +265,7 @@ public class AdmissionService {
 		admission.setLastUpdatedAt(new Date());
 		admissionDao.save(admission);
 	}
-	
+
 	@Transactional
 	public void deactivateAdmission() {
 		var admission = admissionDao.findAll().get(0);
@@ -262,7 +273,7 @@ public class AdmissionService {
 		admission.setLastUpdatedAt(new Date());
 		admissionDao.save(admission);
 	}
-	
+
 	@Transactional
 	public void lockAdmission() {
 		var admission = admissionDao.findAll().get(0);
@@ -270,7 +281,7 @@ public class AdmissionService {
 		admission.setLastUpdatedAt(new Date());
 		admissionDao.save(admission);
 	}
-	
+
 	@Transactional
 	public void unlockAdmission() {
 		var admission = admissionDao.findAll().get(0);
@@ -278,12 +289,11 @@ public class AdmissionService {
 		admission.setLastUpdatedAt(new Date());
 		admissionDao.save(admission);
 	}
-	
+
 	@Transactional
 	public boolean areAdmissionsLocked() {
 		var admission = admissionDao.findAll().get(0);
 		return admission.isAdminLock();
 	}
 
-	
 }
