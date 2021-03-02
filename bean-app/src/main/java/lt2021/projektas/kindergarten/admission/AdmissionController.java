@@ -89,7 +89,7 @@ public class AdmissionController {
 		admissionService.unlockAdmission();
 	}
 	
-	@RequestMapping(path = "/admission/queues", method = RequestMethod.GET)
+	@RequestMapping(path = "/queues", method = RequestMethod.GET)
 	public List<QueueTableObject> getAdmissionQueues() {
 		return queueService.getAllAdmissionQueues();
 	}
