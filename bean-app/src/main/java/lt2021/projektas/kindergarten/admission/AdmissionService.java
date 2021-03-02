@@ -47,15 +47,16 @@ public class AdmissionService {
 			pageNumber = 1;
 		}
 		List<KindergartenRegistration> admissionRegistrations = new ArrayList<>();
-		double pageCount = 1;
+		int pageCount = 1;
+		var totalRegs = 0L;
 		if (lastname.length() == 0) {
 			admissionRegistrations = registrationDao.findRegistrationsWithAdmission(PageRequest.of(pageNumber - 1, 15));
-			var totalRegs = registrationDao.registrationWithAdmissionCount();
-			pageCount = Math.ceil((double)totalRegs / 15.0);
+			totalRegs = registrationDao.registrationWithAdmissionCount();
+			pageCount = (int) Math.ceil((double)totalRegs / 15.0);
 		} else {
 			admissionRegistrations = registrationDao.findRegistrationByChildLastname(lastname);
-			var totalRegs = admissionRegistrations.size();
-			pageCount = Math.ceil((double)totalRegs / 15.0);
+			totalRegs = admissionRegistrations.size();
+			pageCount = (int) Math.ceil((double)totalRegs / 15.0);
 		}
 		
 		
@@ -111,7 +112,7 @@ public class AdmissionService {
 						reg.getChild().getPersonalCode(), reg.getRating(),
 						reg.getAcceptedKindergarten() == null ? false : true))
 				.collect(Collectors.toList());
-		return new RegistrationTableObject(pageNumber, pageCount, registrations);
+		return new RegistrationTableObject(pageNumber, pageCount, totalRegs, registrations);
 	}
 
 	@Transactional

@@ -4,35 +4,45 @@ import java.util.List;
 
 public class RegistrationTableObject {
 	
-	private int pageNumber;
-	private double pageCount;
+	private int currentPage;
+	private int totalPages;
+	private long totalRegistrations;
 	private List<RegistrationTableItem> registrations;
 	
 	public RegistrationTableObject() {
 		// TODO Auto-generated constructor stub
 	}
 
-	public RegistrationTableObject(int pageNumber, double pageCount, List<RegistrationTableItem> registrations) {
+	public RegistrationTableObject(int currentPage, int totalPages, long totalRegistrations, List<RegistrationTableItem> registrations) {
 		super();
-		this.pageNumber = pageNumber;
-		this.pageCount = pageCount;
+		this.currentPage = currentPage;
+		this.totalPages = totalPages;
+		this.totalRegistrations = totalRegistrations;
 		this.registrations = registrations;
 	}
 
-	public int getPageNumber() {
-		return pageNumber;
+	public int getCurrentPage() {
+		return currentPage;
 	}
 
-	public void setPageNumber(int pageNumber) {
-		this.pageNumber = pageNumber;
+	public void setCurrentPage(int currentPage) {
+		this.currentPage = currentPage;
 	}
 
-	public double getPageCount() {
-		return pageCount;
+	public int getTotalPages() {
+		return totalPages;
 	}
 
-	public void setPageCount(double pageCount) {
-		this.pageCount = pageCount;
+	public void setTotalPages(int totalPages) {
+		this.totalPages = totalPages;
+	}
+
+	public long getTotalRegistrations() {
+		return totalRegistrations;
+	}
+
+	public void setTotalRegistrations(long totalRegistrations) {
+		this.totalRegistrations = totalRegistrations;
 	}
 
 	public List<RegistrationTableItem> getRegistrations() {
@@ -42,6 +52,8 @@ public class RegistrationTableObject {
 	public void setRegistrations(List<RegistrationTableItem> registrations) {
 		this.registrations = registrations;
 	}
+
+	
 	
 	
 
