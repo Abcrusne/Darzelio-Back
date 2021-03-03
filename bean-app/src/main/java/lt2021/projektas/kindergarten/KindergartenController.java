@@ -88,7 +88,10 @@ public class KindergartenController {
 		kgRegService.updateRegistration(reg);
 	}
 	
-
+	@RequestMapping(path = "/register/{childId}/delete", method = RequestMethod.DELETE)
+	public void deleteRegistration(@PathVariable("childId") final long childId) {
+		kgRegService.deleteRegistration(childId);
+	}
 	
 	
 }

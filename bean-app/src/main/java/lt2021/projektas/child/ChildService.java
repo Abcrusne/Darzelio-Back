@@ -352,5 +352,26 @@ public class ChildService {
 			return new ResponseEntity<String>("Blogas failo formatas", HttpStatus.BAD_REQUEST);
 		}
 	}
+	
+	@Transactional 
+	public DBFile getHealthRecord(long childId) {
+		var child = childDao.findById(childId).orElse(null);
+		if (child != null) {
+			return child.getHealthRecord();
+		} else {
+			return null;
+		}
+	}
+	
+	@Transactional
+	public void deleteHealthRecord(long childId) {
+		var child = childDao.findById(childId).orElse(null);
+		if (child != null) {
+			var dbfile = child.getHealthRecord();
+			child.setHealthRecord(null);
+			dbfile.setChild(null);
+			fileDao.delete(dbfile);
+		}
+	}
 
 }

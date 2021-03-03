@@ -74,6 +74,18 @@ public class AdmissionService {
 					return r1.getChild().getLastname().compareTo(r2.getChild().getLastname());
 				}
 			});
+		} else if (sortby.equals("lastnamedesc")) {
+			admissionRegistrations.sort((r1, r2) -> {
+				if (r1.getChild().getLastname().compareTo(r2.getChild().getLastname()) == 0) {
+					if (r1.getRating() == r2.getRating()) {
+						return r1.getChild().getBirthdate().compareTo(r2.getChild().getBirthdate());
+					} else {
+						return r2.getRating() - r1.getRating();
+					}
+				} else {
+					return r2.getChild().getLastname().compareTo(r1.getChild().getLastname());
+				}
+			});
 		} else if (sortby.equals("accepted")) {
 			admissionRegistrations.sort((r1, r2) -> {
 				if (r1.getAcceptedKindergarten() != null && r2.getAcceptedKindergarten() != null) {

@@ -65,6 +65,15 @@ public class DBFile {
 	public void setData(byte[] data) {
 		this.data = data;
 	}
+
+	public Child getChild() {
+		return child;
+	}
+
+	public void setChild(Child child) {
+		this.child = child;
+	}
+	
 	
 	
 }

@@ -7,7 +7,11 @@ import java.util.List;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -26,6 +30,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lt2021.projektas.child.ChildService;
 import lt2021.projektas.child.CreateChildCommand;
+import lt2021.projektas.child.DBFile;
 import lt2021.projektas.child.ServiceLayerChild;
 import lt2021.projektas.parentdetails.CreateDetailsCommand;
 import lt2021.projektas.parentdetails.ParentDetailsService;
@@ -180,6 +185,20 @@ public class UserController {
 	@RequestMapping(path = "/pdf", method = RequestMethod.POST)
 	public ResponseEntity<String> uploadHealthRecord(@RequestParam("data") MultipartFile file, @RequestParam("id") long id) {
 		return childService.uploadHealthRecord(file, id);
+	}
+	
+	@RequestMapping(path = "/pdf/{childId}/download", method = RequestMethod.GET)
+	public ResponseEntity<Resource> downloadHealthRecord(@PathVariable("childId") final long childId) {
+		DBFile dbfile = childService.getHealthRecord(childId);
+		return ResponseEntity.ok()
+				.contentType(MediaType.parseMediaType(dbfile.getFileType()))
+				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + dbfile.getFileName() + "\"")
+				.body(new ByteArrayResource(dbfile.getData()));
+	}
+	
+	@RequestMapping(path = "/pdf/{childId}/delete", method = RequestMethod.DELETE)
+	public void deleteHealthRecord(@PathVariable("childId") final long childId) {
+		childService.deleteHealthRecord(childId);
 	}
 
 }
