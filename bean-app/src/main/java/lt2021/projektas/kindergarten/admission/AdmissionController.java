@@ -92,13 +92,13 @@ public class AdmissionController {
 	}
 
 	@RequestMapping(path = "/lock", method = RequestMethod.POST)
-	public void lockAdmission() {
-		admissionService.lockAdmission();
+	public AdmissionStatusObject lockAdmission() {
+		return admissionService.lockAdmission();
 	}
 
 	@RequestMapping(path = "/unlock", method = RequestMethod.POST)
-	public void unlockAdmission() {
-		admissionService.unlockAdmission();
+	public AdmissionStatusObject unlockAdmission() {
+		return admissionService.unlockAdmission();
 	}
 	
 	@RequestMapping(path = "/queues", method = RequestMethod.GET)
