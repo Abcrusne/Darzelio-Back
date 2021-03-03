@@ -57,7 +57,7 @@ public class AdmissionController {
 
 	@RequestMapping(path = "/registrations/{childId}/delete", method = RequestMethod.DELETE)
 	public ResponseEntity<String> deleteAdmissionRegistration(@PathVariable("childId") long childId) {
-		/*
+		
 		if (!admissionService.areAdmissionsLocked()) {
 			kgRegService.deleteRegistration(childId);
 			return new ResponseEntity<String>("Vartotojas ištrintas", HttpStatus.OK);
@@ -65,9 +65,10 @@ public class AdmissionController {
 			return new ResponseEntity<String>("Sąrašų redagavimas užrakintas sistemos administratoriaus",
 					HttpStatus.BAD_REQUEST);
 		}
-		*/
+		/*
 		kgRegService.deleteRegistration(childId);
 		return new ResponseEntity<String>("Vartotojas ištrintas", HttpStatus.OK);
+		*/
 	}
 
 	@RequestMapping(path = "/registrations/confirm", method = RequestMethod.POST)
@@ -89,8 +90,6 @@ public class AdmissionController {
 	public void deactivateAdmission() {
 		admissionService.deactivateAdmission();
 	}
-	
-	/*
 
 	@RequestMapping(path = "/lock", method = RequestMethod.POST)
 	public void lockAdmission() {
@@ -102,8 +101,6 @@ public class AdmissionController {
 		admissionService.unlockAdmission();
 	}
 	
-	*/
-
 	@RequestMapping(path = "/queues", method = RequestMethod.GET)
 	public List<QueueTableObject> getAdmissionQueues() {
 		return queueService.getAllAdmissionQueues();

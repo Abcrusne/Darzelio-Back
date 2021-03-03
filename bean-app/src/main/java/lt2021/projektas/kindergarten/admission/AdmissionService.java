@@ -314,19 +314,26 @@ public class AdmissionService {
 				spotsInSecondAgeGroup, admission.isActive());
 	}
 
-	/*
-	 * 
-	 * @Transactional public void lockAdmission() { var admission =
-	 * admissionDao.findAll().get(0); admission.setAdminLock(true);
-	 * admission.setLastUpdatedAt(new Date()); admissionDao.save(admission); }
-	 * 
-	 * @Transactional public void unlockAdmission() { var admission =
-	 * admissionDao.findAll().get(0); admission.setAdminLock(false);
-	 * admission.setLastUpdatedAt(new Date()); admissionDao.save(admission); }
-	 * 
-	 * @Transactional public boolean areAdmissionsLocked() { var admission =
-	 * admissionDao.findAll().get(0); return admission.isAdminLock(); }
-	 * 
-	 */
+	@Transactional
+	public void lockAdmission() {
+		var admission = admissionDao.findAll().get(0);
+		admission.setAdminLock(true);
+		admission.setLastUpdatedAt(new Date());
+		admissionDao.save(admission);
+	}
+
+	@Transactional
+	public void unlockAdmission() {
+		var admission = admissionDao.findAll().get(0);
+		admission.setAdminLock(false);
+		admission.setLastUpdatedAt(new Date());
+		admissionDao.save(admission);
+	}
+
+	@Transactional
+	public boolean areAdmissionsLocked() {
+		var admission = admissionDao.findAll().get(0);
+		return admission.isAdminLock();
+	}
 
 }
