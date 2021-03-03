@@ -82,13 +82,13 @@ public class AdmissionController {
 	}
 
 	@RequestMapping(path = "/activate", method = RequestMethod.POST)
-	public void activateAdmission() {
-		admissionService.activateAdmission();
+	public AdmissionStatusObject activateAdmission() {
+		return admissionService.activateAdmission();
 	}
 
 	@RequestMapping(path = "/deactivate", method = RequestMethod.POST)
-	public void deactivateAdmission() {
-		admissionService.deactivateAdmission();
+	public AdmissionStatusObject deactivateAdmission() {
+		return admissionService.deactivateAdmission();
 	}
 
 	@RequestMapping(path = "/lock", method = RequestMethod.POST)

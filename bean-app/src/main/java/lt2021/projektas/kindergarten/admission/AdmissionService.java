@@ -284,19 +284,21 @@ public class AdmissionService {
 	}
 
 	@Transactional
-	public void activateAdmission() {
+	public AdmissionStatusObject activateAdmission() {
 		var admission = admissionDao.findAll().get(0);
 		admission.setActive(true);
 		admission.setLastUpdatedAt(new Date());
 		admissionDao.save(admission);
+		return admissionStatus();
 	}
 
 	@Transactional
-	public void deactivateAdmission() {
+	public AdmissionStatusObject deactivateAdmission() {
 		var admission = admissionDao.findAll().get(0);
 		admission.setActive(false);
 		admission.setLastUpdatedAt(new Date());
 		admissionDao.save(admission);
+		return admissionStatus();
 	}
 
 	@Transactional
@@ -332,6 +334,7 @@ public class AdmissionService {
 		admission.setAdminLock(true);
 		admission.setLastUpdatedAt(new Date());
 		admissionDao.save(admission);
+		
 	}
 
 	@Transactional
@@ -340,6 +343,7 @@ public class AdmissionService {
 		admission.setAdminLock(false);
 		admission.setLastUpdatedAt(new Date());
 		admissionDao.save(admission);
+		
 	}
 
 	@Transactional
