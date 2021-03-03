@@ -142,7 +142,7 @@ public class ChildService {
 			for (Child ch : children) {
 				ServiceLayerChild child = new ServiceLayerChild(ch.getId(), ch.getFirstname(), ch.getLastname(),
 						ch.getPersonalCode(), ch.isAdopted(),
-						new SimpleDateFormat("yyyy-MM-dd").format(ch.getBirthdate()), ch.getLivingAddress());
+						new SimpleDateFormat("yyyy-MM-dd").format(ch.getBirthdate()), ch.getLivingAddress(), ch.getHealthRecord() == null ? 0 : ch.getHealthRecord().getId());
 				ParentDetails secondParent = ch.getParents().stream()
 						.filter(p -> !(p.getId().equals(parent.getParentDetails().getId()))).findFirst().orElse(null);
 				if (secondParent != null) {
@@ -177,7 +177,9 @@ public class ChildService {
 							new SimpleDateFormat("yyyy-MM-dd").format(currentChild.getBirthdate()),
 							currentChild.getLivingAddress().getCity(), currentChild.getLivingAddress().getStreet(),
 							currentChild.getLivingAddress().getHouseNumber(),
-							currentChild.getLivingAddress().getFlatNumber(), true, secondParent.getId(),
+							currentChild.getLivingAddress().getFlatNumber(),
+							currentChild.getHealthRecord() == null ? 0 : currentChild.getHealthRecord().getId(),
+							true, secondParent.getId(),
 							secondParent.getFirstname(), secondParent.getLastname(), secondParent.getEmail(),
 							secondParent.getPhone(), secondParent.getPersonalCode(),
 							secondParent.getLivingAddress().getCity(), secondParent.getLivingAddress().getStreet(),
@@ -194,7 +196,9 @@ public class ChildService {
 							new SimpleDateFormat("yyyy-MM-dd").format(currentChild.getBirthdate()),
 							currentChild.getLivingAddress().getCity(), currentChild.getLivingAddress().getStreet(),
 							currentChild.getLivingAddress().getHouseNumber(),
-							currentChild.getLivingAddress().getFlatNumber(), false, 0L, "", "", "", "", 0L, "", "", "",
+							currentChild.getLivingAddress().getFlatNumber(),
+							currentChild.getHealthRecord() == null ? 0 : currentChild.getHealthRecord().getId(),
+							false, 0L, "", "", "", "", 0L, "", "", "",
 							"", 0, false, "", false, false, "", "", "", "");
 				}
 			} else {

@@ -117,7 +117,7 @@ public class UserController {
 					finalChildren.add(new CreateChildCommand(child.getId(), child.getFirstname(), child.getLastname(),
 							child.getPersonalCode(), child.isAdopted(), child.getBirthdate(),
 							child.getLivingAddress().getCity(), child.getLivingAddress().getStreet(),
-							child.getLivingAddress().getHouseNumber(), child.getLivingAddress().getFlatNumber(), true,
+							child.getLivingAddress().getHouseNumber(), child.getLivingAddress().getFlatNumber(), child.getHealthRecordId(), true,
 							child.getSecondParentDetails().getId(), child.getSecondParentDetails().getFirstname(),
 							child.getSecondParentDetails().getLastname(), child.getSecondParentDetails().getEmail(),
 							child.getSecondParentDetails().getPhone(), child.getSecondParentDetails().getPersonalCode(),
@@ -138,7 +138,7 @@ public class UserController {
 					finalChildren.add(new CreateChildCommand(child.getId(), child.getFirstname(), child.getLastname(),
 							child.getPersonalCode(), child.isAdopted(), child.getBirthdate(),
 							child.getLivingAddress().getCity(), child.getLivingAddress().getStreet(),
-							child.getLivingAddress().getHouseNumber(), child.getLivingAddress().getFlatNumber(), false,
+							child.getLivingAddress().getHouseNumber(), child.getLivingAddress().getFlatNumber(), child.getHealthRecordId(), false,
 							0L, "", "", "", "", 0L, "", "", "", "", 0, false, "", false, false, "", "", "", ""));
 				}
 			}

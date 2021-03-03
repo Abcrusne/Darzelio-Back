@@ -286,7 +286,7 @@ public class AdmissionService {
 	@Transactional
 	public void activateAdmission() {
 		var admission = admissionDao.findAll().get(0);
-		admission.setActive(false);
+		admission.setActive(true);
 		admission.setLastUpdatedAt(new Date());
 		admissionDao.save(admission);
 	}
@@ -294,7 +294,7 @@ public class AdmissionService {
 	@Transactional
 	public void deactivateAdmission() {
 		var admission = admissionDao.findAll().get(0);
-		admission.setActive(true);
+		admission.setActive(false);
 		admission.setLastUpdatedAt(new Date());
 		admissionDao.save(admission);
 	}

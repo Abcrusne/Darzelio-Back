@@ -19,6 +19,8 @@ public class ServiceLayerChild {
 
 	private Address livingAddress;
 	
+	private long healthRecordId;
+	
 	private ServiceLayerDetails secondParentDetails;
 
 	public ServiceLayerChild(String firstname, String lastname, long personalCode, boolean isAdopted, String birthdate,
@@ -71,6 +73,19 @@ public class ServiceLayerChild {
 		this.secondParentDetails = secondParentDetails;
 	}
 	
+
+	public ServiceLayerChild(Long id, String firstname, String lastname, long personalCode, boolean isAdopted,
+			String birthdate, Address livingAddress, long healthRecordId) {
+		super();
+		this.id = id;
+		this.firstname = firstname;
+		this.lastname = lastname;
+		this.personalCode = personalCode;
+		this.isAdopted = isAdopted;
+		this.birthdate = birthdate;
+		this.livingAddress = livingAddress;
+		this.healthRecordId = healthRecordId;
+	}
 
 	public Long getId() {
 		return id;
@@ -134,6 +149,14 @@ public class ServiceLayerChild {
 
 	public void setSecondParentDetails(ServiceLayerDetails secondParentDetails) {
 		this.secondParentDetails = secondParentDetails;
+	}
+
+	public long getHealthRecordId() {
+		return healthRecordId;
+	}
+
+	public void setHealthRecordId(long healthRecordId) {
+		this.healthRecordId = healthRecordId;
 	}
 	
 	

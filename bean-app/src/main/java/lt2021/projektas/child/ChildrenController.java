@@ -46,7 +46,7 @@ public class ChildrenController {
 			if (child.getSecondParentDetails() != null) {
 				finalChildren.add(new CreateChildCommand(child.getId(), child.getFirstname(), child.getLastname(), child.getPersonalCode(), child.isAdopted(), 
 						child.getBirthdate(), child.getLivingAddress().getCity(), child.getLivingAddress().getStreet(), child.getLivingAddress().getHouseNumber(), 
-						child.getLivingAddress().getFlatNumber(), true, child.getSecondParentDetails().getId(), child.getSecondParentDetails().getFirstname(), 
+						child.getLivingAddress().getFlatNumber(), 0L, true, child.getSecondParentDetails().getId(), child.getSecondParentDetails().getFirstname(), 
 						child.getSecondParentDetails().getLastname(), child.getSecondParentDetails().getEmail(), child.getSecondParentDetails().getPhone(), 
 						child.getSecondParentDetails().getPersonalCode(), child.getSecondParentDetails().getLivingAddress().getCity(), 
 						child.getSecondParentDetails().getLivingAddress().getStreet(), child.getSecondParentDetails().getLivingAddress().getHouseNumber(), 
@@ -58,7 +58,7 @@ public class ChildrenController {
 			} else {
 				finalChildren.add(new CreateChildCommand(child.getId(), child.getFirstname(), child.getLastname(), child.getPersonalCode(), child.isAdopted(), 
 						child.getBirthdate(), child.getLivingAddress().getCity(), child.getLivingAddress().getStreet(), child.getLivingAddress().getHouseNumber(), 
-						child.getLivingAddress().getFlatNumber(), false, 0L, "", "", "", "", 0L, "", "", "", "", 0, false, "", false, false, "", "", "", ""));
+						child.getLivingAddress().getFlatNumber(), 0L, false, 0L, "", "", "", "", 0L, "", "", "", "", 0, false, "", false, false, "", "", "", ""));
 			}
 		}
 		return finalChildren;
