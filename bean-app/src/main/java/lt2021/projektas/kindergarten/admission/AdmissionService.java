@@ -1,5 +1,6 @@
 package lt2021.projektas.kindergarten.admission;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -267,16 +268,18 @@ public class AdmissionService {
 					return new ChildAndParentDetailsObject(childId, mainParent.getFirstname(), mainParent.getLastname(),
 							mainParent.getEmail(), mainParent.getPhone(), mainParent.getLivingAddress().toString(),
 							mainParent.getNumberOfKids(), mainParent.isStudying(), mainParent.getStudyingInstitution(),
-							mainParent.isHasDisability(), child.getFirstname(), child.getLastname(),
-							child.getLivingAddress().toString(), child.isAdopted(), true, secondParent.getFirstname(),
-							secondParent.getLastname(), secondParent.getNumberOfKids(), secondParent.isStudying(),
+							mainParent.isHasDisability(), child.getFirstname(), child.getLastname(), new SimpleDateFormat("yyyy-MM-dd").format(child.getBirthdate()),
+							child.getLivingAddress().toString(), child.isAdopted(), child.getRegistrationForm().getRating(),
+							child.getRegistrationForm().getAcceptedKindergarten() == null ? "" : child.getRegistrationForm().getAcceptedKindergarten(),
+							true, secondParent.getFirstname(), secondParent.getLastname(), secondParent.getNumberOfKids(), secondParent.isStudying(),
 							secondParent.getStudyingInstitution(), secondParent.isHasDisability());
 				} else {
 					return new ChildAndParentDetailsObject(childId, mainParent.getFirstname(), mainParent.getLastname(),
 							mainParent.getEmail(), mainParent.getPhone(), mainParent.getLivingAddress().toString(),
 							mainParent.getNumberOfKids(), mainParent.isStudying(), mainParent.getStudyingInstitution(),
-							mainParent.isHasDisability(), child.getFirstname(), child.getLastname(),
-							child.getLivingAddress().toString(), child.isAdopted(), false, "", "", 0, false, "", false);
+							mainParent.isHasDisability(), child.getFirstname(), child.getLastname(), new SimpleDateFormat("yyyy-MM-dd").format(child.getBirthdate()),
+							child.getLivingAddress().toString(), child.isAdopted(), child.getRegistrationForm().getRating(), 
+							child.getRegistrationForm().getAcceptedKindergarten() == null ? "" : child.getRegistrationForm().getAcceptedKindergarten(), false, "", "", 0, false, "", false);
 				}
 			}
 		}

@@ -14,8 +14,11 @@ public class ChildAndParentDetailsObject {
 	private boolean mainParentDisabled;
 	private String childFirstname;
 	private String childLastname;
+	private String childBirthdate;
 	private String childAddress;
 	private boolean childAdopted;
+	private int childRating;
+	private String kindergartenName;
 	private boolean secondParent;
 	private String secondParentFirstname;
 	private String secondParentLastname;
@@ -30,8 +33,8 @@ public class ChildAndParentDetailsObject {
 	public ChildAndParentDetailsObject(long childId, String mainParentFirstname, String mainParentLastname,
 			String mainParentEmail, String mainParentPhone, String mainParentAddress, int mainParentNumberOfKids,
 			boolean mainParentStudying, String mainParentStudyingInstitution, boolean mainParentDisabled,
-			String childFirstname, String childLastname, String childAddress, boolean childAdopted,
-			boolean secondParent, String secondParentFirstname, String secondParentLastname,
+			String childFirstname, String childLastname, String childBirthdate, String childAddress, boolean childAdopted, int childRating,
+			String kindergartenName, boolean secondParent, String secondParentFirstname, String secondParentLastname,
 			int secondParentNumberofKids, boolean secondParentStudying, String secondParentStudyingInstitution,
 			boolean secondParentDisabled) {
 		super();
@@ -47,8 +50,11 @@ public class ChildAndParentDetailsObject {
 		this.mainParentDisabled = mainParentDisabled;
 		this.childFirstname = childFirstname;
 		this.childLastname = childLastname;
+		this.childBirthdate = childBirthdate;
 		this.childAddress = childAddress;
 		this.childAdopted = childAdopted;
+		this.childRating = childRating;
+		this.kindergartenName = kindergartenName;
 		this.secondParent = secondParent;
 		this.secondParentFirstname = secondParentFirstname;
 		this.secondParentLastname = secondParentLastname;
@@ -57,6 +63,8 @@ public class ChildAndParentDetailsObject {
 		this.secondParentStudyingInstitution = secondParentStudyingInstitution;
 		this.secondParentDisabled = secondParentDisabled;
 	}
+
+
 
 	public long getChildId() {
 		return childId;
@@ -225,6 +233,31 @@ public class ChildAndParentDetailsObject {
 	public void setSecondParentDisabled(boolean secondParentDisabled) {
 		this.secondParentDisabled = secondParentDisabled;
 	}
+
+	public int getChildRating() {
+		return childRating;
+	}
+
+	public void setChildRating(int childRating) {
+		this.childRating = childRating;
+	}
+
+	public String getKindergartenName() {
+		return kindergartenName;
+	}
+
+	public void setKindergartenName(String kindergartenName) {
+		this.kindergartenName = kindergartenName;
+	}
+
+	public String getChildBirthdate() {
+		return childBirthdate;
+	}
+
+	public void setChildBirthdate(String childBirthdate) {
+		this.childBirthdate = childBirthdate;
+	}
+	
 	
 	
 }
