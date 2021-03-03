@@ -15,11 +15,21 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import lt2021.projektas.child.Child;
+import lt2021.projektas.child.ChildService;
+import lt2021.projektas.parentdetails.ParentDetailsDao;
+
 @Service
 public class UserService implements UserDetailsService {
 
 	@Autowired
 	private UserDao userDao;
+	
+	@Autowired
+	private ParentDetailsDao detailsDao;
+	
+	@Autowired
+	private ChildService childService;
 
 	@Transactional(readOnly = true)
 	public List<ServiceLayerUser> getUsers() {
@@ -63,7 +73,27 @@ public class UserService implements UserDetailsService {
 
 	@Transactional
 	public void deleteUser(Long id) {
-		userDao.deleteById(id);
+		var user = userDao.findById(id).orElse(null);
+		if (user != null) {
+			var parentDetails = user.getParentDetails();
+			if (parentDetails != null) {
+				var children = parentDetails.getChildren().stream().collect(Collectors.toList());
+				if (children.size() > 0) {
+					children.forEach(child -> {
+						childService.deleteChild(id, child.getId());
+					});
+					children.clear();
+					parentDetails.setChildren(null);
+					detailsDao.delete(parentDetails);
+					userDao.delete(user);
+				} else {
+					detailsDao.delete(parentDetails);
+					userDao.delete(user);
+				}
+			} else {
+				userDao.delete(user);
+			}
+		}
 	}
 
 	@Override

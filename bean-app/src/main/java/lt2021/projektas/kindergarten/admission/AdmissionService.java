@@ -143,7 +143,7 @@ public class AdmissionService {
 	public List<KindergartenRegistration> sortAdmissionRegistrations() {
 		var admission = admissionDao.findAll().get(0);
 		var admissionRegistrations = admission.getRegistrations();
-		var sortedRegistrations = admissionRegistrations.stream().collect(Collectors.toList());
+		var sortedRegistrations = admissionRegistrations.stream().filter(reg -> reg.getAcceptedKindergarten() == null).collect(Collectors.toList());
 		sortedRegistrations.sort((r1, r2) -> {
 			if (r1.getRating() == r2.getRating()) {
 				if (r1.getChild().getBirthdate().compareTo(r2.getChild().getBirthdate()) == 0) {
@@ -166,7 +166,7 @@ public class AdmissionService {
 					.filter(q -> q.getKindergarten().getName().equals(reg.getFirstPriority())).findFirst().orElse(null);
 			if (firstPriorityQueue != null) {
 				var howManyAccepted = firstPriorityQueue.getRegistrations().stream()
-						.map(r -> r.getAcceptedKindergarten()).filter(kg -> kg != null).count();
+						.map(r -> r.getAcceptedKindergarten()).filter(kg -> kg == null ? false : kg.equals(reg.getFirstPriority())).count();
 				var freeSpots = firstPriorityQueue.getAgeGroup().equals(AgeGroup.PRESCHOOL)
 						? firstPriorityQueue.getKindergarten().getSpotsInFirstAgeGroup()
 						: firstPriorityQueue.getKindergarten().getSpotsInSecondAgeGroup();
@@ -193,7 +193,7 @@ public class AdmissionService {
 							.orElse(null);
 					if (secondPriorityQueue != null) {
 						howManyAccepted = secondPriorityQueue.getRegistrations().stream()
-								.map(r -> r.getAcceptedKindergarten()).filter(kg -> kg != null).count();
+								.map(r -> r.getAcceptedKindergarten()).filter(kg -> kg == null ? false : kg.equals(reg.getSecondPriority())).count();
 						freeSpots = secondPriorityQueue.getAgeGroup().equals(AgeGroup.PRESCHOOL)
 								? secondPriorityQueue.getKindergarten().getSpotsInFirstAgeGroup()
 								: secondPriorityQueue.getKindergarten().getSpotsInSecondAgeGroup();
@@ -206,7 +206,7 @@ public class AdmissionService {
 									.findFirst().orElse(null);
 							if (thirdPriorityQueue != null) {
 								howManyAccepted = thirdPriorityQueue.getRegistrations().stream()
-										.map(r -> r.getAcceptedKindergarten()).filter(kg -> kg != null).count();
+										.map(r -> r.getAcceptedKindergarten()).filter(kg -> kg == null ? false : kg.equals(reg.getThirdPriority())).count();
 								freeSpots = thirdPriorityQueue.getAgeGroup().equals(AgeGroup.PRESCHOOL)
 										? thirdPriorityQueue.getKindergarten().getSpotsInFirstAgeGroup()
 										: thirdPriorityQueue.getKindergarten().getSpotsInSecondAgeGroup();
@@ -219,7 +219,7 @@ public class AdmissionService {
 											.findFirst().orElse(null);
 									if (fourthPriorityQueue != null) {
 										howManyAccepted = fourthPriorityQueue.getRegistrations().stream()
-												.map(r -> r.getAcceptedKindergarten()).filter(kg -> kg != null).count();
+												.map(r -> r.getAcceptedKindergarten()).filter(kg -> kg == null ? false : kg.equals(reg.getFourthPriority())).count();
 										freeSpots = fourthPriorityQueue.getAgeGroup().equals(AgeGroup.PRESCHOOL)
 												? fourthPriorityQueue.getKindergarten().getSpotsInFirstAgeGroup()
 												: fourthPriorityQueue.getKindergarten().getSpotsInSecondAgeGroup();
@@ -236,7 +236,7 @@ public class AdmissionService {
 													: fifthPriorityQueue.getKindergarten().getSpotsInSecondAgeGroup();
 											if (fifthPriorityQueue != null) {
 												howManyAccepted = fifthPriorityQueue.getRegistrations().stream()
-														.map(r -> r.getAcceptedKindergarten()).filter(kg -> kg != null)
+														.map(r -> r.getAcceptedKindergarten()).filter(kg -> kg == null ? false : kg.equals(reg.getFifthPriority()))
 														.count();
 												if (howManyAccepted < freeSpots) {
 													reg.setAcceptedKindergarten(
