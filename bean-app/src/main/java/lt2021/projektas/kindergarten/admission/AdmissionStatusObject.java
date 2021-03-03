@@ -7,19 +7,21 @@ public class AdmissionStatusObject {
 	private int spotsInFirstAgeGroups;
 	private int spotsInSecondAgeGroups;
 	private boolean active;
+	private boolean locked;
 	
 	public AdmissionStatusObject() {
 		// TODO Auto-generated constructor stub
 	}
 
 	public AdmissionStatusObject(int registrationsInFirstAgeGroup, int registrationsInSecondAgeGroup,
-			int spotsInFirstAgeGroups, int spotsInSecondAgeGroups, boolean active) {
+			int spotsInFirstAgeGroups, int spotsInSecondAgeGroups, boolean active, boolean locked) {
 		super();
 		this.registrationsInFirstAgeGroup = registrationsInFirstAgeGroup;
 		this.registrationsInSecondAgeGroup = registrationsInSecondAgeGroup;
 		this.spotsInFirstAgeGroups = spotsInFirstAgeGroups;
 		this.spotsInSecondAgeGroups = spotsInSecondAgeGroups;
 		this.active = active;
+		this.locked = locked;
 	}
 
 	public int getRegistrationsInFirstAgeGroup() {
@@ -60,6 +62,14 @@ public class AdmissionStatusObject {
 
 	public void setActive(boolean active) {
 		this.active = active;
+	}
+
+	public boolean isLocked() {
+		return locked;
+	}
+
+	public void setLocked(boolean locked) {
+		this.locked = locked;
 	} 
 	
 	

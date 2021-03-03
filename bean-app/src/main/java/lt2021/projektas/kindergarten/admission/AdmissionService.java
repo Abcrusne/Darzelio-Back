@@ -328,25 +328,25 @@ public class AdmissionService {
 			spotsInSecondAgeGroup += kg.getSpotsInSecondAgeGroup();
 		}
 		return new AdmissionStatusObject(firstAgeGroupCount, secondAgeGroupCount, spotsInFirstAgeGroup,
-				spotsInSecondAgeGroup, admission.isActive());
+				spotsInSecondAgeGroup, admission.isActive(), admission.isAdminLock());
 	}
 
 	@Transactional
-	public void lockAdmission() {
+	public AdmissionStatusObject lockAdmission() {
 		var admission = admissionDao.findAll().get(0);
 		admission.setAdminLock(true);
 		admission.setLastUpdatedAt(new Date());
 		admissionDao.save(admission);
-		
+		return admissionStatus();
 	}
 
 	@Transactional
-	public void unlockAdmission() {
+	public AdmissionStatusObject unlockAdmission() {
 		var admission = admissionDao.findAll().get(0);
 		admission.setAdminLock(false);
 		admission.setLastUpdatedAt(new Date());
 		admissionDao.save(admission);
-		
+		return admissionStatus();
 	}
 
 	@Transactional
