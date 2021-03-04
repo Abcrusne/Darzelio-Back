@@ -200,5 +200,15 @@ public class UserController {
 	public ResponseEntity<String> deleteHealthRecord(@PathVariable("childId") final long childId) {
 		return childService.deleteHealthRecord(childId);
 	}
+	
+	@RequestMapping(path = "/status", method = RequestMethod.GET)
+	public UserStatusObject getUserStatus() {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		if (!(auth instanceof AnonymousAuthenticationToken)) {
+			return userService.returnLoggedUserStatus(auth.getName());
+		} else {
+			return null;
+		}
+	}
 
 }

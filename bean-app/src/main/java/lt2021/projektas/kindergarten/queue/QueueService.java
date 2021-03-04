@@ -162,5 +162,30 @@ public class QueueService {
 								: queue.getKindergarten().getSpotsInSecondAgeGroup()))
 				.collect(Collectors.toList());
 	}
+	
+	@Transactional
+	public int getChildPositionInKindergartenQueue(String kgname, KindergartenRegistration childReg) {
+		var kindergarten = kindergartenDao.findByName(kgname).orElse(null);
+		if (kindergarten != null) {
+			var queue = kindergarten.getQueues().stream().filter(q -> q.getRegistrations().contains(childReg)).findFirst().orElse(null);
+			if (queue != null) {
+				var registrations = queue.getRegistrations().stream().collect(Collectors.toList());
+				registrations.sort((r1, r2) -> {
+					if (r1.getRating() == r2.getRating()) {
+						if (r1.getChild().getBirthdate().compareTo(r2.getChild().getBirthdate()) == 0) {
+							return r1.getChild().getLastname().compareTo(r2.getChild().getLastname());
+						} else {
+							return r1.getChild().getBirthdate().compareTo(r2.getChild().getBirthdate());
+						}
+					} else {
+						return r2.getRating() - r1.getRating();
+					}
+				});
+				return registrations.indexOf(childReg) + 1;
+			}
+			return 0;
+		}
+		return 0;
+	}
 
 }

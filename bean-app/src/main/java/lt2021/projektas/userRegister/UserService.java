@@ -1,6 +1,9 @@
 package lt2021.projektas.userRegister;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,8 +18,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import lt2021.projektas.child.Child;
 import lt2021.projektas.child.ChildService;
+import lt2021.projektas.child.ChildStatusObject;
+import lt2021.projektas.kindergarten.queue.QueueService;
 import lt2021.projektas.parentdetails.ParentDetailsDao;
 
 @Service
@@ -30,6 +34,9 @@ public class UserService implements UserDetailsService {
 	
 	@Autowired
 	private ChildService childService;
+	
+	@Autowired
+	private QueueService queueService;
 
 	@Transactional(readOnly = true)
 	public List<ServiceLayerUser> getUsers() {
@@ -125,6 +132,64 @@ public class UserService implements UserDetailsService {
 			return new ResponseEntity<String>("Slaptažodis pakeistas", HttpStatus.OK);
 		}
 		return new ResponseEntity<String>("Neteisingai įvestas senas slaptažodis", HttpStatus.BAD_REQUEST);
+	}
+	
+	@Transactional
+	public UserStatusObject returnLoggedUserStatus(String email) {
+		var user = findByEmail(email);
+		UserStatusObject status = new UserStatusObject();
+		List<ChildStatusObject> childrenStatus = new ArrayList<>();
+		@SuppressWarnings("deprecation")
+		PasswordEncoder encoder = new MessageDigestPasswordEncoder("SHA-256");
+		status.setPasswordChanged(encoder.matches(user.getFirstname(), user.getPassword()) ? false : true);
+		status.setDetailsFilled(user.getParentDetails() == null ? false : true);
+		if (user.getParentDetails() != null) {
+			status.setChildRegistered(user.getParentDetails().getChildren().size() == 0 ? false : true);
+			if (user.getParentDetails().getChildren().size() > 0) {
+				user.getParentDetails().getChildren().forEach(child -> {
+					var childStatus = new ChildStatusObject();
+					childStatus.setFirstname(child.getFirstname());
+					childStatus.setLastname(child.getLastname());
+					childStatus.setApplicationFilled(child.getRegistrationForm() == null ? false : true);
+					Date today = new Date();
+					var timeDiff = today.getTime() - child.getBirthdate().getTime();
+					var timeDiffDays = TimeUnit.MILLISECONDS.toDays(timeDiff);
+					var yearDiff = timeDiffDays / 365;
+					if (child.getRegistrationForm() != null) {
+						childStatus.setApplicationAccepted(child.getRegistrationForm().getAdmission() == null ? false : true);
+						if (child.getRegistrationForm().getAdmission() == null) {
+							if (yearDiff < 2) {
+								childStatus.setNotAcceptedReason("Vaikas per jaunas darželiams");
+								childrenStatus.add(childStatus);
+							} else {
+								childStatus.setNotAcceptedReason("Vaikas per senas darželiams");
+								childrenStatus.add(childStatus);
+							}
+						} else {
+							childStatus.setPlaceInFirstQueue(queueService.getChildPositionInKindergartenQueue(child.getRegistrationForm().getFirstPriority(), child.getRegistrationForm()));
+							childStatus.setPlaceInSecondQueue(queueService.getChildPositionInKindergartenQueue(child.getRegistrationForm().getSecondPriority(), child.getRegistrationForm()));
+							childStatus.setPlaceInThirdQueue(queueService.getChildPositionInKindergartenQueue(child.getRegistrationForm().getThirdPriority(), child.getRegistrationForm()));
+							childStatus.setPlaceInFourthQueue(queueService.getChildPositionInKindergartenQueue(child.getRegistrationForm().getFourthPriority(), child.getRegistrationForm()));
+							childStatus.setPlaceInFifthQueue(queueService.getChildPositionInKindergartenQueue(child.getRegistrationForm().getFifthPriority(), child.getRegistrationForm()));
+							childStatus.setAcceptedKindergarten(child.getRegistrationForm().getAcceptedKindergarten());
+							childrenStatus.add(childStatus);
+						}
+					} else {
+						childStatus.setApplicationAccepted(false);
+						childrenStatus.add(childStatus);
+					}
+				});
+			}
+		}
+		childrenStatus.sort((c1, c2) -> {
+			if (c1.getLastname().equals(c2.getLastname())) {
+				return c1.getFirstname().compareTo(c2.getFirstname());
+			} else {
+				return c1.getLastname().compareTo(c2.getLastname());
+			}
+		});
+		status.setChildren(childrenStatus);
+		return status;
 	}
 
 }
