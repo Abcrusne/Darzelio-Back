@@ -72,8 +72,8 @@ public class AdmissionController {
 	}
 
 	@RequestMapping(path = "/registrations/confirm", method = RequestMethod.POST)
-	public void confirmAdmissionRegistrations() {
-		admissionService.confirmRegistrations();
+	public ResponseEntity<String> confirmAdmissionRegistrations() {
+		return admissionService.confirmRegistrations();
 	}
 	
 	@RequestMapping(path = "/status", method = RequestMethod.GET)

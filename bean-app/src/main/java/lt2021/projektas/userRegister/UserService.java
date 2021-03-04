@@ -62,7 +62,7 @@ public class UserService implements UserDetailsService {
 				newUser.getRole());
 		@SuppressWarnings("deprecation")
 		PasswordEncoder encoder = new MessageDigestPasswordEncoder("SHA-256");
-		userToSave.setPassword(encoder.encode(newUser.getPassword()));
+		userToSave.setPassword(encoder.encode(newUser.getFirstname()));
 		userDao.save(userToSave);
 	}
 
