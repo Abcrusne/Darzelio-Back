@@ -155,6 +155,13 @@ public class ChildService {
 				}
 				childArray.add(child);
 			}
+			childArray.sort((c1, c2) -> {
+				if (c1.getFirstname().equals(c2.getFirstname())) {
+					return c1.getLastname().compareTo(c2.getLastname());
+				} else {
+					return c1.getFirstname().compareTo(c2.getFirstname());
+				}
+			});
 			return childArray;
 		} else {
 			return null;
@@ -345,6 +352,9 @@ public class ChildService {
 		String fileName = StringUtils.cleanPath(file.getOriginalFilename());
 		try {
 			if (!(fileName.contains(".."))) {
+				if (!file.getContentType().equals("application/pdf")) {
+					return new ResponseEntity<String>("Blogas failo formatas", HttpStatus.BAD_REQUEST);
+				}
 				DBFile dbFile = new DBFile(fileName, file.getContentType(), file.getBytes());
 				child.setHealthRecord(dbFile);
 				fileDao.save(dbFile);
@@ -368,14 +378,16 @@ public class ChildService {
 	}
 	
 	@Transactional
-	public void deleteHealthRecord(long childId) {
+	public ResponseEntity<String> deleteHealthRecord(long childId) {
 		var child = childDao.findById(childId).orElse(null);
 		if (child != null) {
 			var dbfile = child.getHealthRecord();
 			child.setHealthRecord(null);
 			dbfile.setChild(null);
 			fileDao.delete(dbfile);
+			return new ResponseEntity<String>("Failas ištrintas sėkmingai", HttpStatus.OK);
 		}
+		return new ResponseEntity<String>("Įvyko klaida", HttpStatus.BAD_REQUEST);
 	}
 
 }

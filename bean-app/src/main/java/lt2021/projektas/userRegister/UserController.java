@@ -197,8 +197,8 @@ public class UserController {
 	}
 	
 	@RequestMapping(path = "/pdf/{childId}/delete", method = RequestMethod.DELETE)
-	public void deleteHealthRecord(@PathVariable("childId") final long childId) {
-		childService.deleteHealthRecord(childId);
+	public ResponseEntity<String> deleteHealthRecord(@PathVariable("childId") final long childId) {
+		return childService.deleteHealthRecord(childId);
 	}
 
 }

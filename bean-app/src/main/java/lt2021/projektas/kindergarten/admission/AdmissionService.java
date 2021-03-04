@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,16 +54,30 @@ public class AdmissionService {
 		int pageCount = 1;
 		var totalRegs = 0L;
 		if (lastname.length() == 0) {
-			admissionRegistrations = registrationDao.findRegistrationsWithAdmission(PageRequest.of(pageNumber - 1, 15));
+			if (sortby.equals("lastname")) {
+				admissionRegistrations = registrationDao.findRegistrationsWithAdmission(PageRequest.of(pageNumber - 1, 15, 
+						Sort.by(Sort.Order.asc("child.lastname"), Sort.Order.desc("rating"), Sort.Order.desc("child.birthdate"))));
+			} else if (sortby.equals("lastnamedesc")) {
+				admissionRegistrations = registrationDao.findRegistrationsWithAdmission(PageRequest.of(pageNumber - 1, 15, 
+						Sort.by(Sort.Order.desc("child.lastname"), Sort.Order.desc("rating"), Sort.Order.desc("child.birthdate"))));
+			} else if (sortby.equals("accepted")) {
+				admissionRegistrations = registrationDao.findRegistrationsWithAdmission(PageRequest.of(pageNumber - 1, 15, 
+						Sort.by(Sort.Order.desc("acceptedKindergarten"), Sort.Order.desc("rating"), Sort.Order.desc("child.birthdate"), Sort.Order.asc("child.lastname"))));
+			} else {
+				admissionRegistrations = registrationDao.findRegistrationsWithAdmission(PageRequest.of(pageNumber - 1, 15, 
+						Sort.by(Sort.Order.desc("rating"), Sort.Order.desc("child.birthdate"), Sort.Order.asc("child.lastname"))));
+			}
+			
 			totalRegs = registrationDao.registrationWithAdmissionCount();
 			pageCount = (int) Math.ceil((double) totalRegs / 15.0);
 		} else {
 			admissionRegistrations = registrationDao.findRegistrationByChildLastname(lastname,
-					PageRequest.of(pageNumber - 1, 15));
+					PageRequest.of(pageNumber - 1, 15, 
+							Sort.by(Sort.Order.desc("rating"), Sort.Order.desc("child.birthdate"), Sort.Order.asc("child.lastname"))));
 			totalRegs = admissionRegistrations.size();
 			pageCount = (int) Math.ceil((double) totalRegs / 15.0);
 		}
-
+		/*
 		if (sortby.equals("lastname")) {
 			admissionRegistrations.sort((r1, r2) -> {
 				if (r1.getChild().getLastname().compareTo(r2.getChild().getLastname()) == 0) {
@@ -130,6 +145,7 @@ public class AdmissionService {
 				}
 			});
 		}
+		*/
 		var registrations = admissionRegistrations.stream()
 				.map(reg -> new RegistrationTableItem(reg.getChild().getId(), reg.getChild().getFirstname(),
 						reg.getChild().getLastname(),
@@ -185,7 +201,7 @@ public class AdmissionService {
 					 * mainParent.getLastname() + ", \n" + "Informuojame, jog jūsų vaikas: " +
 					 * reg.getChild().getFirstname() + " " + reg.getChild().getLastname() +
 					 * ", yra priimtas į darželį: " + reg.getAcceptedKindergarten() + ".\n" +
-					 * "Artimiausiu metu su jumis susisieks darželis dėl dokumentų pasirašymo.");
+					 * "Artimiausiu metu su jumis susisieks darželio administracija dėl dokumentų pasirašymo.");
 					 * emailSender.send(message);
 					 */
 				} else {
