@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lt2021.projektas.child.ChildDao;
 import lt2021.projektas.kindergarten.admission.AdmissionDao;
+import lt2021.projektas.kindergarten.admission.AdmissionService;
 import lt2021.projektas.kindergarten.queue.QueueDao;
 import lt2021.projektas.kindergarten.queue.QueueService;
 
@@ -32,32 +33,38 @@ public class KindergartenRegistrationService {
 	@Autowired
 	private AdmissionDao admissionDao;
 	
+	@Autowired
+	private AdmissionService admissionService;
+	
 	
 	@Transactional
 	public ResponseEntity<String> addRegistration(CreateRegistrationCommand registrationForm) {
 		var child = childDao.findById(registrationForm.getChildId()).orElse(null);
 		if (child != null) {
 			if (child.getRegistrationForm() == null) {
-				var registration = new KindergartenRegistration(child, registrationForm.getFirstPriority(), registrationForm.getSecondPriority(), 
-						registrationForm.getThirdPriority(), registrationForm.getFourthPriority(), registrationForm.getFifthPriority());
-				if (child.getLivingAddress().getCity().toLowerCase().equals("vilnius")) {
-					registration.setRating(registration.getRating() + 5);
+				if (admissionService.areAdmissionsActive()) {
+					var registration = new KindergartenRegistration(child, registrationForm.getFirstPriority(), registrationForm.getSecondPriority(), 
+							registrationForm.getThirdPriority(), registrationForm.getFourthPriority(), registrationForm.getFifthPriority());
+					if (child.getLivingAddress().getCity().toLowerCase().equals("vilnius")) {
+						registration.setRating(registration.getRating() + 5);
+					}
+					if (child.isAdopted()) {
+						registration.setRating(registration.getRating() + 1);
+					}
+					if (!(child.getParents().stream().filter(parent -> parent.isStudying()).findFirst().isEmpty())) {
+						registration.setRating(registration.getRating() + 1);
+					}
+					if (!(child.getParents().stream().filter(parent -> parent.getNumberOfKids() >= 3).findFirst().isEmpty())) {
+						registration.setRating(registration.getRating() + 1);
+					}
+					if (!(child.getParents().stream().filter(parent -> parent.isHasDisability()).findFirst().isEmpty())) {
+						registration.setRating(registration.getRating() + 1);
+					}
+					child.setRegistrationForm(registration);
+					queueService.addRegistrationToQueues(kgRegDao.save(registration));
+					return new ResponseEntity<String>("Vaiko registracija išsaugota", HttpStatus.OK);
 				}
-				if (child.isAdopted()) {
-					registration.setRating(registration.getRating() + 1);
-				}
-				if (!(child.getParents().stream().filter(parent -> parent.isStudying()).findFirst().isEmpty())) {
-					registration.setRating(registration.getRating() + 1);
-				}
-				if (!(child.getParents().stream().filter(parent -> parent.getNumberOfKids() >= 3).findFirst().isEmpty())) {
-					registration.setRating(registration.getRating() + 1);
-				}
-				if (!(child.getParents().stream().filter(parent -> parent.isHasDisability()).findFirst().isEmpty())) {
-					registration.setRating(registration.getRating() + 1);
-				}
-				child.setRegistrationForm(registration);
-				queueService.addRegistrationToQueues(kgRegDao.save(registration));
-				return new ResponseEntity<String>("Vaiko registracija išsaugota", HttpStatus.OK);
+				return new ResponseEntity<String>("Registracijos šiuo metu užrakintos", HttpStatus.BAD_REQUEST);
 			}
 			return new ResponseEntity<String>("Šio vaiko registracija jau užpildyta!", HttpStatus.BAD_REQUEST);
 		}

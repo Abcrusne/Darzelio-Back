@@ -169,7 +169,7 @@ public class QueueService {
 		if (kindergarten != null) {
 			var queue = kindergarten.getQueues().stream().filter(q -> q.getRegistrations().contains(childReg)).findFirst().orElse(null);
 			if (queue != null) {
-				var registrations = queue.getRegistrations().stream().collect(Collectors.toList());
+				var registrations = queue.getRegistrations().stream().filter(reg -> reg.getAcceptedKindergarten() == null).collect(Collectors.toList());
 				registrations.sort((r1, r2) -> {
 					if (r1.getRating() == r2.getRating()) {
 						if (r1.getChild().getBirthdate().compareTo(r2.getChild().getBirthdate()) == 0) {
@@ -187,5 +187,6 @@ public class QueueService {
 		}
 		return 0;
 	}
+	
 
 }

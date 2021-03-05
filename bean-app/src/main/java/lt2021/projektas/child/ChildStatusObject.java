@@ -1,7 +1,8 @@
 package lt2021.projektas.child;
 
 public class ChildStatusObject {
-
+	
+	private long childId;
 	private String firstname;
 	private String lastname;
 	private boolean applicationFilled;
@@ -23,11 +24,12 @@ public class ChildStatusObject {
 		// TODO Auto-generated constructor stub
 	}
 
-	public ChildStatusObject(String firstname, String lastname, boolean applicationFilled, boolean applicationAccepted,
+	public ChildStatusObject(long childId, String firstname, String lastname, boolean applicationFilled, boolean applicationAccepted,
 			String notAcceptedReason, String firstPriority, int placeInFirstQueue, String secondPriority, int placeInSecondQueue,
 			String thirdPriority, int placeInThirdQueue, String fourthPriority, int placeInFourthQueue, String fifthPriority,
 			int placeInFifthQueue, String acceptedKindergarten) {
 		super();
+		this.childId = childId;
 		this.firstname = firstname;
 		this.lastname = lastname;
 		this.applicationFilled = applicationFilled;
@@ -172,6 +174,14 @@ public class ChildStatusObject {
 
 	public void setFifthPriority(String fifthPriority) {
 		this.fifthPriority = fifthPriority;
+	}
+
+	public long getChildId() {
+		return childId;
+	}
+
+	public void setChildId(long childId) {
+		this.childId = childId;
 	}
 	
 	

@@ -21,6 +21,7 @@ import lt2021.projektas.child.ChildDao;
 import lt2021.projektas.kindergarten.Kindergarten;
 import lt2021.projektas.kindergarten.KindergartenDao;
 import lt2021.projektas.kindergarten.queue.AgeGroup;
+import lt2021.projektas.kindergarten.queue.QueueDao;
 import lt2021.projektas.kindergarten.queue.RegistrationTableItem;
 import lt2021.projektas.kindergarten.queue.RegistrationTableObject;
 import lt2021.projektas.kindergarten.registration.KindergartenRegistration;
@@ -41,14 +42,15 @@ public class AdmissionService {
 	@Autowired
 	private ChildDao childDao;
 
+	@Autowired
+	private QueueDao queueDao;
+
 	private JavaMailSender emailSender;
 
 	@Autowired
 	public AdmissionService(JavaMailSender emailSender) {
 		this.emailSender = emailSender;
 	}
-
-	
 
 	@Transactional
 	public RegistrationTableObject getSortedAdmissionRegistrations(int pageNumber, String sortby, String lastname) {
@@ -133,8 +135,20 @@ public class AdmissionService {
 							: firstPriorityQueue.getKindergarten().getSpotsInSecondAgeGroup();
 					if (howManyAccepted < freeSpots) {
 						reg.setAcceptedKindergarten(firstPriorityQueue.getKindergarten().getName());
+						var otherQueues = reg.getQueues().stream()
+								.filter(q -> !q.getKindergarten().getName().equals(reg.getAcceptedKindergarten()))
+								.collect(Collectors.toList());
+						var regQueues = reg.getQueues();
+						otherQueues.forEach(queue -> {
+							var regs = queue.getRegistrations();
+							regs.remove(reg);
+							queue.setRegistrations(regs);
+							queueDao.save(queue);
+							regQueues.remove(queue);
+						});
+						reg.setQueues(regQueues);
 						registrationDao.save(reg);
-						sendConfirmationEmailToParents(reg);
+						//sendConfirmationEmailToParents(reg);
 					} else {
 						var secondPriorityQueue = reg.getQueues().stream()
 								.filter(q -> q.getKindergarten().getName().equals(reg.getSecondPriority())).findFirst()
@@ -148,8 +162,20 @@ public class AdmissionService {
 									: secondPriorityQueue.getKindergarten().getSpotsInSecondAgeGroup();
 							if (howManyAccepted < freeSpots) {
 								reg.setAcceptedKindergarten(secondPriorityQueue.getKindergarten().getName());
+								var otherQueues = reg.getQueues().stream().filter(
+										q -> !q.getKindergarten().getName().equals(reg.getAcceptedKindergarten()))
+										.collect(Collectors.toList());
+								var regQueues = reg.getQueues();
+								otherQueues.forEach(queue -> {
+									var regs = queue.getRegistrations();
+									regs.remove(reg);
+									queue.setRegistrations(regs);
+									queueDao.save(queue);
+									regQueues.remove(queue);
+								});
+								reg.setQueues(regQueues);
 								registrationDao.save(reg);
-								sendConfirmationEmailToParents(reg);
+								//sendConfirmationEmailToParents(reg);
 							} else {
 								var thirdPriorityQueue = reg.getQueues().stream()
 										.filter(q -> q.getKindergarten().getName().equals(reg.getThirdPriority()))
@@ -164,8 +190,21 @@ public class AdmissionService {
 											: thirdPriorityQueue.getKindergarten().getSpotsInSecondAgeGroup();
 									if (howManyAccepted < freeSpots) {
 										reg.setAcceptedKindergarten(thirdPriorityQueue.getKindergarten().getName());
+										var otherQueues = reg.getQueues().stream()
+												.filter(q -> !q.getKindergarten().getName()
+														.equals(reg.getAcceptedKindergarten()))
+												.collect(Collectors.toList());
+										var regQueues = reg.getQueues();
+										otherQueues.forEach(queue -> {
+											var regs = queue.getRegistrations();
+											regs.remove(reg);
+											queue.setRegistrations(regs);
+											queueDao.save(queue);
+											regQueues.remove(queue);
+										});
+										reg.setQueues(regQueues);
 										registrationDao.save(reg);
-										sendConfirmationEmailToParents(reg);
+										//sendConfirmationEmailToParents(reg);
 									} else {
 										var fourthPriorityQueue = reg.getQueues().stream().filter(
 												q -> q.getKindergarten().getName().equals(reg.getFourthPriority()))
@@ -182,8 +221,21 @@ public class AdmissionService {
 											if (howManyAccepted < freeSpots) {
 												reg.setAcceptedKindergarten(
 														fourthPriorityQueue.getKindergarten().getName());
+												var otherQueues = reg.getQueues().stream()
+														.filter(q -> !q.getKindergarten().getName()
+																.equals(reg.getAcceptedKindergarten()))
+														.collect(Collectors.toList());
+												var regQueues = reg.getQueues();
+												otherQueues.forEach(queue -> {
+													var regs = queue.getRegistrations();
+													regs.remove(reg);
+													queue.setRegistrations(regs);
+													queueDao.save(queue);
+													regQueues.remove(queue);
+												});
+												reg.setQueues(regQueues);
 												registrationDao.save(reg);
-												sendConfirmationEmailToParents(reg);
+												//sendConfirmationEmailToParents(reg);
 											} else {
 												var fifthPriorityQueue = reg.getQueues().stream()
 														.filter(q -> q.getKindergarten().getName()
@@ -202,8 +254,21 @@ public class AdmissionService {
 													if (howManyAccepted < freeSpots) {
 														reg.setAcceptedKindergarten(
 																fifthPriorityQueue.getKindergarten().getName());
+														var otherQueues = reg.getQueues().stream()
+																.filter(q -> !q.getKindergarten().getName()
+																		.equals(reg.getAcceptedKindergarten()))
+																.collect(Collectors.toList());
+														var regQueues = reg.getQueues();
+														otherQueues.forEach(queue -> {
+															var regs = queue.getRegistrations();
+															regs.remove(reg);
+															queue.setRegistrations(regs);
+															queueDao.save(queue);
+															regQueues.remove(queue);
+														});
+														reg.setQueues(regQueues);
 														registrationDao.save(reg);
-														sendConfirmationEmailToParents(reg);
+														//sendConfirmationEmailToParents(reg);
 													}
 												}
 											}
@@ -220,20 +285,19 @@ public class AdmissionService {
 			return new ResponseEntity<String>("Sistema užrakinta administratoriaus", HttpStatus.BAD_REQUEST);
 		}
 	}
-	
+
 	private void sendConfirmationEmailToParents(KindergartenRegistration reg) {
 		Thread newThread = new Thread(() -> {
-			var mainParent = reg.getChild().getParents().stream()
-					.filter(parent -> parent.getParent() != null).findFirst().orElse(null);
+			var mainParent = reg.getChild().getParents().stream().filter(parent -> parent.getParent() != null)
+					.findFirst().orElse(null);
 			SimpleMailMessage message = new SimpleMailMessage();
 			message.setFrom("bean.vaidar.mailinformer@gmail.com");
 			message.setTo(mainParent.getEmail());
 			message.setSubject("Vaiko registracija į darželį");
 			message.setText("Sveiki, " + mainParent.getFirstname() + " " + mainParent.getLastname() + ", \n"
 					+ "Informuojame, jog jūsų vaikas: " + reg.getChild().getFirstname() + " "
-					+ reg.getChild().getLastname() + ", yra priimtas į darželį: "
-					+ reg.getAcceptedKindergarten() + ".\n"
-					+ "Artimiausiu metu su jumis susisieks darželio administracija dėl dokumentų pasirašymo.");
+					+ reg.getChild().getLastname() + ", yra priimtas į darželį: " + reg.getAcceptedKindergarten()
+					+ ".\n" + "Artimiausiu metu su jumis susisieks darželio administracija dėl dokumentų pasirašymo.");
 			emailSender.send(message);
 		});
 		newThread.start();
@@ -344,6 +408,12 @@ public class AdmissionService {
 	public boolean areAdmissionsLocked() {
 		var admission = admissionDao.findAll().get(0);
 		return admission.isAdminLock();
+	}
+
+	@Transactional
+	public boolean areAdmissionsActive() {
+		var admission = admissionDao.findAll().get(0);
+		return admission.isActive();
 	}
 
 }

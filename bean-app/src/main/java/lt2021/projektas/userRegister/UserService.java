@@ -20,6 +20,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lt2021.projektas.child.ChildService;
 import lt2021.projektas.child.ChildStatusObject;
+import lt2021.projektas.kindergarten.Kindergarten;
+import lt2021.projektas.kindergarten.KindergartenDao;
+import lt2021.projektas.kindergarten.KindergartenStatisticsObject;
 import lt2021.projektas.kindergarten.queue.QueueService;
 import lt2021.projektas.parentdetails.ParentDetailsDao;
 
@@ -37,6 +40,9 @@ public class UserService implements UserDetailsService {
 	
 	@Autowired
 	private QueueService queueService;
+	
+	@Autowired
+	private KindergartenDao kindergartenDao;
 
 	@Transactional(readOnly = true)
 	public List<ServiceLayerUser> getUsers() {
@@ -148,6 +154,7 @@ public class UserService implements UserDetailsService {
 			if (user.getParentDetails().getChildren().size() > 0) {
 				user.getParentDetails().getChildren().forEach(child -> {
 					var childStatus = new ChildStatusObject();
+					childStatus.setChildId(child.getId());
 					childStatus.setFirstname(child.getFirstname());
 					childStatus.setLastname(child.getLastname());
 					childStatus.setApplicationFilled(child.getRegistrationForm() == null ? false : true);
@@ -195,6 +202,25 @@ public class UserService implements UserDetailsService {
 		});
 		status.setChildren(childrenStatus);
 		return status;
+	}
+	
+	@Transactional
+	public List<KindergartenStatisticsObject> getStatistics() {
+		var kindergartens = kindergartenDao.findAll();
+		List<KindergartenStatisticsObject> kindergartenStatistics = new ArrayList<>();
+		for (Kindergarten kg : kindergartens) {
+			var kgStat = new KindergartenStatisticsObject();
+			kgStat.setKindergartenName(kg.getName());
+			kg.getQueues().stream()
+				.forEach(queue -> {
+					var count = queue.getRegistrations().stream()
+						.filter(reg -> reg.getFirstPriority().equals(queue.getKindergarten().getName()))
+						.count();
+					kgStat.setFirstPriorityRegistrations((kgStat.getFirstPriorityRegistrations() + (int) count));
+				});
+			kindergartenStatistics.add(kgStat);
+		}
+		return kindergartenStatistics;
 	}
 
 }

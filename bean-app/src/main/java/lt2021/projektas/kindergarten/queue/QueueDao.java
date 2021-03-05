@@ -10,6 +10,7 @@ import lt2021.projektas.kindergarten.Kindergarten;
 
 public interface QueueDao extends JpaRepository<KindergartenQueue, Long> {
 	
+	
 	@Query("select queue from KindergartenQueue queue where queue.kindergarten = :kindergarten and queue.ageGroup = :ageGroup")
 	Optional<KindergartenQueue> findQueueByKindergartenNameAndAgeGroup(@Param("kindergarten") Kindergarten kindergarten, @Param("ageGroup") AgeGroup ageGroup);
 	

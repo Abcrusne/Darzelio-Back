@@ -32,6 +32,7 @@ import lt2021.projektas.child.ChildService;
 import lt2021.projektas.child.CreateChildCommand;
 import lt2021.projektas.child.DBFile;
 import lt2021.projektas.child.ServiceLayerChild;
+import lt2021.projektas.kindergarten.KindergartenStatisticsObject;
 import lt2021.projektas.parentdetails.CreateDetailsCommand;
 import lt2021.projektas.parentdetails.ParentDetailsService;
 
@@ -209,6 +210,11 @@ public class UserController {
 		} else {
 			return null;
 		}
+	}
+	
+	@RequestMapping(path = "/statistics", method = RequestMethod.GET)
+	public List<KindergartenStatisticsObject> getStatistics() {
+		return userService.getStatistics();
 	}
 
 }
