@@ -166,10 +166,15 @@ public class UserService implements UserDetailsService {
 								childrenStatus.add(childStatus);
 							}
 						} else {
+							childStatus.setFirstPriority(child.getRegistrationForm().getFirstPriority());
 							childStatus.setPlaceInFirstQueue(queueService.getChildPositionInKindergartenQueue(child.getRegistrationForm().getFirstPriority(), child.getRegistrationForm()));
+							childStatus.setSecondPriority(child.getRegistrationForm().getSecondPriority());
 							childStatus.setPlaceInSecondQueue(queueService.getChildPositionInKindergartenQueue(child.getRegistrationForm().getSecondPriority(), child.getRegistrationForm()));
+							childStatus.setThirdPriority(child.getRegistrationForm().getThirdPriority());
 							childStatus.setPlaceInThirdQueue(queueService.getChildPositionInKindergartenQueue(child.getRegistrationForm().getThirdPriority(), child.getRegistrationForm()));
+							childStatus.setFourthPriority(child.getRegistrationForm().getFourthPriority());
 							childStatus.setPlaceInFourthQueue(queueService.getChildPositionInKindergartenQueue(child.getRegistrationForm().getFourthPriority(), child.getRegistrationForm()));
+							childStatus.setFifthPriority(child.getRegistrationForm().getFifthPriority());
 							childStatus.setPlaceInFifthQueue(queueService.getChildPositionInKindergartenQueue(child.getRegistrationForm().getFifthPriority(), child.getRegistrationForm()));
 							childStatus.setAcceptedKindergarten(child.getRegistrationForm().getAcceptedKindergarten());
 							childrenStatus.add(childStatus);

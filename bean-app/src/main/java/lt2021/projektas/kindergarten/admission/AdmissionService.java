@@ -227,7 +227,7 @@ public class AdmissionService {
 					.filter(parent -> parent.getParent() != null).findFirst().orElse(null);
 			SimpleMailMessage message = new SimpleMailMessage();
 			message.setFrom("bean.vaidar.mailinformer@gmail.com");
-			message.setTo(mainParent.getParent().getEmail());
+			message.setTo(mainParent.getEmail());
 			message.setSubject("Vaiko registracija į darželį");
 			message.setText("Sveiki, " + mainParent.getFirstname() + " " + mainParent.getLastname() + ", \n"
 					+ "Informuojame, jog jūsų vaikas: " + reg.getChild().getFirstname() + " "

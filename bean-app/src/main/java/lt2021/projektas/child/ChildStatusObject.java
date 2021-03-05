@@ -7,10 +7,15 @@ public class ChildStatusObject {
 	private boolean applicationFilled;
 	private boolean applicationAccepted;
 	private String notAcceptedReason;
+	private String firstPriority;
 	private int placeInFirstQueue;
+	private String secondPriority;
 	private int placeInSecondQueue;
+	private String thirdPriority;
 	private int placeInThirdQueue;
+	private String fourthPriority;
 	private int placeInFourthQueue;
+	private String fifthPriority;
 	private int placeInFifthQueue;
 	private String acceptedKindergarten;
 
@@ -19,18 +24,24 @@ public class ChildStatusObject {
 	}
 
 	public ChildStatusObject(String firstname, String lastname, boolean applicationFilled, boolean applicationAccepted,
-			String notAcceptedReason, int placeInFirstQueue, int placeInSecondQueue, int placeInThirdQueue,
-			int placeInFourthQueue, int placeInFifthQueue, String acceptedKindergarten) {
+			String notAcceptedReason, String firstPriority, int placeInFirstQueue, String secondPriority, int placeInSecondQueue,
+			String thirdPriority, int placeInThirdQueue, String fourthPriority, int placeInFourthQueue, String fifthPriority,
+			int placeInFifthQueue, String acceptedKindergarten) {
 		super();
 		this.firstname = firstname;
 		this.lastname = lastname;
 		this.applicationFilled = applicationFilled;
 		this.applicationAccepted = applicationAccepted;
 		this.notAcceptedReason = notAcceptedReason;
+		this.firstPriority = firstPriority;
 		this.placeInFirstQueue = placeInFirstQueue;
+		this.secondPriority = secondPriority;
 		this.placeInSecondQueue = placeInSecondQueue;
+		this.thirdPriority = thirdPriority;
 		this.placeInThirdQueue = placeInThirdQueue;
+		this.fourthPriority = fourthPriority;
 		this.placeInFourthQueue = placeInFourthQueue;
+		this.fifthPriority = fifthPriority;
 		this.placeInFifthQueue = placeInFifthQueue;
 		this.acceptedKindergarten = acceptedKindergarten;
 	}
@@ -122,5 +133,47 @@ public class ChildStatusObject {
 	public void setLastname(String lastname) {
 		this.lastname = lastname;
 	}
+
+	public String getFirstPriority() {
+		return firstPriority;
+	}
+
+	public void setFirstPriority(String firstPriority) {
+		this.firstPriority = firstPriority;
+	}
+
+	public String getSecondPriority() {
+		return secondPriority;
+	}
+
+	public void setSecondPriority(String secondPriority) {
+		this.secondPriority = secondPriority;
+	}
+
+	public String getThirdPriority() {
+		return thirdPriority;
+	}
+
+	public void setThirdPriority(String thirdPriority) {
+		this.thirdPriority = thirdPriority;
+	}
+
+	public String getFourthPriority() {
+		return fourthPriority;
+	}
+
+	public void setFourthPriority(String fourthPriority) {
+		this.fourthPriority = fourthPriority;
+	}
+
+	public String getFifthPriority() {
+		return fifthPriority;
+	}
+
+	public void setFifthPriority(String fifthPriority) {
+		this.fifthPriority = fifthPriority;
+	}
+	
+	
 
 }
