@@ -14,6 +14,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.crypto.password.MessageDigestPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +28,7 @@ import lt2021.projektas.kindergarten.queue.RegistrationTableItem;
 import lt2021.projektas.kindergarten.queue.RegistrationTableObject;
 import lt2021.projektas.kindergarten.registration.KindergartenRegistration;
 import lt2021.projektas.kindergarten.registration.KindergartenRegistrationDao;
+import lt2021.projektas.userRegister.User;
 
 @Service
 public class AdmissionService {
@@ -342,25 +345,27 @@ public class AdmissionService {
 	}
 
 	@Transactional
-	public AdmissionStatusObject activateAdmission() {
+	public AdmissionStatusObject activateAdmission(User user) {
 		var admission = admissionDao.findAll().get(0);
 		admission.setActive(true);
 		admission.setLastUpdatedAt(new Date());
 		admissionDao.save(admission);
-		return admissionStatus();
+		return admissionStatus(user);
 	}
 
 	@Transactional
-	public AdmissionStatusObject deactivateAdmission() {
+	public AdmissionStatusObject deactivateAdmission(User user) {
 		var admission = admissionDao.findAll().get(0);
 		admission.setActive(false);
 		admission.setLastUpdatedAt(new Date());
 		admissionDao.save(admission);
-		return admissionStatus();
+		return admissionStatus(user);
 	}
 
 	@Transactional
-	public AdmissionStatusObject admissionStatus() {
+	public AdmissionStatusObject admissionStatus(User user) {
+		PasswordEncoder encoder = new MessageDigestPasswordEncoder("SHA-256");
+		var passwordChanged = encoder.matches(user.getFirstname(), user.getPassword()) ? false : true;
 		var admission = admissionDao.findAll().get(0);
 		var kindergartens = kindergartenDao.findAll();
 		int firstAgeGroupCount = 0;
@@ -383,25 +388,25 @@ public class AdmissionService {
 			spotsInSecondAgeGroup += kg.getSpotsInSecondAgeGroup();
 		}
 		return new AdmissionStatusObject(firstAgeGroupCount, secondAgeGroupCount, spotsInFirstAgeGroup,
-				spotsInSecondAgeGroup, admission.isActive(), admission.isAdminLock());
+				spotsInSecondAgeGroup, admission.isActive(), admission.isAdminLock(), passwordChanged);
 	}
 
 	@Transactional
-	public AdmissionStatusObject lockAdmission() {
+	public AdmissionStatusObject lockAdmission(User user) {
 		var admission = admissionDao.findAll().get(0);
 		admission.setAdminLock(true);
 		admission.setLastUpdatedAt(new Date());
 		admissionDao.save(admission);
-		return admissionStatus();
+		return admissionStatus(user);
 	}
 
 	@Transactional
-	public AdmissionStatusObject unlockAdmission() {
+	public AdmissionStatusObject unlockAdmission(User user) {
 		var admission = admissionDao.findAll().get(0);
 		admission.setAdminLock(false);
 		admission.setLastUpdatedAt(new Date());
 		admissionDao.save(admission);
-		return admissionStatus();
+		return admissionStatus(user);
 	}
 
 	@Transactional

@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -15,6 +16,7 @@ import lt2021.projektas.kindergarten.queue.QueueService;
 import lt2021.projektas.kindergarten.queue.QueueTableObject;
 import lt2021.projektas.kindergarten.queue.RegistrationTableObject;
 import lt2021.projektas.kindergarten.registration.KindergartenRegistrationService;
+import lt2021.projektas.userRegister.UserService;
 
 @RestController
 @RequestMapping(value = "/api/kindergartens/admission")
@@ -28,6 +30,9 @@ public class AdmissionController {
 
 	@Autowired
 	private QueueService queueService;
+	
+	@Autowired
+	private UserService userService;
 
 	@RequestMapping(path = "/registrations", method = RequestMethod.GET)
 	public RegistrationTableObject getAdmissionRegistrations() {
@@ -78,27 +83,32 @@ public class AdmissionController {
 	
 	@RequestMapping(path = "/status", method = RequestMethod.GET)
 	public AdmissionStatusObject getAdmissionStatus() {
-		return admissionService.admissionStatus();
+		var user = userService.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
+		return admissionService.admissionStatus(user);
 	}
 
 	@RequestMapping(path = "/activate", method = RequestMethod.POST)
 	public AdmissionStatusObject activateAdmission() {
-		return admissionService.activateAdmission();
+		var user = userService.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
+		return admissionService.activateAdmission(user);
 	}
 
 	@RequestMapping(path = "/deactivate", method = RequestMethod.POST)
 	public AdmissionStatusObject deactivateAdmission() {
-		return admissionService.deactivateAdmission();
+		var user = userService.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
+		return admissionService.deactivateAdmission(user);
 	}
 
 	@RequestMapping(path = "/lock", method = RequestMethod.POST)
 	public AdmissionStatusObject lockAdmission() {
-		return admissionService.lockAdmission();
+		var user = userService.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
+		return admissionService.lockAdmission(user);
 	}
 
 	@RequestMapping(path = "/unlock", method = RequestMethod.POST)
 	public AdmissionStatusObject unlockAdmission() {
-		return admissionService.unlockAdmission();
+		var user = userService.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
+		return admissionService.unlockAdmission(user);
 	}
 	
 	@RequestMapping(path = "/queues", method = RequestMethod.GET)
