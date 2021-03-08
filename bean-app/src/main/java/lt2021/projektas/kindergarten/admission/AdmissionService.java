@@ -148,7 +148,7 @@ public class AdmissionService {
 						});
 						reg.setQueues(regQueues);
 						registrationDao.save(reg);
-						//sendConfirmationEmailToParents(reg);
+						sendConfirmationEmailToParents(reg);
 					} else {
 						var secondPriorityQueue = reg.getQueues().stream()
 								.filter(q -> q.getKindergarten().getName().equals(reg.getSecondPriority())).findFirst()
@@ -175,7 +175,7 @@ public class AdmissionService {
 								});
 								reg.setQueues(regQueues);
 								registrationDao.save(reg);
-								//sendConfirmationEmailToParents(reg);
+								sendConfirmationEmailToParents(reg);
 							} else {
 								var thirdPriorityQueue = reg.getQueues().stream()
 										.filter(q -> q.getKindergarten().getName().equals(reg.getThirdPriority()))
@@ -204,7 +204,7 @@ public class AdmissionService {
 										});
 										reg.setQueues(regQueues);
 										registrationDao.save(reg);
-										//sendConfirmationEmailToParents(reg);
+										sendConfirmationEmailToParents(reg);
 									} else {
 										var fourthPriorityQueue = reg.getQueues().stream().filter(
 												q -> q.getKindergarten().getName().equals(reg.getFourthPriority()))
@@ -235,7 +235,7 @@ public class AdmissionService {
 												});
 												reg.setQueues(regQueues);
 												registrationDao.save(reg);
-												//sendConfirmationEmailToParents(reg);
+												sendConfirmationEmailToParents(reg);
 											} else {
 												var fifthPriorityQueue = reg.getQueues().stream()
 														.filter(q -> q.getKindergarten().getName()
@@ -268,7 +268,7 @@ public class AdmissionService {
 														});
 														reg.setQueues(regQueues);
 														registrationDao.save(reg);
-														//sendConfirmationEmailToParents(reg);
+														sendConfirmationEmailToParents(reg);
 													}
 												}
 											}

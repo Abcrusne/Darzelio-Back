@@ -6,6 +6,7 @@ import lt2021.projektas.child.ChildStatusObject;
 
 public class UserStatusObject {
 	
+	private boolean admissionActive;
 	private boolean passwordChanged;
 	private boolean detailsFilled;
 	private boolean childRegistered;
@@ -15,9 +16,10 @@ public class UserStatusObject {
 		// TODO Auto-generated constructor stub
 	}
 
-	public UserStatusObject(boolean passwordChanged, boolean detailsFilled, boolean childRegistered,
+	public UserStatusObject(boolean admissionActive, boolean passwordChanged, boolean detailsFilled, boolean childRegistered,
 			List<ChildStatusObject> children) {
 		super();
+		this.admissionActive = admissionActive;
 		this.passwordChanged = passwordChanged;
 		this.detailsFilled = detailsFilled;
 		this.childRegistered = childRegistered;
@@ -54,6 +56,14 @@ public class UserStatusObject {
 
 	public void setChildren(List<ChildStatusObject> children) {
 		this.children = children;
+	}
+
+	public boolean isAdmissionActive() {
+		return admissionActive;
+	}
+
+	public void setAdmissionActive(boolean admissionActive) {
+		this.admissionActive = admissionActive;
 	}
 	
 	

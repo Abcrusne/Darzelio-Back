@@ -23,7 +23,10 @@ import lt2021.projektas.child.ChildStatusObject;
 import lt2021.projektas.kindergarten.Kindergarten;
 import lt2021.projektas.kindergarten.KindergartenDao;
 import lt2021.projektas.kindergarten.KindergartenStatisticsObject;
+import lt2021.projektas.kindergarten.admission.AdmissionService;
 import lt2021.projektas.kindergarten.queue.QueueService;
+import lt2021.projektas.logging.Log;
+import lt2021.projektas.logging.LogDao;
 import lt2021.projektas.parentdetails.ParentDetailsDao;
 
 @Service
@@ -43,6 +46,12 @@ public class UserService implements UserDetailsService {
 	
 	@Autowired
 	private KindergartenDao kindergartenDao;
+	
+	@Autowired
+	private AdmissionService admissionService;	
+	
+	@Autowired
+	private LogDao logDao;
 
 	@Transactional(readOnly = true)
 	public List<ServiceLayerUser> getUsers() {
@@ -63,17 +72,18 @@ public class UserService implements UserDetailsService {
 	}
 
 	@Transactional
-	public void createUser(CreateUserCommand newUser) {
+	public void createUser(CreateUserCommand newUser, User admin) {
 		User userToSave = new User(newUser.getFirstname(), newUser.getLastname(), newUser.getEmail().toLowerCase(),
 				newUser.getRole());
 		@SuppressWarnings("deprecation")
 		PasswordEncoder encoder = new MessageDigestPasswordEncoder("SHA-256");
 		userToSave.setPassword(encoder.encode(newUser.getFirstname()));
 		userDao.save(userToSave);
+		logDao.save(new Log(new Date(), admin.getEmail(), admin.getRole().toString(), ("Sukurtas naujas vartotojas su el. paštu: " + newUser.getEmail())));
 	}
 
 	@Transactional
-	public void updateUser(ServiceLayerUser user) {
+	public void updateUser(ServiceLayerUser user, User loggedUser) {
 
 		var updatedUser = userDao.findById(user.getId()).orElse(null);
 		updatedUser.setFirstname(user.getFirstname());
@@ -82,10 +92,11 @@ public class UserService implements UserDetailsService {
 		updatedUser.setRole(user.getRole());
 		updatedUser.setMarkedForDeletion(user.isMarkedForDeletion());
 		userDao.save(updatedUser);
+		logDao.save(new Log(new Date(), loggedUser.getEmail(), loggedUser.getRole().toString(), ("Pakeisti vartotojo " + user.getEmail() + " duomenys")));
 	}
 
 	@Transactional
-	public void deleteUser(Long id) {
+	public void deleteUser(Long id, User loggedUser) {
 		var user = userDao.findById(id).orElse(null);
 		if (user != null) {
 			var parentDetails = user.getParentDetails();
@@ -106,6 +117,7 @@ public class UserService implements UserDetailsService {
 			} else {
 				userDao.delete(user);
 			}
+			logDao.save(new Log(new Date(), loggedUser.getEmail(), loggedUser.getRole().toString(), ("Ištrintas vartotojas su el. paštu: " + user.getEmail())));
 		}
 	}
 
@@ -130,13 +142,16 @@ public class UserService implements UserDetailsService {
 		@SuppressWarnings("deprecation")
 		PasswordEncoder encoder = new MessageDigestPasswordEncoder("SHA-256");
 		if (oldPassword.equals(newPassword)) {
+			logDao.save(new Log(new Date(), user.getEmail(), user.getRole().toString(), ("Bandytas pakeisti slaptažodis. Nepakeistas (senas ir naujas sutapo)")));
 			return new ResponseEntity<String>("Senas ir naujas slaptažodis negali sutapti", HttpStatus.BAD_REQUEST);
 		}
 		if (encoder.matches(oldPassword, user.getPassword())) {
 			user.setPassword(encoder.encode(newPassword));
 			userDao.save(user);
+			logDao.save(new Log(new Date(), user.getEmail(), user.getRole().toString(), ("Pakeistas vartotojo slaptažodis")));
 			return new ResponseEntity<String>("Slaptažodis pakeistas", HttpStatus.OK);
 		}
+		logDao.save(new Log(new Date(), user.getEmail(), user.getRole().toString(), ("Bandytas pakeisti slaptažodis. Nepakeistas (neteisingas senas slaptažodis)")));
 		return new ResponseEntity<String>("Neteisingai įvestas senas slaptažodis", HttpStatus.BAD_REQUEST);
 	}
 	
@@ -149,6 +164,7 @@ public class UserService implements UserDetailsService {
 		PasswordEncoder encoder = new MessageDigestPasswordEncoder("SHA-256");
 		status.setPasswordChanged(encoder.matches(user.getFirstname(), user.getPassword()) ? false : true);
 		status.setDetailsFilled(user.getParentDetails() == null ? false : true);
+		status.setAdmissionActive(admissionService.areAdmissionsActive());
 		if (user.getParentDetails() != null) {
 			status.setChildRegistered(user.getParentDetails().getChildren().size() == 0 ? false : true);
 			if (user.getParentDetails().getChildren().size() > 0) {

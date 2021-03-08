@@ -66,21 +66,27 @@ public class UserController {
 	@ApiOperation(value = "Create user", notes = "Creates users with data")
 	public List<ServiceLayerUser> createUser(
 			@ApiParam(value = "User Data", required = true) @RequestBody final CreateUserCommand user) {
-		userService.createUser(user);
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		var admin = userService.findByEmail(auth.getName());
+		userService.createUser(user, admin);
 		return userService.getUsers();
 	}
 
 	@RequestMapping(path = "/{userId}", method = RequestMethod.PUT)
 	public void updateUser(@PathVariable final long userId, @Valid @RequestBody final CreateUserCommand user) {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		var loggedUser = userService.findByEmail(auth.getName());
 		userService.updateUser(new ServiceLayerUser(userId, user.getFirstname(), user.getLastname(), user.getEmail(),
-				user.getPassword(), user.getRole(), user.isMarkedForDeletion()));
+				user.getPassword(), user.getRole(), user.isMarkedForDeletion()), loggedUser);
 	}
 
 //	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@RequestMapping(path = "/{userId}", method = RequestMethod.DELETE)
 	@ApiOperation(value = "Delete user", notes = "Deletes user by id")
 	public void deleteUser(@PathVariable final Long userId) {
-		userService.deleteUser(userId);
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		var loggedUser = userService.findByEmail(auth.getName());
+		userService.deleteUser(userId, loggedUser);
 	}
 
 	@RequestMapping(path = "/loggedrole", method = RequestMethod.GET)
