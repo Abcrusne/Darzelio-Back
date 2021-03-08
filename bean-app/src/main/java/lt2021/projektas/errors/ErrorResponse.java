@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 
@@ -44,6 +45,12 @@ public class ErrorResponse extends ResponseEntityExceptionHandler {
 	
 	@ExceptionHandler(ParseException.class)
 	protected ResponseEntity<Object> handleParseException(HttpServletRequest req, Exception ex) {
+		ErrorDetails errorDetails = new ErrorDetails(new Date(), "Bad birthdate format", ex.getMessage());
+		return new ResponseEntity<Object>(errorDetails, HttpStatus.BAD_REQUEST);
+	}
+	
+	@ExceptionHandler(MaxUploadSizeExceededException.class)
+	protected ResponseEntity<Object> handleMaxUploadSizeExceededException(HttpServletRequest req, Exception ex) {
 		ErrorDetails errorDetails = new ErrorDetails(new Date(), "Bad birthdate format", ex.getMessage());
 		return new ResponseEntity<Object>(errorDetails, HttpStatus.BAD_REQUEST);
 	}

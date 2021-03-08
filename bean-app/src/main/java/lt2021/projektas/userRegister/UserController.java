@@ -7,26 +7,32 @@ import java.util.List;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lt2021.projektas.child.ChildService;
 import lt2021.projektas.child.CreateChildCommand;
+import lt2021.projektas.child.DBFile;
 import lt2021.projektas.child.ServiceLayerChild;
+import lt2021.projektas.kindergarten.KindergartenStatisticsObject;
 import lt2021.projektas.parentdetails.CreateDetailsCommand;
 import lt2021.projektas.parentdetails.ParentDetailsService;
 
@@ -112,7 +118,7 @@ public class UserController {
 					finalChildren.add(new CreateChildCommand(child.getId(), child.getFirstname(), child.getLastname(),
 							child.getPersonalCode(), child.isAdopted(), child.getBirthdate(),
 							child.getLivingAddress().getCity(), child.getLivingAddress().getStreet(),
-							child.getLivingAddress().getHouseNumber(), child.getLivingAddress().getFlatNumber(), true,
+							child.getLivingAddress().getHouseNumber(), child.getLivingAddress().getFlatNumber(), child.getHealthRecordId(), true,
 							child.getSecondParentDetails().getId(), child.getSecondParentDetails().getFirstname(),
 							child.getSecondParentDetails().getLastname(), child.getSecondParentDetails().getEmail(),
 							child.getSecondParentDetails().getPhone(), child.getSecondParentDetails().getPersonalCode(),
@@ -133,7 +139,7 @@ public class UserController {
 					finalChildren.add(new CreateChildCommand(child.getId(), child.getFirstname(), child.getLastname(),
 							child.getPersonalCode(), child.isAdopted(), child.getBirthdate(),
 							child.getLivingAddress().getCity(), child.getLivingAddress().getStreet(),
-							child.getLivingAddress().getHouseNumber(), child.getLivingAddress().getFlatNumber(), false,
+							child.getLivingAddress().getHouseNumber(), child.getLivingAddress().getFlatNumber(), child.getHealthRecordId(), false,
 							0L, "", "", "", "", 0L, "", "", "", "", 0, false, "", false, false, "", "", "", ""));
 				}
 			}
@@ -146,28 +152,8 @@ public class UserController {
 	
 	
 	@RequestMapping(path = "/getparentdetails", method = RequestMethod.GET)
-	//@PreAuthorize("hasRole('PARENT')")
-	//@Secured("PARENT")
-	//@PostAuthorize("hasRole('PARENT')")
 	public CreateDetailsCommand getLoggedParentDetails() {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		//System.out.println("???????????? cookie authority:" + auth.getAuthorities() + " ??????????????");
-		//System.out.println("???????????? cookie authority:" + auth.toString() + " ??????????????");
-		//var test = ((org.springframework.security.core.userdetails.User) auth.getPrincipal()).getAuthorities();
-		/*
-		 * for (GrantedAuthority i: test) { for (GrantedAuthority t:
-		 * auth.getAuthorities()) { System.out.println("????????????? User authority: "
-		 * + i.toString() + " ????????????????");
-		 * System.out.println("????????????? Token authority: " + t.toString() +
-		 * " ????????????????"); System.out.println("????????????? Check if equals: " +
-		 * i.equals(t) + " ??????????????"); } }
-		 */
-		//System.out.println("???????????? User authorities hash:" + test.hashCode() + " ??????????????");
-		//System.out.println("???????????? Token authorities hash:" + auth.getAuthorities().hashCode() + " ??????????????");
-		//System.out.println("???????????? Check if equal from principal: " + (test.equals(auth.getAuthorities())) + " ?????????????");
-		//System.out.println("???????????? cookie authority:" + userService.loadUserByUsername(auth.getName()).toString() + " ??????????????");
-		//System.out.println("???????????? userService authority:" + userService.loadUserByUsername(auth.getName()).getAuthorities() + " ????????????????");
-		//System.out.println("???????????? Check if equal: " + (auth.getAuthorities().equals(userService.loadUserByUsername(auth.getName()).getAuthorities())) + " ?????????????");
 		if (!(auth instanceof AnonymousAuthenticationToken)) {
 			var user = userService.findByEmail(auth.getName());
 			if (user.getParentDetails() != null) {
@@ -195,6 +181,40 @@ public class UserController {
 			return userService.changePassword(user, passwordChange.getOldPassword(), passwordChange.getNewPassword());
 		}
 		return new ResponseEntity<String>("Vartotojas nerastas. Prisijunkite iš naujo", HttpStatus.BAD_REQUEST);
+	}
+	
+	@RequestMapping(path = "/pdf", method = RequestMethod.POST)
+	public ResponseEntity<String> uploadHealthRecord(@RequestParam("data") MultipartFile file, @RequestParam("id") long id) {
+		return childService.uploadHealthRecord(file, id);
+	}
+	
+	@RequestMapping(path = "/pdf/{childId}/download", method = RequestMethod.GET)
+	public ResponseEntity<Resource> downloadHealthRecord(@PathVariable("childId") final long childId) {
+		DBFile dbfile = childService.getHealthRecord(childId);
+		return ResponseEntity.ok()
+				.contentType(MediaType.parseMediaType(dbfile.getFileType()))
+				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + dbfile.getFileName() + "\"")
+				.body(new ByteArrayResource(dbfile.getData()));
+	}
+	
+	@RequestMapping(path = "/pdf/{childId}/delete", method = RequestMethod.DELETE)
+	public ResponseEntity<String> deleteHealthRecord(@PathVariable("childId") final long childId) {
+		return childService.deleteHealthRecord(childId);
+	}
+	
+	@RequestMapping(path = "/status", method = RequestMethod.GET)
+	public UserStatusObject getUserStatus() {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		if (!(auth instanceof AnonymousAuthenticationToken)) {
+			return userService.returnLoggedUserStatus(auth.getName());
+		} else {
+			return null;
+		}
+	}
+	
+	@RequestMapping(path = "/statistics", method = RequestMethod.GET)
+	public List<KindergartenStatisticsObject> getStatistics() {
+		return userService.getStatistics();
 	}
 
 }

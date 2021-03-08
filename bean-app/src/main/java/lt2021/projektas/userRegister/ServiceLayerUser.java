@@ -12,16 +12,17 @@ public class ServiceLayerUser {
 
 	@Enumerated(EnumType.STRING)
 	private UserRole role;
-  
+
 	private String password;
 //		private String confirmPassword;
 	
 	private boolean markedForDeletion;
 
+	private boolean markedForDeletion;
+
 	public ServiceLayerUser() {
 		super();
 	}
-
 
 	public ServiceLayerUser(String firstname, String lastname, String email, String password, UserRole role) {
 		super();
@@ -33,7 +34,8 @@ public class ServiceLayerUser {
 	}
 
 
-	public ServiceLayerUser(Long id, String firstname, String lastname, String email, String password, UserRole role, boolean markedForDeletion) {
+	public ServiceLayerUser(Long id, String firstname, String lastname, String email, String password, UserRole role,
+			boolean markedForDeletion) {
 		super();
 		this.id = id;
 		this.firstname = firstname;
@@ -92,16 +94,12 @@ public class ServiceLayerUser {
 		this.password = password;
 	}
 
-
 	public boolean isMarkedForDeletion() {
 		return markedForDeletion;
 	}
 
-
 	public void setMarkedForDeletion(boolean markedForDeletion) {
 		this.markedForDeletion = markedForDeletion;
 	}
-	
-	
 
 }

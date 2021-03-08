@@ -21,6 +21,8 @@ public class CreateChildCommand {
 	private String houseNumber;
 
 	private String flatNumber;
+	
+	private Long healthRecordId;
 
 	private boolean secondParent;
 	
@@ -63,7 +65,7 @@ public class CreateChildCommand {
 	private String secondParentDeclaredFlatNumber;
 
 	public CreateChildCommand(Long id, String firstname, String lastname, long personalCode, boolean isAdopted,
-			String birthdate, String city, String street, String houseNumber, String flatNumber, boolean secondParent,
+			String birthdate, String city, String street, String houseNumber, String flatNumber, Long healthRecordId, boolean secondParent,
 			Long secondParentId, String secondParentFirstname, String secondParentLastname, String secondParentEmail,
 			String secondParentPhone, long secondParentPersonalCode, String secondParentCity, String secondParentStreet,
 			String secondParentHouseNumber, String secondParentFlatNumber, int secondParentNumberOfKids,
@@ -82,6 +84,7 @@ public class CreateChildCommand {
 		this.street = street;
 		this.houseNumber = houseNumber;
 		this.flatNumber = flatNumber;
+		this.healthRecordId = healthRecordId;
 		this.secondParent = secondParent;
 		this.secondParentId = secondParentId;
 		this.secondParentFirstname = secondParentFirstname;
@@ -342,6 +345,14 @@ public class CreateChildCommand {
 
 	public void setSecondParentId(Long secondParentId) {
 		this.secondParentId = secondParentId;
+	}
+
+	public Long getHealthRecordId() {
+		return healthRecordId;
+	}
+
+	public void setHealthRecordId(Long healthRecordId) {
+		this.healthRecordId = healthRecordId;
 	}
 	
 	

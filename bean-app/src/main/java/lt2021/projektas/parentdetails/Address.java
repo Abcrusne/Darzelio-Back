@@ -60,6 +60,13 @@ public class Address {
 		this.flatNumber = flatNumber;
 	}
 	
-	
+	@Override
+	public String toString() {
+		if (this.flatNumber.length() > 0) {
+			return this.city + ", " + this.street + " " + this.houseNumber + "-" + this.flatNumber;
+		} else {
+			return this.city + ", " + this.street + " " + this.houseNumber;
+		}
+	}
 	
 }

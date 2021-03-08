@@ -1,6 +1,9 @@
 package lt2021.projektas.userRegister;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,15 +18,36 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import lt2021.projektas.child.ChildService;
+import lt2021.projektas.child.ChildStatusObject;
+import lt2021.projektas.kindergarten.Kindergarten;
+import lt2021.projektas.kindergarten.KindergartenDao;
+import lt2021.projektas.kindergarten.KindergartenStatisticsObject;
+import lt2021.projektas.kindergarten.queue.QueueService;
+import lt2021.projektas.parentdetails.ParentDetailsDao;
+
 @Service
 public class UserService implements UserDetailsService {
 
 	@Autowired
 	private UserDao userDao;
+	
+	@Autowired
+	private ParentDetailsDao detailsDao;
+	
+	@Autowired
+	private ChildService childService;
+	
+	@Autowired
+	private QueueService queueService;
+	
+	@Autowired
+	private KindergartenDao kindergartenDao;
 
 	@Transactional(readOnly = true)
 	public List<ServiceLayerUser> getUsers() {
-		return userDao.findAll().stream()
+		var users = userDao.findAll();
+		return users.stream()
 				.map(userFromService -> new ServiceLayerUser(userFromService.getId(), userFromService.getFirstname(),
 						userFromService.getLastname(), userFromService.getEmail(), userFromService.getPassword(),
 						userFromService.getRole(), userFromService.isMarkedForDeletion()))
@@ -44,7 +68,7 @@ public class UserService implements UserDetailsService {
 				newUser.getRole());
 		@SuppressWarnings("deprecation")
 		PasswordEncoder encoder = new MessageDigestPasswordEncoder("SHA-256");
-		userToSave.setPassword(encoder.encode(newUser.getPassword()));
+		userToSave.setPassword(encoder.encode(newUser.getFirstname()));
 		userDao.save(userToSave);
 	}
 
@@ -57,17 +81,32 @@ public class UserService implements UserDetailsService {
 		updatedUser.setEmail(user.getEmail().toLowerCase());
 		updatedUser.setRole(user.getRole());
 		updatedUser.setMarkedForDeletion(user.isMarkedForDeletion());
-		@SuppressWarnings("deprecation")
-		PasswordEncoder encoder = new MessageDigestPasswordEncoder("SHA-256");
-		if (!(user.getPassword().equals(updatedUser.getPassword()))) {
-			updatedUser.setPassword(encoder.encode(user.getPassword()));
-		}
 		userDao.save(updatedUser);
 	}
 
 	@Transactional
 	public void deleteUser(Long id) {
-		userDao.deleteById(id);
+		var user = userDao.findById(id).orElse(null);
+		if (user != null) {
+			var parentDetails = user.getParentDetails();
+			if (parentDetails != null) {
+				var children = parentDetails.getChildren().stream().collect(Collectors.toList());
+				if (children.size() > 0) {
+					children.forEach(child -> {
+						childService.deleteChild(id, child.getId());
+					});
+					children.clear();
+					parentDetails.setChildren(null);
+					detailsDao.delete(parentDetails);
+					userDao.delete(user);
+				} else {
+					detailsDao.delete(parentDetails);
+					userDao.delete(user);
+				}
+			} else {
+				userDao.delete(user);
+			}
+		}
 	}
 
 	@Override
@@ -78,7 +117,7 @@ public class UserService implements UserDetailsService {
 			throw new UsernameNotFoundException(username + " not found.");
 		}
 		return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(),
-				AuthorityUtils.createAuthorityList(new String[] { user.getRole().toString() }));
+				AuthorityUtils.createAuthorityList(new String[] { "ROLE_" + user.getRole().toString() }));
 	}
 
 	@Transactional(readOnly = true)
@@ -88,6 +127,7 @@ public class UserService implements UserDetailsService {
 	
 	@Transactional
 	public ResponseEntity<String> changePassword(User user, String oldPassword, String newPassword) {
+		@SuppressWarnings("deprecation")
 		PasswordEncoder encoder = new MessageDigestPasswordEncoder("SHA-256");
 		if (oldPassword.equals(newPassword)) {
 			return new ResponseEntity<String>("Senas ir naujas slaptažodis negali sutapti", HttpStatus.BAD_REQUEST);
@@ -98,6 +138,89 @@ public class UserService implements UserDetailsService {
 			return new ResponseEntity<String>("Slaptažodis pakeistas", HttpStatus.OK);
 		}
 		return new ResponseEntity<String>("Neteisingai įvestas senas slaptažodis", HttpStatus.BAD_REQUEST);
+	}
+	
+	@Transactional
+	public UserStatusObject returnLoggedUserStatus(String email) {
+		var user = findByEmail(email);
+		UserStatusObject status = new UserStatusObject();
+		List<ChildStatusObject> childrenStatus = new ArrayList<>();
+		@SuppressWarnings("deprecation")
+		PasswordEncoder encoder = new MessageDigestPasswordEncoder("SHA-256");
+		status.setPasswordChanged(encoder.matches(user.getFirstname(), user.getPassword()) ? false : true);
+		status.setDetailsFilled(user.getParentDetails() == null ? false : true);
+		if (user.getParentDetails() != null) {
+			status.setChildRegistered(user.getParentDetails().getChildren().size() == 0 ? false : true);
+			if (user.getParentDetails().getChildren().size() > 0) {
+				user.getParentDetails().getChildren().forEach(child -> {
+					var childStatus = new ChildStatusObject();
+					childStatus.setChildId(child.getId());
+					childStatus.setFirstname(child.getFirstname());
+					childStatus.setLastname(child.getLastname());
+					childStatus.setApplicationFilled(child.getRegistrationForm() == null ? false : true);
+					Date today = new Date();
+					var timeDiff = today.getTime() - child.getBirthdate().getTime();
+					var timeDiffDays = TimeUnit.MILLISECONDS.toDays(timeDiff);
+					var yearDiff = timeDiffDays / 365;
+					if (child.getRegistrationForm() != null) {
+						childStatus.setApplicationAccepted(child.getRegistrationForm().getAdmission() == null ? false : true);
+						if (child.getRegistrationForm().getAdmission() == null) {
+							if (yearDiff < 2) {
+								childStatus.setNotAcceptedReason("Vaikas per jaunas darželiams");
+								childrenStatus.add(childStatus);
+							} else {
+								childStatus.setNotAcceptedReason("Vaikas per senas darželiams");
+								childrenStatus.add(childStatus);
+							}
+						} else {
+							childStatus.setFirstPriority(child.getRegistrationForm().getFirstPriority());
+							childStatus.setPlaceInFirstQueue(queueService.getChildPositionInKindergartenQueue(child.getRegistrationForm().getFirstPriority(), child.getRegistrationForm()));
+							childStatus.setSecondPriority(child.getRegistrationForm().getSecondPriority());
+							childStatus.setPlaceInSecondQueue(queueService.getChildPositionInKindergartenQueue(child.getRegistrationForm().getSecondPriority(), child.getRegistrationForm()));
+							childStatus.setThirdPriority(child.getRegistrationForm().getThirdPriority());
+							childStatus.setPlaceInThirdQueue(queueService.getChildPositionInKindergartenQueue(child.getRegistrationForm().getThirdPriority(), child.getRegistrationForm()));
+							childStatus.setFourthPriority(child.getRegistrationForm().getFourthPriority());
+							childStatus.setPlaceInFourthQueue(queueService.getChildPositionInKindergartenQueue(child.getRegistrationForm().getFourthPriority(), child.getRegistrationForm()));
+							childStatus.setFifthPriority(child.getRegistrationForm().getFifthPriority());
+							childStatus.setPlaceInFifthQueue(queueService.getChildPositionInKindergartenQueue(child.getRegistrationForm().getFifthPriority(), child.getRegistrationForm()));
+							childStatus.setAcceptedKindergarten(child.getRegistrationForm().getAcceptedKindergarten());
+							childrenStatus.add(childStatus);
+						}
+					} else {
+						childStatus.setApplicationAccepted(false);
+						childrenStatus.add(childStatus);
+					}
+				});
+			}
+		}
+		childrenStatus.sort((c1, c2) -> {
+			if (c1.getLastname().equals(c2.getLastname())) {
+				return c1.getFirstname().compareTo(c2.getFirstname());
+			} else {
+				return c1.getLastname().compareTo(c2.getLastname());
+			}
+		});
+		status.setChildren(childrenStatus);
+		return status;
+	}
+	
+	@Transactional
+	public List<KindergartenStatisticsObject> getStatistics() {
+		var kindergartens = kindergartenDao.findAll();
+		List<KindergartenStatisticsObject> kindergartenStatistics = new ArrayList<>();
+		for (Kindergarten kg : kindergartens) {
+			var kgStat = new KindergartenStatisticsObject();
+			kgStat.setKindergartenName(kg.getName());
+			kg.getQueues().stream()
+				.forEach(queue -> {
+					var count = queue.getRegistrations().stream()
+						.filter(reg -> reg.getFirstPriority().equals(queue.getKindergarten().getName()))
+						.count();
+					kgStat.setFirstPriorityRegistrations((kgStat.getFirstPriorityRegistrations() + (int) count));
+				});
+			kindergartenStatistics.add(kgStat);
+		}
+		return kindergartenStatistics;
 	}
 
 }

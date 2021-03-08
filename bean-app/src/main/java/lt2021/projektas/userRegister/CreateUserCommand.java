@@ -76,6 +76,5 @@ public class CreateUserCommand {
 		this.markedForDeletion = markedForDeletion;
 	}
 	
-	
 
 }
