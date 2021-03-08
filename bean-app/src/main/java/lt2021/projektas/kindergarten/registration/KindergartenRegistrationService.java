@@ -74,10 +74,9 @@ public class KindergartenRegistrationService {
 	@Transactional
 	public void updateRegistrationOnParentOrChildInfoChange(long childId) {
 		var updatedChild = childDao.findById(childId).orElse(null);
-		var childRegistrations = kgRegDao.findByChild(updatedChild);
-		if (childRegistrations != null) {
-			var childRegistration = childRegistrations.stream().filter(reg -> reg.getAcceptedKindergarten() == null).findFirst().orElse(null);
-			if (childRegistration != null) {
+		var childRegistration = updatedChild.getRegistrationForm();
+		if (childRegistration != null) {
+			if (childRegistration.getAcceptedKindergarten() == null) {
 				childRegistration.setRating(0);
 				if (updatedChild.getLivingAddress().getCity().toLowerCase().equals("vilnius")) {
 					childRegistration.setRating(childRegistration.getRating() + 5);

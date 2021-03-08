@@ -1,6 +1,7 @@
 package lt2021.projektas.parentdetails;
 
 import java.util.Date;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -54,8 +55,8 @@ public class ParentDetailsService {
 					parentDetails.getPersonalCode(), parentDetails.getLivingAddress(), 
 					parentDetails.getNumberOfKids(), parentDetails.isStudying(), parentDetails.getStudyingInstitution(), parentDetails.isHasDisability(), 
 					parentDetails.isDeclaredResidenceSameAsLiving(), parentDetails.getDeclaredAddress()));
-			userDao.save(parent);
-			logDao.save(new Log(new Date(), parent.getEmail(), parent.getRole().toString(), "Užpildyti tėvo duomenys"));
+			parent = userDao.save(parent);
+			logDao.save(new Log(new Date(), parent.getEmail(), parent.getRole().toString(), "Užpildyti tėvo duomenys (Details ID: " + parent.getParentDetails().getId() + ")"));
 			return new ResponseEntity<String>("Tėvo/globėjo duomenys išsaugoti", HttpStatus.OK);
 		}
 		return new ResponseEntity<String>("Tėvas/globėjas neregistruotas sistemoje", HttpStatus.BAD_REQUEST);
@@ -83,9 +84,10 @@ public class ParentDetailsService {
 				details.setHasDisability(parentDetails.isHasDisability());
 				details.setDeclaredResidenceSameAsLiving(parentDetails.isDeclaredResidenceSameAsLiving());
 				details.setDeclaredAddress(parentDetails.getDeclaredAddress());
-				detailsDao.save(details);
-				details.getChildren().stream().forEach(child -> kgRegService.updateRegistrationOnParentOrChildInfoChange(child.getId()));
-				logDao.save(new Log(new Date(), parent.getEmail(), parent.getRole().toString(), "Atnaujinti tėvo duomenys"));
+				details = detailsDao.save(details);
+				var children = details.getChildren().stream().collect(Collectors.toList());
+				children.stream().forEach(child -> kgRegService.updateRegistrationOnParentOrChildInfoChange(child.getId()));
+				logDao.save(new Log(new Date(), parent.getEmail(), parent.getRole().toString(), "Atnaujinti tėvo duomenys (Details ID: " + details.getId() + ")"));
 				return new ResponseEntity<String>("Duomenys sekmingai pakeisti", HttpStatus.OK);
 			}
 			return new ResponseEntity<String>("Tėvo/globėjo duomenys neužpildyti", HttpStatus.BAD_REQUEST);
