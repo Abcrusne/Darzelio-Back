@@ -18,7 +18,6 @@ public class ServiceLayerUser {
 	
 	private boolean markedForDeletion;
 
-	private boolean markedForDeletion;
 
 	public ServiceLayerUser() {
 		super();
