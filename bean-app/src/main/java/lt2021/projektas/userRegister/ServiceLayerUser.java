@@ -15,6 +15,8 @@ public class ServiceLayerUser {
 
 	private String password;
 //		private String confirmPassword;
+	
+	private boolean markedForDeletion;
 
 	private boolean markedForDeletion;
 
@@ -30,6 +32,7 @@ public class ServiceLayerUser {
 		this.role = role;
 		this.password = password;
 	}
+
 
 	public ServiceLayerUser(Long id, String firstname, String lastname, String email, String password, UserRole role,
 			boolean markedForDeletion) {
