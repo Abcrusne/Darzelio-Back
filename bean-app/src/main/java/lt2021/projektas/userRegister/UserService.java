@@ -274,7 +274,7 @@ public class UserService implements UserDetailsService {
 					message.setSubject("Slaptažodžio keitimas");
 					message.setText("Sveiki, " + user.getFirstname() + " " + user.getLastname() + ", \n"
 							+ "Gautas prašymas pakeisti jūsų pamirštą slaptažodį. Nuoroda slaptažodžio keitimui: \n"
-							+ "http://localhost:8081/bean-app/keistislaptazodis?token=" + finalToken.getToken());
+							+ "http://localhost:8081/bean-app/keistislaptazodi?token=" + finalToken.getToken());
 					emailSender.send(message);
 				});
 				newThread.start();
@@ -296,7 +296,7 @@ public class UserService implements UserDetailsService {
 					message.setSubject("Slaptažodžio keitimas");
 					message.setText("Sveiki, " + user.getFirstname() + " " + user.getLastname() + ", \n"
 							+ "Gautas prašymas pakeisti jūsų pamirštą slaptažodį. Nuoroda slaptažodžio keitimui: \n"
-							+ "http://localhost:8081/bean-app/keistislaptazodis?token=" + finalToken.getToken());
+							+ "http://localhost:8081/bean-app/keistislaptazodi?token=" + finalToken.getToken());
 					emailSender.send(message);
 				});
 				newThread.start();
