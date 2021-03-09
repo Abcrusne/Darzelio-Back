@@ -9,6 +9,8 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -28,6 +30,9 @@ import lt2021.projektas.kindergarten.queue.QueueService;
 import lt2021.projektas.logging.Log;
 import lt2021.projektas.logging.LogDao;
 import lt2021.projektas.parentdetails.ParentDetailsDao;
+import lt2021.projektas.passwordreset.PasswordResetDTO;
+import lt2021.projektas.passwordreset.PasswordResetToken;
+import lt2021.projektas.passwordreset.ResetTokenDao;
 
 @Service
 public class UserService implements UserDetailsService {
@@ -48,10 +53,20 @@ public class UserService implements UserDetailsService {
 	private KindergartenDao kindergartenDao;
 	
 	@Autowired
-	private AdmissionService admissionService;	
+	private AdmissionService admissionService;
+	
+	@Autowired
+	private ResetTokenDao tokenDao;
 	
 	@Autowired
 	private LogDao logDao;
+	
+	private JavaMailSender emailSender;
+	
+	@Autowired
+	public UserService(JavaMailSender emailSender) {
+		this.emailSender = emailSender;
+	}
 
 	@Transactional(readOnly = true)
 	public List<ServiceLayerUser> getUsers() {
@@ -237,6 +252,83 @@ public class UserService implements UserDetailsService {
 			kindergartenStatistics.add(kgStat);
 		}
 		return kindergartenStatistics;
+	}
+	
+	@Transactional
+	public ResponseEntity<String> resetUserPassword(String email) {
+		var user = findByEmail(email);
+		@SuppressWarnings("deprecation")
+		PasswordEncoder encoder = new MessageDigestPasswordEncoder("SHA-256");
+		if (user != null) {
+			if (user.getToken() == null) {
+				var token = new PasswordResetToken(user);
+				user.setToken(token);
+				user.setPassword(encoder.encode((new Date().toString() + user.getFirstname() + user.getLastname() )));
+				userDao.save(user);
+				token = tokenDao.save(token);
+				final var finalToken = token;
+				Thread newThread = new Thread(() -> {
+					SimpleMailMessage message = new SimpleMailMessage();
+					message.setFrom("bean.vaidar.mailinformer@gmail.com");
+					message.setTo(user.getEmail());
+					message.setSubject("Slaptažodžio keitimas");
+					message.setText("Sveiki, " + user.getFirstname() + " " + user.getLastname() + ", \n"
+							+ "Gautas prašymas pakeisti jūsų pamirštą slaptažodį. Nuoroda slaptažodžio keitimui: \n"
+							+ "http://localhost:8081/bean-app/keistislaptazodis?token=" + finalToken.getToken());
+					emailSender.send(message);
+				});
+				newThread.start();
+				return new ResponseEntity<String>("Nuoroda slaptažodžio keitimui išsiųsta į nurodytą el. paštą", HttpStatus.OK);
+			} else {
+				var tokenToDelete = user.getToken();
+				user.setToken(null);
+				tokenDao.delete(tokenToDelete);
+				var token = new PasswordResetToken(user);
+				user.setToken(token);
+				user.setPassword(encoder.encode((new Date().toString() + user.getFirstname() + user.getLastname() )));
+				userDao.save(user);
+				token = tokenDao.save(token);
+				final var finalToken = token;
+				Thread newThread = new Thread(() -> {
+					SimpleMailMessage message = new SimpleMailMessage();
+					message.setFrom("bean.vaidar.mailinformer@gmail.com");
+					message.setTo(user.getEmail());
+					message.setSubject("Slaptažodžio keitimas");
+					message.setText("Sveiki, " + user.getFirstname() + " " + user.getLastname() + ", \n"
+							+ "Gautas prašymas pakeisti jūsų pamirštą slaptažodį. Nuoroda slaptažodžio keitimui: \n"
+							+ "http://localhost:8081/bean-app/keistislaptazodis?token=" + finalToken.getToken());
+					emailSender.send(message);
+				});
+				newThread.start();
+				return new ResponseEntity<String>("Nuoroda slaptažodžio keitimui išsiųsta į nurodytą el. paštą", HttpStatus.OK);
+			}
+		}
+		return new ResponseEntity<String>("Įvestas pašto adresas nerastas sistemoje", HttpStatus.BAD_REQUEST);
+	}
+	
+	@Transactional
+	public ResponseEntity<String> changeUserPasswordAfterReset(PasswordResetDTO resetObject) {
+		@SuppressWarnings("deprecation")
+		PasswordEncoder encoder = new MessageDigestPasswordEncoder("SHA-256");
+		if (resetObject.getToken() != null && resetObject.getToken().length() > 0) {
+			var token = tokenDao.findById(resetObject.getToken()).orElse(null);
+			if (token != null) {
+				if (new Date().after(token.getExpiryDate())) {
+					tokenDao.delete(token);
+					return new ResponseEntity<String>("Baigėsi slaptažodžio žymės (token) galiojimo laikas. Sukurkite naują prašymą atstatyti slaptažodį", HttpStatus.BAD_REQUEST);
+				} else {
+					if (resetObject.getNewPassword().equals(resetObject.getConfirmNewPassword())) {
+						token.getUser().setPassword(encoder.encode(resetObject.getNewPassword()));
+						userDao.save(token.getUser());
+						tokenDao.delete(token);
+						return new ResponseEntity<String>("Slaptažodis pakeistas sėkmingai", HttpStatus.OK);
+					}
+					return new ResponseEntity<String>("Įvesti slaptažodžiai nesutapo. Patikrinkite ar teisingai patvirtinote naują slaptažodį", HttpStatus.BAD_REQUEST);
+				}
+			}
+			return new ResponseEntity<String>("Atsiųsta bloga slaptažodžio žymė (token)", HttpStatus.BAD_REQUEST);
+		}
+		return new ResponseEntity<String>("Atsiųsta bloga slaptažodžio žymė (token)", HttpStatus.BAD_REQUEST);
 	}
 
 }

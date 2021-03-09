@@ -37,6 +37,7 @@ import lt2021.projektas.logging.LogService;
 import lt2021.projektas.logging.LogTableObject;
 import lt2021.projektas.parentdetails.CreateDetailsCommand;
 import lt2021.projektas.parentdetails.ParentDetailsService;
+import lt2021.projektas.passwordreset.PasswordResetDTO;
 
 @RestController
 @Api(value = "users")
@@ -241,6 +242,16 @@ public class UserController {
 	@RequestMapping(path = "/logs", method = RequestMethod.GET, params = {"page", "sortby", "email"})
 	public LogTableObject getLogs(@RequestParam int page, @RequestParam String sortby, @RequestParam String email) {
 		return logService.retrieveAllLogs(page, sortby, email);
+	}
+	
+	@RequestMapping(path ="/resetpassword", method = RequestMethod.POST, params = "email")
+	public ResponseEntity<String> resetPassword(@RequestParam String email) {
+		return userService.resetUserPassword(email);
+	}
+	
+	@RequestMapping(path = "/resetpasswordchange", method = RequestMethod.POST)
+	public ResponseEntity<String> changePasswordAfterReset(@RequestBody PasswordResetDTO passwordReset) {
+		return userService.changeUserPasswordAfterReset(passwordReset);
 	}
 
 }

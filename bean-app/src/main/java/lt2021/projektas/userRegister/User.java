@@ -14,6 +14,7 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 
 import lt2021.projektas.parentdetails.ParentDetails;
+import lt2021.projektas.passwordreset.PasswordResetToken;
 
 @Entity
 public class User {
@@ -45,6 +46,9 @@ public class User {
 	private ParentDetails parentDetails;
 //	@NotNull
 //	private String confirmPassword;
+	
+	@OneToOne(mappedBy = "user")
+	private PasswordResetToken token;
 	
 	private boolean markedForDeletion;
 
@@ -123,6 +127,14 @@ public class User {
 
 	public void setMarkedForDeletion(boolean markedForDeletion) {
 		this.markedForDeletion = markedForDeletion;
+	}
+
+	public PasswordResetToken getToken() {
+		return token;
+	}
+
+	public void setToken(PasswordResetToken token) {
+		this.token = token;
 	}
 	
 	
