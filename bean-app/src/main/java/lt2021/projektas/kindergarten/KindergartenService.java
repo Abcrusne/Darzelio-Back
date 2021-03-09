@@ -1,5 +1,6 @@
 package lt2021.projektas.kindergarten;
 
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -10,6 +11,9 @@ import org.springframework.transaction.annotation.Transactional;
 import lt2021.projektas.kindergarten.admission.AdmissionDao;
 import lt2021.projektas.kindergarten.queue.QueueService;
 import lt2021.projektas.kindergarten.registration.KindergartenRegistrationDao;
+import lt2021.projektas.logging.Log;
+import lt2021.projektas.logging.LogDao;
+import lt2021.projektas.userRegister.User;
 
 @Service
 public class KindergartenService {
@@ -26,10 +30,14 @@ public class KindergartenService {
 	@Autowired
 	private AdmissionDao admissionDao;
 	
+	@Autowired
+	private LogDao logDao;
+	
 	@Transactional
-	public void addKindergarten(CreateKindergartenCommand kindergarten) {
+	public void addKindergarten(CreateKindergartenCommand kindergarten, User user) {
+		logDao.save(new Log(new Date(), user.getEmail(), user.getRole().toString(), "Sukurtas naujas darželis: " + kindergarten.getName().toUpperCase()));
 		queueService.createNewQueuesForKindergarten(new Kindergarten(kindergarten.getName().toUpperCase(), kindergarten.getAddress(),
-				kindergarten.getSpotsInFirstAgeGroup(), kindergarten.getSpotsInSecondAgeGroup()));
+				kindergarten.getSpotsInFirstAgeGroup(), kindergarten.getSpotsInSecondAgeGroup()), user);
 	}
 	
 	@Transactional
@@ -51,7 +59,7 @@ public class KindergartenService {
 	}
 	
 	@Transactional
-	public List<CreateKindergartenCommand> deleteKindergarten(long kgId) {
+	public List<CreateKindergartenCommand> deleteKindergarten(long kgId, User user) {
 		var admission = admissionDao.findAll().get(0);
 		var kindergarten = kgDao.findById(kgId).orElse(null);
 		if (kindergarten != null) {
@@ -72,12 +80,13 @@ public class KindergartenService {
 			});
 			admission.setQueues(adQueues);
 		}
+		logDao.save(new Log(new Date(), user.getEmail(), user.getRole().toString(), "Ištrintas darželis: " + kindergarten.getName().toUpperCase()));
 		kgDao.delete(kindergarten);
 		return getAllKindergartens();
 	}
 	
 	@Transactional
-	public void updateKindergarten(CreateKindergartenCommand kindergarten, long kgId) {
+	public void updateKindergarten(CreateKindergartenCommand kindergarten, long kgId, User user) {
 		Kindergarten kg = kgDao.findById(kgId).orElse(null);
 		if (!(kg.getName().equals(kindergarten.getName()))) {
 			var registrations = registrationDao.findRegistrationsWithSpecifiedKindergarten(kg.getName());
@@ -104,7 +113,8 @@ public class KindergartenService {
 		kg.setAddress(kindergarten.getAddress());
 		kg.setSpotsInFirstAgeGroup(kindergarten.getSpotsInFirstAgeGroup());
 		kg.setSpotsInSecondAgeGroup(kindergarten.getSpotsInSecondAgeGroup());
-		queueService.createNewQueuesForKindergarten(kg);
+		logDao.save(new Log(new Date(), user.getEmail(), user.getRole().toString(), "Pakoreguotas darželis: " + kindergarten.getName().toUpperCase()));
+		queueService.createNewQueuesForKindergarten(kg, user);
 	}
 	
 }

@@ -33,6 +33,8 @@ import lt2021.projektas.child.CreateChildCommand;
 import lt2021.projektas.child.DBFile;
 import lt2021.projektas.child.ServiceLayerChild;
 import lt2021.projektas.kindergarten.KindergartenStatisticsObject;
+import lt2021.projektas.logging.LogService;
+import lt2021.projektas.logging.LogTableObject;
 import lt2021.projektas.parentdetails.CreateDetailsCommand;
 import lt2021.projektas.parentdetails.ParentDetailsService;
 
@@ -49,6 +51,9 @@ public class UserController {
 
 	@Autowired
 	private ParentDetailsService detailsService;
+	
+	@Autowired
+	private LogService logService;
 
 	@RequestMapping(method = RequestMethod.GET)
 	@ApiOperation(value = "Get users list", notes = "Returns all users")
@@ -221,6 +226,21 @@ public class UserController {
 	@RequestMapping(path = "/statistics", method = RequestMethod.GET)
 	public List<KindergartenStatisticsObject> getStatistics() {
 		return userService.getStatistics();
+	}
+	
+	@RequestMapping(path = "/logs", method = RequestMethod.GET, params = "page")
+	public LogTableObject getLogs(@RequestParam int page) {
+		return logService.retrieveAllLogs(page, "", "");
+	}
+	
+	@RequestMapping(path = "/logs", method = RequestMethod.GET, params = {"page", "sortby"})
+	public LogTableObject getLogs(@RequestParam int page, @RequestParam String sortby) {
+		return logService.retrieveAllLogs(page, sortby, "");
+	}
+	
+	@RequestMapping(path = "/logs", method = RequestMethod.GET, params = {"page", "sortby", "email"})
+	public LogTableObject getLogs(@RequestParam int page, @RequestParam String sortby, @RequestParam String email) {
+		return logService.retrieveAllLogs(page, sortby, email);
 	}
 
 }

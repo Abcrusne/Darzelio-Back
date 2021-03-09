@@ -64,8 +64,9 @@ public class AdmissionController {
 	public ResponseEntity<String> deleteAdmissionRegistration(@PathVariable("childId") long childId) {
 		
 		if (!admissionService.areAdmissionsLocked()) {
-			kgRegService.deleteRegistration(childId);
-			return new ResponseEntity<String>("Vartotojas ištrintas", HttpStatus.OK);
+			var user = userService.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
+			kgRegService.deleteRegistration(childId, user);
+			return new ResponseEntity<String>("Vaiko registracija ištrinta", HttpStatus.OK);
 		} else {
 			return new ResponseEntity<String>("Sąrašų redagavimas užrakintas sistemos administratoriaus",
 					HttpStatus.BAD_REQUEST);
@@ -78,7 +79,8 @@ public class AdmissionController {
 
 	@RequestMapping(path = "/registrations/confirm", method = RequestMethod.POST)
 	public ResponseEntity<String> confirmAdmissionRegistrations() {
-		return admissionService.confirmRegistrations();
+		var user = userService.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
+		return admissionService.confirmRegistrations(user);
 	}
 	
 	@RequestMapping(path = "/status", method = RequestMethod.GET)

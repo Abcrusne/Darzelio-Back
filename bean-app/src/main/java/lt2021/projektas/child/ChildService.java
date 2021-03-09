@@ -356,7 +356,7 @@ public class ChildService {
 				childList.remove(childToDelete);
 				details.setChildren(childList);
 				userDao.save(parent);
-				kgRegService.deleteRegistration(childId);
+				kgRegService.deleteRegistration(childId, parent);
 				if (childToDelete.getHealthRecord() != null) {
 					fileDao.delete(childToDelete.getHealthRecord());
 				}

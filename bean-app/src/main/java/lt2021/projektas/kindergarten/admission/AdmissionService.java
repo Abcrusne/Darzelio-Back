@@ -28,6 +28,8 @@ import lt2021.projektas.kindergarten.queue.RegistrationTableItem;
 import lt2021.projektas.kindergarten.queue.RegistrationTableObject;
 import lt2021.projektas.kindergarten.registration.KindergartenRegistration;
 import lt2021.projektas.kindergarten.registration.KindergartenRegistrationDao;
+import lt2021.projektas.logging.Log;
+import lt2021.projektas.logging.LogDao;
 import lt2021.projektas.userRegister.User;
 
 @Service
@@ -47,6 +49,9 @@ public class AdmissionService {
 
 	@Autowired
 	private QueueDao queueDao;
+	
+	@Autowired
+	private LogDao logDao;
 
 	private JavaMailSender emailSender;
 
@@ -122,7 +127,7 @@ public class AdmissionService {
 	}
 
 	@Transactional
-	public ResponseEntity<String> confirmRegistrations() {
+	public ResponseEntity<String> confirmRegistrations(User user) {
 		if (!areAdmissionsLocked()) {
 			var sortedRegistrations = sortAdmissionRegistrations();
 			for (KindergartenRegistration reg : sortedRegistrations) {
@@ -244,11 +249,11 @@ public class AdmissionService {
 														.filter(q -> q.getKindergarten().getName()
 																.equals(reg.getFifthPriority()))
 														.findFirst().orElse(null);
-												freeSpots = fifthPriorityQueue.getAgeGroup().equals(AgeGroup.PRESCHOOL)
-														? fifthPriorityQueue.getKindergarten().getSpotsInFirstAgeGroup()
-														: fifthPriorityQueue.getKindergarten()
-																.getSpotsInSecondAgeGroup();
 												if (fifthPriorityQueue != null) {
+													freeSpots = fifthPriorityQueue.getAgeGroup().equals(AgeGroup.PRESCHOOL)
+															? fifthPriorityQueue.getKindergarten().getSpotsInFirstAgeGroup()
+															: fifthPriorityQueue.getKindergarten()
+																	.getSpotsInSecondAgeGroup();
 													howManyAccepted = fifthPriorityQueue.getRegistrations().stream()
 															.map(r -> r.getAcceptedKindergarten())
 															.filter(kg -> kg == null ? false
@@ -283,6 +288,7 @@ public class AdmissionService {
 					}
 				}
 			}
+			logDao.save(new Log(new Date(), user.getEmail(), user.getRole().toString(), "Atliktas suskirstymas į darželius"));
 			return new ResponseEntity<String>("Registracijų skirstymas į eiles sėkmingas", HttpStatus.OK);
 		} else {
 			return new ResponseEntity<String>("Sistema užrakinta administratoriaus", HttpStatus.BAD_REQUEST);
@@ -350,6 +356,7 @@ public class AdmissionService {
 		admission.setActive(true);
 		admission.setLastUpdatedAt(new Date());
 		admissionDao.save(admission);
+		logDao.save(new Log(new Date(), user.getEmail(), user.getRole().toString(), "Įjungtas darželių priėmimas"));
 		return admissionStatus(user);
 	}
 
@@ -359,6 +366,7 @@ public class AdmissionService {
 		admission.setActive(false);
 		admission.setLastUpdatedAt(new Date());
 		admissionDao.save(admission);
+		logDao.save(new Log(new Date(), user.getEmail(), user.getRole().toString(), "Išjungtas darželių priėmimas"));
 		return admissionStatus(user);
 	}
 
@@ -397,6 +405,7 @@ public class AdmissionService {
 		admission.setAdminLock(true);
 		admission.setLastUpdatedAt(new Date());
 		admissionDao.save(admission);
+		logDao.save(new Log(new Date(), user.getEmail(), user.getRole().toString(), "Užrakintas eilių koregavimas"));
 		return admissionStatus(user);
 	}
 
@@ -406,6 +415,7 @@ public class AdmissionService {
 		admission.setAdminLock(false);
 		admission.setLastUpdatedAt(new Date());
 		admissionDao.save(admission);
+		logDao.save(new Log(new Date(), user.getEmail(), user.getRole().toString(), "Atrakintas eilių koregavimas"));
 		return admissionStatus(user);
 	}
 
