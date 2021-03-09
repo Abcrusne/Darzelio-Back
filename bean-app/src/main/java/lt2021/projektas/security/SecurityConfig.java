@@ -83,6 +83,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 					response.setHeader("Access-Control-Allow-Credentials", "true");
 					response.setHeader("Access-Control-Allow-Origin", request.getHeader("Origin"));
 					response.setHeader("Content-Type", "application/json;charset=UTF-8");
+					response.setStatus(401);
+					response.setHeader("Response-Code", "bad-credentials");
 					logDao.save(new Log(new Date(), request.getParameter("username"), "", "Nesėkmingas prisijungimas"));
 				}
 			})
