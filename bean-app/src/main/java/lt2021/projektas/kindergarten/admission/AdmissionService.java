@@ -156,7 +156,7 @@ public class AdmissionService {
 						});
 						reg.setQueues(regQueues);
 						registrationDao.save(reg);
-						sendConfirmationEmailToParents(reg);
+						//sendConfirmationEmailToParents(reg);
 						continue;
 					}
 				}
@@ -186,7 +186,7 @@ public class AdmissionService {
 						});
 						reg.setQueues(regQueues);
 						registrationDao.save(reg);
-						sendConfirmationEmailToParents(reg);
+						//sendConfirmationEmailToParents(reg);
 						continue;
 					}
 				}
@@ -216,7 +216,7 @@ public class AdmissionService {
 						});
 						reg.setQueues(regQueues);
 						registrationDao.save(reg);
-						sendConfirmationEmailToParents(reg);
+						//sendConfirmationEmailToParents(reg);
 						continue;
 					}
 				}
@@ -246,7 +246,7 @@ public class AdmissionService {
 						});
 						reg.setQueues(regQueues);
 						registrationDao.save(reg);
-						sendConfirmationEmailToParents(reg);
+						//sendConfirmationEmailToParents(reg);
 						continue;
 					}
 				}
@@ -276,10 +276,11 @@ public class AdmissionService {
 						});
 						reg.setQueues(regQueues);
 						registrationDao.save(reg);
-						sendConfirmationEmailToParents(reg);
+						//sendConfirmationEmailToParents(reg);
 						continue;
 					}
 				}
+				sendConfirmationEmailToParents(reg);
 			}
 			logDao.save(new Log(new Date(), user.getEmail(), user.getRole().toString(),
 					"Atliktas suskirstymas į darželius"));
@@ -298,9 +299,10 @@ public class AdmissionService {
 			message.setTo(mainParent.getEmail());
 			message.setSubject("Vaiko registracija į darželį");
 			message.setText("Sveiki, " + mainParent.getFirstname() + " " + mainParent.getLastname() + ", \n"
-					+ "Informuojame, jog jūsų vaikas: " + reg.getChild().getFirstname() + " "
-					+ reg.getChild().getLastname() + ", yra priimtas į darželį: " + reg.getAcceptedKindergarten()
-					+ ".\n" + "Artimiausiu metu su jumis susisieks darželio administracija dėl dokumentų pasirašymo.");
+					+ "Informuojame, jog pasikeitė jūsų vaiko: " + reg.getChild().getFirstname() + " "
+					+ reg.getChild().getLastname() + ", registracijos į darželį statusas. "
+					+ ".\n" + "Patikrinti vaiko statusą galite prisijungę prie sistemos." + "\n" + 
+					"http://localhost:8081/bean-app");
 			emailSender.send(message);
 		});
 		newThread.start();

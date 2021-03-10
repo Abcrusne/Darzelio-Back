@@ -20,6 +20,9 @@ public interface KindergartenRegistrationDao extends JpaRepository<KindergartenR
 	@Query("select count(kgreg) from KindergartenRegistration kgreg where kgreg.admission is not null")
 	long registrationWithAdmissionCount();
 	
+	@Query("select count(kgreg) from KindergartenRegistration kgreg where kgreg.firstPriority = :kgName")
+	long registrationsWithFirstPriorityKindergarten(@Param("kgName") String kindergartenName);
+	
 	@Query("select kgreg from KindergartenRegistration kgreg where kgreg.admission is not null")
 	List<KindergartenRegistration> findRegistrationsWithAdmission(Pageable pageable);
 	

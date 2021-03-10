@@ -52,7 +52,7 @@ public class KindergartenRegistrationService {
 				if (admissionService.areAdmissionsActive()) {
 					var registration = new KindergartenRegistration(child, registrationForm.getFirstPriority(), registrationForm.getSecondPriority(), 
 							registrationForm.getThirdPriority(), registrationForm.getFourthPriority(), registrationForm.getFifthPriority());
-					if (child.getLivingAddress().getCity().toLowerCase().equals("vilnius")) {
+					if (child.getLivingAddress().getCity().toLowerCase().contains("viln")) {
 						registration.setRating(registration.getRating() + 5);
 					}
 					if (child.isAdopted()) {
@@ -88,7 +88,7 @@ public class KindergartenRegistrationService {
 		if (childRegistration != null) {
 			if (childRegistration.getAcceptedKindergarten() == null) {
 				childRegistration.setRating(0);
-				if (updatedChild.getLivingAddress().getCity().toLowerCase().equals("vilnius")) {
+				if (updatedChild.getLivingAddress().getCity().toLowerCase().contains("viln")) {
 					childRegistration.setRating(childRegistration.getRating() + 5);
 				}
 				if (updatedChild.isAdopted()) {

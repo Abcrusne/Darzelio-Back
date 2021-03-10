@@ -253,5 +253,10 @@ public class UserController {
 	public ResponseEntity<String> changePasswordAfterReset(@RequestBody PasswordResetDTO passwordReset) {
 		return userService.changeUserPasswordAfterReset(passwordReset);
 	}
+	
+	@RequestMapping(path = "/register", method = RequestMethod.POST)
+	public ResponseEntity<String> newUserRegistration(@RequestBody RegistrationObject registration) {
+		return userService.newUserRegistration(registration);
+	}
 
 }

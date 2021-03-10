@@ -27,6 +27,7 @@ import lt2021.projektas.kindergarten.KindergartenDao;
 import lt2021.projektas.kindergarten.KindergartenStatisticsObject;
 import lt2021.projektas.kindergarten.admission.AdmissionService;
 import lt2021.projektas.kindergarten.queue.QueueService;
+import lt2021.projektas.kindergarten.registration.KindergartenRegistrationDao;
 import lt2021.projektas.logging.Log;
 import lt2021.projektas.logging.LogDao;
 import lt2021.projektas.parentdetails.ParentDetailsDao;
@@ -51,6 +52,9 @@ public class UserService implements UserDetailsService {
 	
 	@Autowired
 	private KindergartenDao kindergartenDao;
+	
+	@Autowired
+	private KindergartenRegistrationDao kgRegDao;
 	
 	@Autowired
 	private AdmissionService admissionService;
@@ -242,13 +246,7 @@ public class UserService implements UserDetailsService {
 		for (Kindergarten kg : kindergartens) {
 			var kgStat = new KindergartenStatisticsObject();
 			kgStat.setKindergartenName(kg.getName());
-			kg.getQueues().stream()
-				.forEach(queue -> {
-					var count = queue.getRegistrations().stream()
-						.filter(reg -> reg.getFirstPriority().equals(queue.getKindergarten().getName()))
-						.count();
-					kgStat.setFirstPriorityRegistrations((kgStat.getFirstPriorityRegistrations() + (int) count));
-				});
+			kgStat.setFirstPriorityRegistrations((int)kgRegDao.registrationsWithFirstPriorityKindergarten(kg.getName()));
 			kindergartenStatistics.add(kgStat);
 		}
 		return kindergartenStatistics;
@@ -329,6 +327,29 @@ public class UserService implements UserDetailsService {
 			return new ResponseEntity<String>("Atsiųsta bloga slaptažodžio žymė (token)", HttpStatus.BAD_REQUEST);
 		}
 		return new ResponseEntity<String>("Atsiųsta bloga slaptažodžio žymė (token)", HttpStatus.BAD_REQUEST);
+	}
+	
+	@Transactional
+	public ResponseEntity<String> newUserRegistration(RegistrationObject registration) {
+		@SuppressWarnings("deprecation")
+		PasswordEncoder encoder = new MessageDigestPasswordEncoder("SHA-256");
+		var user = new User(registration.getFirstname(), registration.getLastname(), registration.getEmail(), UserRole.PARENT);
+		user.setPassword(encoder.encode(registration.getFirstname()));
+		userDao.save(user);
+		Thread newThread = new Thread(() -> {
+			SimpleMailMessage message = new SimpleMailMessage();
+			message.setFrom("bean.vaidar.mailinformer@gmail.com");
+			message.setTo(registration.getEmail());
+			message.setSubject("Vartotojo registracija");
+			message.setText("Sveiki, " + registration.getFirstname() + " " + registration.getLastname() + ", \n"
+					+ "Jūsų paskyra sėkmingai sukurta! Prisijungimo duomenys: \n" +
+					"Paštas: " + registration.getEmail() + "\n" +
+					"Slaptažodis: " + registration.getFirstname() + "\n" +
+					"Prisijungę būtinai pasikeiskite savo slaptažodį! \n" + "http://localhost:8081/bean-app");
+			emailSender.send(message);
+		});
+		newThread.start();
+		return new ResponseEntity<String>("Registracija sėkminga. Prisijungimo duomenys išsiųsti į jūsų pašto dėžutę", HttpStatus.OK);
 	}
 
 }
