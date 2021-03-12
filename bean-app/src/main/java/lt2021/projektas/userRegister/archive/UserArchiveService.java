@@ -1,5 +1,6 @@
 package lt2021.projektas.userRegister.archive;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -15,7 +16,8 @@ public class UserArchiveService {
 	
 	@Transactional
 	public List<UserArchiveObject> getUserArchive() {
-		return archiveDao.findAll().stream().map(item -> new UserArchiveObject(item.getId(), item.getEmail(), item.getFilename())).collect(Collectors.toList());
+		return archiveDao.findAll().stream().map(item -> new UserArchiveObject(item.getId(), item.getEmail(), item.getFilename(),
+				new SimpleDateFormat("yyyy-MM-dd").format(item.getDeletionDate()).toString())).collect(Collectors.toList());
 	}
 	
 	@Transactional

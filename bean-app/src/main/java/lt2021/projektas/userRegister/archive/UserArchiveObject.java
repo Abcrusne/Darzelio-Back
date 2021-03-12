@@ -5,16 +5,18 @@ public class UserArchiveObject {
 	private Long id;
 	private String email;
 	private String filename;
+	private String deletionDate;
 	
 	public UserArchiveObject() {
 		// TODO Auto-generated constructor stub
 	}
 
-	public UserArchiveObject(Long id, String email, String filename) {
+	public UserArchiveObject(Long id, String email, String filename, String deletionDate) {
 		super();
 		this.id = id;
 		this.email = email;
 		this.filename = filename;
+		this.deletionDate = deletionDate;
 	}
 
 	public Long getId() {
@@ -39,6 +41,14 @@ public class UserArchiveObject {
 
 	public void setFilename(String filename) {
 		this.filename = filename;
+	}
+
+	public String getDeletionDate() {
+		return deletionDate;
+	}
+
+	public void setDeletionDate(String deletionDate) {
+		this.deletionDate = deletionDate;
 	}
 	
 	
