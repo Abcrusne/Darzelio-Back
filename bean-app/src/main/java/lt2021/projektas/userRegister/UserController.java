@@ -102,7 +102,7 @@ public class UserController {
 	}
 	
 	@RequestMapping(path = "/delete", method = RequestMethod.DELETE)
-	public void deletedLoggedUser(@RequestBody final boolean eraseData) {
+	public void deletedLoggedUser(@RequestParam("eraseData") boolean eraseData) {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		var loggedUser = userService.findByEmail(auth.getName());
 		userService.deleteUser(loggedUser, eraseData);
