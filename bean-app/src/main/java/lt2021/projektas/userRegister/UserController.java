@@ -39,6 +39,8 @@ import lt2021.projektas.logging.LogTableObject;
 import lt2021.projektas.parentdetails.CreateDetailsCommand;
 import lt2021.projektas.parentdetails.ParentDetailsService;
 import lt2021.projektas.passwordreset.PasswordResetDTO;
+import lt2021.projektas.userRegister.archive.UserArchiveObject;
+import lt2021.projektas.userRegister.archive.UserArchiveService;
 
 @RestController
 @Api(value = "users")
@@ -53,6 +55,9 @@ public class UserController {
 
 	@Autowired
 	private ParentDetailsService detailsService;
+	
+	@Autowired
+	private UserArchiveService archiveService;
 	
 	@Autowired
 	private LogService logService;
@@ -84,7 +89,7 @@ public class UserController {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		var loggedUser = userService.findByEmail(auth.getName());
 		userService.updateUser(new ServiceLayerUser(userId, user.getFirstname(), user.getLastname(), user.getEmail(),
-				user.getPassword(), user.getRole(), user.isMarkedForDeletion()), loggedUser);
+				user.getPassword(), user.getRole(), user.isMarkedForDeletion(), user.isEraseData()), loggedUser);
 	}
 
 //	@ResponseStatus(HttpStatus.NO_CONTENT)
@@ -269,6 +274,20 @@ public class UserController {
 					.body(new ByteArrayResource(userService.getUserDataArchive(user)));
 					
 				
+	}
+	
+	@RequestMapping(path = "/archive", method = RequestMethod.GET)
+	public List<UserArchiveObject> getUserArchive() {
+		return archiveService.getUserArchive();
+	}
+	
+	@RequestMapping(path = "/archive/{archiveId}/download", method = RequestMethod.GET)
+	public ResponseEntity<Resource> getSpecifiedUserArchive(@PathVariable("archiveId") long archiveId) {
+		var data = archiveService.downloadArchivedUserData(archiveId);
+		return ResponseEntity.ok()
+				.contentType(MediaType.parseMediaType("application/zip"))
+				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + data.getFilename() + "\"")
+				.body(new ByteArrayResource(data.getData()));
 	}
 
 }

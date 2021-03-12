@@ -40,6 +40,8 @@ import lt2021.projektas.parentdetails.ParentDetailsDao;
 import lt2021.projektas.passwordreset.PasswordResetDTO;
 import lt2021.projektas.passwordreset.PasswordResetToken;
 import lt2021.projektas.passwordreset.ResetTokenDao;
+import lt2021.projektas.userRegister.archive.UserArchive;
+import lt2021.projektas.userRegister.archive.UserArchiveDao;
 
 @Service
 public class UserService implements UserDetailsService {
@@ -67,6 +69,9 @@ public class UserService implements UserDetailsService {
 
 	@Autowired
 	private ResetTokenDao tokenDao;
+	
+	@Autowired
+	private UserArchiveDao archiveDao;
 
 	@Autowired
 	private LogDao logDao;
@@ -84,7 +89,7 @@ public class UserService implements UserDetailsService {
 		return users.stream()
 				.map(userFromService -> new ServiceLayerUser(userFromService.getId(), userFromService.getFirstname(),
 						userFromService.getLastname(), userFromService.getEmail(), userFromService.getPassword(),
-						userFromService.getRole(), userFromService.isMarkedForDeletion()))
+						userFromService.getRole(), userFromService.isMarkedForDeletion(), userFromService.isEraseData()))
 				.collect(Collectors.toList());
 	}
 
@@ -93,7 +98,7 @@ public class UserService implements UserDetailsService {
 		var userFromService = userDao.findById(id).orElse(null);
 		return new ServiceLayerUser(userFromService.getId(), userFromService.getFirstname(),
 				userFromService.getLastname(), userFromService.getEmail(), userFromService.getPassword(),
-				userFromService.getRole(), userFromService.isMarkedForDeletion());
+				userFromService.getRole(), userFromService.isMarkedForDeletion(), userFromService.isEraseData());
 	}
 
 	@Transactional
@@ -117,6 +122,7 @@ public class UserService implements UserDetailsService {
 		updatedUser.setEmail(user.getEmail().toLowerCase());
 		updatedUser.setRole(user.getRole());
 		updatedUser.setMarkedForDeletion(user.isMarkedForDeletion());
+		updatedUser.setEraseData(user.isEraseData());
 		@SuppressWarnings("deprecation")
 		PasswordEncoder encoder = new MessageDigestPasswordEncoder("SHA-256");
 		if (!(user.getPassword().equals(updatedUser.getPassword()))) {
@@ -131,6 +137,16 @@ public class UserService implements UserDetailsService {
 	public void deleteUser(Long id, User loggedUser) {
 		var user = userDao.findById(id).orElse(null);
 		if (user != null) {
+			if (!user.isEraseData()) {
+				try {
+					byte[] erasedUserFile = getUserDataArchive(user);
+					archiveDao.save(new UserArchive(user.getEmail(), (user.getFirstname() + "_" + user.getLastname() + ".zip"), erasedUserFile));
+				}
+				catch (IOException e) {
+					e.printStackTrace();
+				}
+				
+			}
 			var parentDetails = user.getParentDetails();
 			if (parentDetails != null) {
 				var children = parentDetails.getChildren().stream().collect(Collectors.toList());

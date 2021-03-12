@@ -33,24 +33,25 @@ public class User {
 	@Column(unique = true)
 	@Email(message = "email format needs to be correct")
 	private String email;
-	
+
 	@Enumerated(EnumType.STRING)
 	private UserRole role;
 
 	// @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=\\S+$).{8,}$")
 	@NotBlank(message = "password can't be blank")
 	private String password;
-	
-	@OneToOne(cascade= CascadeType.ALL)
-	@JoinColumn(name="parentDetails_id")
+
+	@OneToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "parentDetails_id")
 	private ParentDetails parentDetails;
 //	@NotNull
 //	private String confirmPassword;
-	
+
 	@OneToOne(mappedBy = "user")
 	private PasswordResetToken token;
-	
+
 	private boolean markedForDeletion;
+	private boolean eraseData;
 
 	public User() {
 		super();
@@ -63,6 +64,7 @@ public class User {
 		this.email = email;
 		this.role = role;
 		this.markedForDeletion = false;
+		this.eraseData = false;
 	}
 
 	public Long getId() {
@@ -136,14 +138,19 @@ public class User {
 	public void setToken(PasswordResetToken token) {
 		this.token = token;
 	}
-	
+
+	public boolean isEraseData() {
+		return eraseData;
+	}
+
+	public void setEraseData(boolean eraseData) {
+		this.eraseData = eraseData;
+	}
+
 	@Override
 	public String toString() {
-		return 
-				"Vardas: " + this.firstname + ",\n" +
-				"Pavardė: " + this.lastname + ",\n" +
-				"Pašto adresas: " + this.email + ",\n" +
-				"Registracijos duomenys: \n" + this.parentDetails;
+		return "Vardas: " + this.firstname + ",\n" + "Pavardė: " + this.lastname + ",\n" + "Pašto adresas: "
+				+ this.email + ",\n" + "Registracijos duomenys: \n" + this.parentDetails;
 	}
 
 }
