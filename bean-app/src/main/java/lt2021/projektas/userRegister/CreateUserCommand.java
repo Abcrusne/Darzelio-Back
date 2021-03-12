@@ -11,14 +11,13 @@ public class CreateUserCommand {
 	private String password;
 //	private String confirmPassword;
 	
-	private boolean markedForDeletion;
-	private boolean eraseData;
+
 
 	public CreateUserCommand() {
 		super();
 	}
 
-	public CreateUserCommand(String firstname, String lastname, String email, String password, UserRole role, boolean markedForDeletion, boolean eraseData) {
+	public CreateUserCommand(String firstname, String lastname, String email, String password, UserRole role) {
 
 		super();
 		this.firstname = firstname;
@@ -26,8 +25,6 @@ public class CreateUserCommand {
 		this.email = email;
 		this.role = role;
 		this.password = password;
-		this.markedForDeletion = markedForDeletion;
-		this.eraseData = eraseData;
 	}
 
 	public String getFirstname() {
@@ -70,23 +67,5 @@ public class CreateUserCommand {
 		this.password = password;
 	}
 
-	public boolean isMarkedForDeletion() {
-		return markedForDeletion;
-	}
-
-	public void setMarkedForDeletion(boolean markedForDeletion) {
-		this.markedForDeletion = markedForDeletion;
-	}
-
-	public boolean isEraseData() {
-		return eraseData;
-	}
-
-	public void setEraseData(boolean eraseData) {
-		this.eraseData = eraseData;
-	}
 	
-	
-	
-
 }

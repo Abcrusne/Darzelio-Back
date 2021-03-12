@@ -89,7 +89,7 @@ public class UserController {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		var loggedUser = userService.findByEmail(auth.getName());
 		userService.updateUser(new ServiceLayerUser(userId, user.getFirstname(), user.getLastname(), user.getEmail(),
-				user.getPassword(), user.getRole(), user.isMarkedForDeletion(), user.isEraseData()), loggedUser);
+				user.getPassword(), user.getRole()), loggedUser);
 	}
 
 //	@ResponseStatus(HttpStatus.NO_CONTENT)
@@ -99,6 +99,13 @@ public class UserController {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		var loggedUser = userService.findByEmail(auth.getName());
 		userService.deleteUser(userId, loggedUser);
+	}
+	
+	@RequestMapping(path = "/delete", method = RequestMethod.DELETE)
+	public void deletedLoggedUser(@RequestBody final boolean eraseData) {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		var loggedUser = userService.findByEmail(auth.getName());
+		userService.deleteUser(loggedUser, eraseData);
 	}
 
 	@RequestMapping(path = "/loggedrole", method = RequestMethod.GET)

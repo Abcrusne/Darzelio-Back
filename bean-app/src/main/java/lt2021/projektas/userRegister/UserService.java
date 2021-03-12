@@ -89,7 +89,7 @@ public class UserService implements UserDetailsService {
 		return users.stream()
 				.map(userFromService -> new ServiceLayerUser(userFromService.getId(), userFromService.getFirstname(),
 						userFromService.getLastname(), userFromService.getEmail(), userFromService.getPassword(),
-						userFromService.getRole(), userFromService.isMarkedForDeletion(), userFromService.isEraseData()))
+						userFromService.getRole()))
 				.collect(Collectors.toList());
 	}
 
@@ -98,7 +98,7 @@ public class UserService implements UserDetailsService {
 		var userFromService = userDao.findById(id).orElse(null);
 		return new ServiceLayerUser(userFromService.getId(), userFromService.getFirstname(),
 				userFromService.getLastname(), userFromService.getEmail(), userFromService.getPassword(),
-				userFromService.getRole(), userFromService.isMarkedForDeletion(), userFromService.isEraseData());
+				userFromService.getRole());
 	}
 
 	@Transactional
@@ -121,8 +121,6 @@ public class UserService implements UserDetailsService {
 		updatedUser.setLastname(user.getLastname());
 		updatedUser.setEmail(user.getEmail().toLowerCase());
 		updatedUser.setRole(user.getRole());
-		updatedUser.setMarkedForDeletion(user.isMarkedForDeletion());
-		updatedUser.setEraseData(user.isEraseData());
 		@SuppressWarnings("deprecation")
 		PasswordEncoder encoder = new MessageDigestPasswordEncoder("SHA-256");
 		if (!(user.getPassword().equals(updatedUser.getPassword()))) {
@@ -137,16 +135,6 @@ public class UserService implements UserDetailsService {
 	public void deleteUser(Long id, User loggedUser) {
 		var user = userDao.findById(id).orElse(null);
 		if (user != null) {
-			if (!user.isEraseData()) {
-				try {
-					byte[] erasedUserFile = getUserDataArchive(user);
-					archiveDao.save(new UserArchive(user.getEmail(), (user.getFirstname() + "_" + user.getLastname() + ".zip"), erasedUserFile));
-				}
-				catch (IOException e) {
-					e.printStackTrace();
-				}
-				
-			}
 			var parentDetails = user.getParentDetails();
 			if (parentDetails != null) {
 				var children = parentDetails.getChildren().stream().collect(Collectors.toList());
@@ -168,6 +156,40 @@ public class UserService implements UserDetailsService {
 			logDao.save(new Log(new Date(), loggedUser.getEmail(), loggedUser.getRole().toString(),
 					("Ištrintas vartotojas su el. paštu: " + user.getEmail())));
 		}
+	}
+	
+	@Transactional
+	public void deleteUser(User user, boolean eraseData) {
+		if (!eraseData) {
+			try {
+				byte[] erasedUserFile = getUserDataArchive(user);
+				archiveDao.save(new UserArchive(user.getEmail(), (user.getFirstname() + "_" + user.getLastname() + ".zip"), erasedUserFile));
+			}
+			catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+		}
+		var parentDetails = user.getParentDetails();
+		if (parentDetails != null) {
+			var children = parentDetails.getChildren().stream().collect(Collectors.toList());
+			if (children.size() > 0) {
+				children.forEach(child -> {
+					childService.deleteChild(user.getId(), child.getId());
+				});
+				children.clear();
+				parentDetails.setChildren(null);
+				detailsDao.delete(parentDetails);
+				userDao.delete(user);
+			} else {
+				detailsDao.delete(parentDetails);
+				userDao.delete(user);
+			}
+		} else {
+			userDao.delete(user);
+		}
+		logDao.save(new Log(new Date(), user.getEmail(), user.getRole().toString(),
+				("Ištrintas vartotojas su el. paštu: " + user.getEmail())));
 	}
 
 	@Override

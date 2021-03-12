@@ -50,8 +50,6 @@ public class User {
 	@OneToOne(mappedBy = "user")
 	private PasswordResetToken token;
 
-	private boolean markedForDeletion;
-	private boolean eraseData;
 
 	public User() {
 		super();
@@ -63,8 +61,7 @@ public class User {
 		this.lastname = lastname;
 		this.email = email;
 		this.role = role;
-		this.markedForDeletion = false;
-		this.eraseData = false;
+
 	}
 
 	public Long getId() {
@@ -123,14 +120,6 @@ public class User {
 		this.parentDetails = parentDetails;
 	}
 
-	public boolean isMarkedForDeletion() {
-		return markedForDeletion;
-	}
-
-	public void setMarkedForDeletion(boolean markedForDeletion) {
-		this.markedForDeletion = markedForDeletion;
-	}
-
 	public PasswordResetToken getToken() {
 		return token;
 	}
@@ -139,13 +128,7 @@ public class User {
 		this.token = token;
 	}
 
-	public boolean isEraseData() {
-		return eraseData;
-	}
-
-	public void setEraseData(boolean eraseData) {
-		this.eraseData = eraseData;
-	}
+	
 
 	@Override
 	public String toString() {
