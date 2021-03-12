@@ -110,6 +110,11 @@ public class UserService implements UserDetailsService {
 		updatedUser.setEmail(user.getEmail().toLowerCase());
 		updatedUser.setRole(user.getRole());
 		updatedUser.setMarkedForDeletion(user.isMarkedForDeletion());
+		@SuppressWarnings("deprecation")
+		PasswordEncoder encoder = new MessageDigestPasswordEncoder("SHA-256");
+		if (!(user.getPassword().equals(updatedUser.getPassword()))) {
+			updatedUser.setPassword(encoder.encode(user.getPassword()));
+		}
 		userDao.save(updatedUser);
 		logDao.save(new Log(new Date(), loggedUser.getEmail(), loggedUser.getRole().toString(), ("Pakeisti vartotojo " + user.getEmail() + " duomenys")));
 	}
@@ -272,10 +277,11 @@ public class UserService implements UserDetailsService {
 					message.setSubject("Slaptažodžio keitimas");
 					message.setText("Sveiki, " + user.getFirstname() + " " + user.getLastname() + ", \n"
 							+ "Gautas prašymas pakeisti jūsų pamirštą slaptažodį. Nuoroda slaptažodžio keitimui: \n"
-							+ "http://localhost:8081/bean-app/keistislaptazodi?token=" + finalToken.getToken());
+							+ "http://akademijait.vtmc.lt:8181/bean-app/keistislaptazodi?token=" + finalToken.getToken());
 					emailSender.send(message);
 				});
 				newThread.start();
+				logDao.save(new Log(new Date(), user.getEmail(), user.getRole().toString(), "Paprašyta atstatyti slaptažodį"));
 				return new ResponseEntity<String>("Nuoroda slaptažodžio keitimui išsiųsta į nurodytą el. paštą", HttpStatus.OK);
 			} else {
 				var tokenToDelete = user.getToken();
@@ -294,10 +300,11 @@ public class UserService implements UserDetailsService {
 					message.setSubject("Slaptažodžio keitimas");
 					message.setText("Sveiki, " + user.getFirstname() + " " + user.getLastname() + ", \n"
 							+ "Gautas prašymas pakeisti jūsų pamirštą slaptažodį. Nuoroda slaptažodžio keitimui: \n"
-							+ "http://localhost:8081/bean-app/keistislaptazodi?token=" + finalToken.getToken());
+							+ "http://akademijait.vtmc.lt:8181/bean-app/keistislaptazodi?token=" + finalToken.getToken());
 					emailSender.send(message);
 				});
 				newThread.start();
+				logDao.save(new Log(new Date(), user.getEmail(), user.getRole().toString(), "Paprašyta atstatyti slaptažodį"));
 				return new ResponseEntity<String>("Nuoroda slaptažodžio keitimui išsiųsta į nurodytą el. paštą", HttpStatus.OK);
 			}
 		}
@@ -317,6 +324,7 @@ public class UserService implements UserDetailsService {
 				} else {
 					if (resetObject.getNewPassword().equals(resetObject.getConfirmNewPassword())) {
 						token.getUser().setPassword(encoder.encode(resetObject.getNewPassword()));
+						logDao.save(new Log(new Date(), token.getUser().getEmail(), token.getUser().getRole().toString(), "Sėkmingai atkurtas ir pakeistas slaptažodis"));
 						userDao.save(token.getUser());
 						tokenDao.delete(token);
 						return new ResponseEntity<String>("Slaptažodis pakeistas sėkmingai", HttpStatus.OK);
@@ -345,10 +353,11 @@ public class UserService implements UserDetailsService {
 					+ "Jūsų paskyra sėkmingai sukurta! Prisijungimo duomenys: \n" +
 					"Paštas: " + registration.getEmail() + "\n" +
 					"Slaptažodis: " + registration.getFirstname() + "\n" +
-					"Prisijungę būtinai pasikeiskite savo slaptažodį! \n" + "http://localhost:8081/bean-app");
+					"Prisijungę būtinai pasikeiskite savo slaptažodį! \n" + "http://akademijait.vtmc.lt:8181/bean-app");
 			emailSender.send(message);
 		});
 		newThread.start();
+		logDao.save(new Log(new Date(), user.getEmail(), user.getRole().toString(), "Prisiregistravo prie sistemos"));
 		return new ResponseEntity<String>("Registracija sėkminga. Prisijungimo duomenys išsiųsti į jūsų pašto dėžutę", HttpStatus.OK);
 	}
 

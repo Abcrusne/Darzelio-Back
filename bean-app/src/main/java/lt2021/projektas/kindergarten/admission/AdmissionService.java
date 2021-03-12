@@ -300,9 +300,9 @@ public class AdmissionService {
 			message.setSubject("Vaiko registracija į darželį");
 			message.setText("Sveiki, " + mainParent.getFirstname() + " " + mainParent.getLastname() + ", \n"
 					+ "Informuojame, jog pasikeitė jūsų vaiko: " + reg.getChild().getFirstname() + " "
-					+ reg.getChild().getLastname() + ", registracijos į darželį statusas. "
-					+ ".\n" + "Patikrinti vaiko statusą galite prisijungę prie sistemos." + "\n" + 
-					"http://localhost:8081/bean-app");
+					+ reg.getChild().getLastname() + ", registracijos į darželį statusas."
+					+ "\n" + "Patikrinti vaiko statusą galite prisijungę prie sistemos." + "\n" + 
+					"http://akademijait.vtmc.lt:8181/bean-app");
 			emailSender.send(message);
 		});
 		newThread.start();
