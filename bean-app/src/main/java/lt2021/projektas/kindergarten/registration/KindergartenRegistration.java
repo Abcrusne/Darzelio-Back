@@ -157,5 +157,16 @@ public class KindergartenRegistration {
 	public void setAcceptedKindergarten(String acceptedKindergarten) {
 		this.acceptedKindergarten = acceptedKindergarten;
 	}
+	
+	@Override
+	public String toString() {
+		return
+				"   Pirmas prioritetas: " + this.firstPriority + ",\n" +
+				"   Antras prioritetas: " + this.secondPriority + ",\n" +
+				"   Trečias prioritetas: " + this.thirdPriority + ",\n" +
+				"   Ketvirtas prioritetas: " + this.fourthPriority + ",\n" +
+				"   Penktas prioritetas: " + this.fifthPriority + ",\n" +
+				"   Priimtas į darželį: " + (this.acceptedKindergarten == null ? "Ne" : this.acceptedKindergarten) + "\n";
+	}
 
 }

@@ -137,6 +137,13 @@ public class User {
 		this.token = token;
 	}
 	
-	
+	@Override
+	public String toString() {
+		return 
+				"Vardas: " + this.firstname + ",\n" +
+				"Pavardė: " + this.lastname + ",\n" +
+				"Pašto adresas: " + this.email + ",\n" +
+				"Registracijos duomenys: \n" + this.parentDetails;
+	}
 
 }

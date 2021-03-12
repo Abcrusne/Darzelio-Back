@@ -226,6 +226,23 @@ public class ParentDetails {
 		this.email = email;
 	}
 	
-	
+	@Override
+	public String toString() {
+		return
+				" Registruotas vardas: " + this.firstname + ",\n" +
+				" Registruota pavardė: " + this.lastname + ",\n" +
+				" Registruotas el. pašto adresas: " + this.email + ",\n" +
+				" Telefono numeris: " + this.phone + ",\n" +
+				" Asmens kodas: " + this.personalCode + ",\n" +
+				" Registruotas vardas: " + this.firstname + ",\n" +
+				" Gyvenamasis adresas: " + this.livingAddress + ",\n" +
+				" Vaikų skaičius: " + this.numberOfKids + ",\n" +
+				" Studijuoja: " + (this.isStudying ? "Taip" : "Ne") + ",\n" +
+				" Studijų institucijos pavadinimas: " + this.studyingInstitution + ",\n" +
+				" Darbingumo lygis mažiau 40%: " + (this.hasDisability ? "Taip" : "Ne") + ",\n" +
+				" Deklaruotas adresas sutampa su gyvenamuoju: " + (this.declaredResidenceSameAsLiving ? "Taip" : "Ne") + ",\n" +
+				" Deklaruotas adresas: " + this.declaredAddress + ",\n" +
+				( this.parent == null ? "" : " Vaikai: \n" + this.children);
+	}
 
 }

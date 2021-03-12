@@ -1,10 +1,16 @@
 package lt2021.projektas.userRegister;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -40,33 +46,33 @@ public class UserService implements UserDetailsService {
 
 	@Autowired
 	private UserDao userDao;
-	
+
 	@Autowired
 	private ParentDetailsDao detailsDao;
-	
+
 	@Autowired
 	private ChildService childService;
-	
+
 	@Autowired
 	private QueueService queueService;
-	
+
 	@Autowired
 	private KindergartenDao kindergartenDao;
-	
+
 	@Autowired
 	private KindergartenRegistrationDao kgRegDao;
-	
+
 	@Autowired
 	private AdmissionService admissionService;
-	
+
 	@Autowired
 	private ResetTokenDao tokenDao;
-	
+
 	@Autowired
 	private LogDao logDao;
-	
+
 	private JavaMailSender emailSender;
-	
+
 	@Autowired
 	public UserService(JavaMailSender emailSender) {
 		this.emailSender = emailSender;
@@ -98,7 +104,8 @@ public class UserService implements UserDetailsService {
 		PasswordEncoder encoder = new MessageDigestPasswordEncoder("SHA-256");
 		userToSave.setPassword(encoder.encode(newUser.getFirstname()));
 		userDao.save(userToSave);
-		logDao.save(new Log(new Date(), admin.getEmail(), admin.getRole().toString(), ("Sukurtas naujas vartotojas su el. paštu: " + newUser.getEmail())));
+		logDao.save(new Log(new Date(), admin.getEmail(), admin.getRole().toString(),
+				("Sukurtas naujas vartotojas su el. paštu: " + newUser.getEmail())));
 	}
 
 	@Transactional
@@ -116,7 +123,8 @@ public class UserService implements UserDetailsService {
 			updatedUser.setPassword(encoder.encode(user.getPassword()));
 		}
 		userDao.save(updatedUser);
-		logDao.save(new Log(new Date(), loggedUser.getEmail(), loggedUser.getRole().toString(), ("Pakeisti vartotojo " + user.getEmail() + " duomenys")));
+		logDao.save(new Log(new Date(), loggedUser.getEmail(), loggedUser.getRole().toString(),
+				("Pakeisti vartotojo " + user.getEmail() + " duomenys")));
 	}
 
 	@Transactional
@@ -141,7 +149,8 @@ public class UserService implements UserDetailsService {
 			} else {
 				userDao.delete(user);
 			}
-			logDao.save(new Log(new Date(), loggedUser.getEmail(), loggedUser.getRole().toString(), ("Ištrintas vartotojas su el. paštu: " + user.getEmail())));
+			logDao.save(new Log(new Date(), loggedUser.getEmail(), loggedUser.getRole().toString(),
+					("Ištrintas vartotojas su el. paštu: " + user.getEmail())));
 		}
 	}
 
@@ -160,25 +169,28 @@ public class UserService implements UserDetailsService {
 	public User findByEmail(String email) {
 		return userDao.findByEmail(email);
 	}
-	
+
 	@Transactional
 	public ResponseEntity<String> changePassword(User user, String oldPassword, String newPassword) {
 		@SuppressWarnings("deprecation")
 		PasswordEncoder encoder = new MessageDigestPasswordEncoder("SHA-256");
 		if (oldPassword.equals(newPassword)) {
-			logDao.save(new Log(new Date(), user.getEmail(), user.getRole().toString(), ("Bandytas pakeisti slaptažodis. Nepakeistas (senas ir naujas sutapo)")));
+			logDao.save(new Log(new Date(), user.getEmail(), user.getRole().toString(),
+					("Bandytas pakeisti slaptažodis. Nepakeistas (senas ir naujas sutapo)")));
 			return new ResponseEntity<String>("Senas ir naujas slaptažodis negali sutapti", HttpStatus.BAD_REQUEST);
 		}
 		if (encoder.matches(oldPassword, user.getPassword())) {
 			user.setPassword(encoder.encode(newPassword));
 			userDao.save(user);
-			logDao.save(new Log(new Date(), user.getEmail(), user.getRole().toString(), ("Pakeistas vartotojo slaptažodis")));
+			logDao.save(new Log(new Date(), user.getEmail(), user.getRole().toString(),
+					("Pakeistas vartotojo slaptažodis")));
 			return new ResponseEntity<String>("Slaptažodis pakeistas", HttpStatus.OK);
 		}
-		logDao.save(new Log(new Date(), user.getEmail(), user.getRole().toString(), ("Bandytas pakeisti slaptažodis. Nepakeistas (neteisingas senas slaptažodis)")));
+		logDao.save(new Log(new Date(), user.getEmail(), user.getRole().toString(),
+				("Bandytas pakeisti slaptažodis. Nepakeistas (neteisingas senas slaptažodis)")));
 		return new ResponseEntity<String>("Neteisingai įvestas senas slaptažodis", HttpStatus.BAD_REQUEST);
 	}
-	
+
 	@Transactional
 	public UserStatusObject returnLoggedUserStatus(String email) {
 		var user = findByEmail(email);
@@ -203,7 +215,8 @@ public class UserService implements UserDetailsService {
 					var timeDiffDays = TimeUnit.MILLISECONDS.toDays(timeDiff);
 					var yearDiff = timeDiffDays / 365;
 					if (child.getRegistrationForm() != null) {
-						childStatus.setApplicationAccepted(child.getRegistrationForm().getAdmission() == null ? false : true);
+						childStatus.setApplicationAccepted(
+								child.getRegistrationForm().getAdmission() == null ? false : true);
 						if (child.getRegistrationForm().getAdmission() == null) {
 							if (yearDiff < 2) {
 								childStatus.setNotAcceptedReason("Vaikas per jaunas darželiams");
@@ -214,15 +227,20 @@ public class UserService implements UserDetailsService {
 							}
 						} else {
 							childStatus.setFirstPriority(child.getRegistrationForm().getFirstPriority());
-							childStatus.setPlaceInFirstQueue(queueService.getChildPositionInKindergartenQueue(child.getRegistrationForm().getFirstPriority(), child.getRegistrationForm()));
+							childStatus.setPlaceInFirstQueue(queueService.getChildPositionInKindergartenQueue(
+									child.getRegistrationForm().getFirstPriority(), child.getRegistrationForm()));
 							childStatus.setSecondPriority(child.getRegistrationForm().getSecondPriority());
-							childStatus.setPlaceInSecondQueue(queueService.getChildPositionInKindergartenQueue(child.getRegistrationForm().getSecondPriority(), child.getRegistrationForm()));
+							childStatus.setPlaceInSecondQueue(queueService.getChildPositionInKindergartenQueue(
+									child.getRegistrationForm().getSecondPriority(), child.getRegistrationForm()));
 							childStatus.setThirdPriority(child.getRegistrationForm().getThirdPriority());
-							childStatus.setPlaceInThirdQueue(queueService.getChildPositionInKindergartenQueue(child.getRegistrationForm().getThirdPriority(), child.getRegistrationForm()));
+							childStatus.setPlaceInThirdQueue(queueService.getChildPositionInKindergartenQueue(
+									child.getRegistrationForm().getThirdPriority(), child.getRegistrationForm()));
 							childStatus.setFourthPriority(child.getRegistrationForm().getFourthPriority());
-							childStatus.setPlaceInFourthQueue(queueService.getChildPositionInKindergartenQueue(child.getRegistrationForm().getFourthPriority(), child.getRegistrationForm()));
+							childStatus.setPlaceInFourthQueue(queueService.getChildPositionInKindergartenQueue(
+									child.getRegistrationForm().getFourthPriority(), child.getRegistrationForm()));
 							childStatus.setFifthPriority(child.getRegistrationForm().getFifthPriority());
-							childStatus.setPlaceInFifthQueue(queueService.getChildPositionInKindergartenQueue(child.getRegistrationForm().getFifthPriority(), child.getRegistrationForm()));
+							childStatus.setPlaceInFifthQueue(queueService.getChildPositionInKindergartenQueue(
+									child.getRegistrationForm().getFifthPriority(), child.getRegistrationForm()));
 							childStatus.setAcceptedKindergarten(child.getRegistrationForm().getAcceptedKindergarten());
 							childrenStatus.add(childStatus);
 						}
@@ -243,7 +261,7 @@ public class UserService implements UserDetailsService {
 		status.setChildren(childrenStatus);
 		return status;
 	}
-	
+
 	@Transactional
 	public List<KindergartenStatisticsObject> getStatistics() {
 		var kindergartens = kindergartenDao.findAll();
@@ -251,12 +269,13 @@ public class UserService implements UserDetailsService {
 		for (Kindergarten kg : kindergartens) {
 			var kgStat = new KindergartenStatisticsObject();
 			kgStat.setKindergartenName(kg.getName());
-			kgStat.setFirstPriorityRegistrations((int)kgRegDao.registrationsWithFirstPriorityKindergarten(kg.getName()));
+			kgStat.setFirstPriorityRegistrations(
+					(int) kgRegDao.registrationsWithFirstPriorityKindergarten(kg.getName()));
 			kindergartenStatistics.add(kgStat);
 		}
 		return kindergartenStatistics;
 	}
-	
+
 	@Transactional
 	public ResponseEntity<String> resetUserPassword(String email) {
 		var user = findByEmail(email);
@@ -266,7 +285,7 @@ public class UserService implements UserDetailsService {
 			if (user.getToken() == null) {
 				var token = new PasswordResetToken(user);
 				user.setToken(token);
-				user.setPassword(encoder.encode((new Date().toString() + user.getFirstname() + user.getLastname() )));
+				user.setPassword(encoder.encode((new Date().toString() + user.getFirstname() + user.getLastname())));
 				userDao.save(user);
 				token = tokenDao.save(token);
 				final var finalToken = token;
@@ -277,19 +296,22 @@ public class UserService implements UserDetailsService {
 					message.setSubject("Slaptažodžio keitimas");
 					message.setText("Sveiki, " + user.getFirstname() + " " + user.getLastname() + ", \n"
 							+ "Gautas prašymas pakeisti jūsų pamirštą slaptažodį. Nuoroda slaptažodžio keitimui: \n"
-							+ "http://akademijait.vtmc.lt:8181/bean-app/keistislaptazodi?token=" + finalToken.getToken());
+							+ "http://akademijait.vtmc.lt:8181/bean-app/keistislaptazodi?token="
+							+ finalToken.getToken());
 					emailSender.send(message);
 				});
 				newThread.start();
-				logDao.save(new Log(new Date(), user.getEmail(), user.getRole().toString(), "Paprašyta atstatyti slaptažodį"));
-				return new ResponseEntity<String>("Nuoroda slaptažodžio keitimui išsiųsta į nurodytą el. paštą", HttpStatus.OK);
+				logDao.save(new Log(new Date(), user.getEmail(), user.getRole().toString(),
+						"Paprašyta atstatyti slaptažodį"));
+				return new ResponseEntity<String>("Nuoroda slaptažodžio keitimui išsiųsta į nurodytą el. paštą",
+						HttpStatus.OK);
 			} else {
 				var tokenToDelete = user.getToken();
 				user.setToken(null);
 				tokenDao.delete(tokenToDelete);
 				var token = new PasswordResetToken(user);
 				user.setToken(token);
-				user.setPassword(encoder.encode((new Date().toString() + user.getFirstname() + user.getLastname() )));
+				user.setPassword(encoder.encode((new Date().toString() + user.getFirstname() + user.getLastname())));
 				userDao.save(user);
 				token = tokenDao.save(token);
 				final var finalToken = token;
@@ -300,17 +322,20 @@ public class UserService implements UserDetailsService {
 					message.setSubject("Slaptažodžio keitimas");
 					message.setText("Sveiki, " + user.getFirstname() + " " + user.getLastname() + ", \n"
 							+ "Gautas prašymas pakeisti jūsų pamirštą slaptažodį. Nuoroda slaptažodžio keitimui: \n"
-							+ "http://akademijait.vtmc.lt:8181/bean-app/keistislaptazodi?token=" + finalToken.getToken());
+							+ "http://akademijait.vtmc.lt:8181/bean-app/keistislaptazodi?token="
+							+ finalToken.getToken());
 					emailSender.send(message);
 				});
 				newThread.start();
-				logDao.save(new Log(new Date(), user.getEmail(), user.getRole().toString(), "Paprašyta atstatyti slaptažodį"));
-				return new ResponseEntity<String>("Nuoroda slaptažodžio keitimui išsiųsta į nurodytą el. paštą", HttpStatus.OK);
+				logDao.save(new Log(new Date(), user.getEmail(), user.getRole().toString(),
+						"Paprašyta atstatyti slaptažodį"));
+				return new ResponseEntity<String>("Nuoroda slaptažodžio keitimui išsiųsta į nurodytą el. paštą",
+						HttpStatus.OK);
 			}
 		}
 		return new ResponseEntity<String>("Įvestas pašto adresas nerastas sistemoje", HttpStatus.BAD_REQUEST);
 	}
-	
+
 	@Transactional
 	public ResponseEntity<String> changeUserPasswordAfterReset(PasswordResetDTO resetObject) {
 		@SuppressWarnings("deprecation")
@@ -320,28 +345,34 @@ public class UserService implements UserDetailsService {
 			if (token != null) {
 				if (new Date().after(token.getExpiryDate())) {
 					tokenDao.delete(token);
-					return new ResponseEntity<String>("Baigėsi slaptažodžio žymės (token) galiojimo laikas. Sukurkite naują prašymą atstatyti slaptažodį", HttpStatus.BAD_REQUEST);
+					return new ResponseEntity<String>(
+							"Baigėsi slaptažodžio žymės (token) galiojimo laikas. Sukurkite naują prašymą atstatyti slaptažodį",
+							HttpStatus.BAD_REQUEST);
 				} else {
 					if (resetObject.getNewPassword().equals(resetObject.getConfirmNewPassword())) {
 						token.getUser().setPassword(encoder.encode(resetObject.getNewPassword()));
-						logDao.save(new Log(new Date(), token.getUser().getEmail(), token.getUser().getRole().toString(), "Sėkmingai atkurtas ir pakeistas slaptažodis"));
+						logDao.save(new Log(new Date(), token.getUser().getEmail(),
+								token.getUser().getRole().toString(), "Sėkmingai atkurtas ir pakeistas slaptažodis"));
 						userDao.save(token.getUser());
 						tokenDao.delete(token);
 						return new ResponseEntity<String>("Slaptažodis pakeistas sėkmingai", HttpStatus.OK);
 					}
-					return new ResponseEntity<String>("Įvesti slaptažodžiai nesutapo. Patikrinkite ar teisingai patvirtinote naują slaptažodį", HttpStatus.BAD_REQUEST);
+					return new ResponseEntity<String>(
+							"Įvesti slaptažodžiai nesutapo. Patikrinkite ar teisingai patvirtinote naują slaptažodį",
+							HttpStatus.BAD_REQUEST);
 				}
 			}
 			return new ResponseEntity<String>("Atsiųsta bloga slaptažodžio žymė (token)", HttpStatus.BAD_REQUEST);
 		}
 		return new ResponseEntity<String>("Atsiųsta bloga slaptažodžio žymė (token)", HttpStatus.BAD_REQUEST);
 	}
-	
+
 	@Transactional
 	public ResponseEntity<String> newUserRegistration(RegistrationObject registration) {
 		@SuppressWarnings("deprecation")
 		PasswordEncoder encoder = new MessageDigestPasswordEncoder("SHA-256");
-		var user = new User(registration.getFirstname(), registration.getLastname(), registration.getEmail(), UserRole.PARENT);
+		var user = new User(registration.getFirstname(), registration.getLastname(), registration.getEmail(),
+				UserRole.PARENT);
 		user.setPassword(encoder.encode(registration.getFirstname()));
 		userDao.save(user);
 		Thread newThread = new Thread(() -> {
@@ -350,15 +381,54 @@ public class UserService implements UserDetailsService {
 			message.setTo(registration.getEmail());
 			message.setSubject("Vartotojo registracija");
 			message.setText("Sveiki, " + registration.getFirstname() + " " + registration.getLastname() + ", \n"
-					+ "Jūsų paskyra sėkmingai sukurta! Prisijungimo duomenys: \n" +
-					"Paštas: " + registration.getEmail() + "\n" +
-					"Slaptažodis: " + registration.getFirstname() + "\n" +
-					"Prisijungę būtinai pasikeiskite savo slaptažodį! \n" + "http://akademijait.vtmc.lt:8181/bean-app");
+					+ "Jūsų paskyra sėkmingai sukurta! Prisijungimo duomenys: \n" + "Paštas: " + registration.getEmail()
+					+ "\n" + "Slaptažodis: " + registration.getFirstname() + "\n"
+					+ "Prisijungę būtinai pasikeiskite savo slaptažodį! \n"
+					+ "http://akademijait.vtmc.lt:8181/bean-app");
 			emailSender.send(message);
 		});
 		newThread.start();
 		logDao.save(new Log(new Date(), user.getEmail(), user.getRole().toString(), "Prisiregistravo prie sistemos"));
-		return new ResponseEntity<String>("Registracija sėkminga. Prisijungimo duomenys išsiųsti į jūsų pašto dėžutę", HttpStatus.OK);
+		return new ResponseEntity<String>("Registracija sėkminga. Prisijungimo duomenys išsiųsti į jūsų pašto dėžutę",
+				HttpStatus.OK);
+	}
+
+	@Transactional
+	public byte[] getUserDataArchive(User user) throws IOException {
+		String userInfo = user.toString();
+		Charset charset = StandardCharsets.UTF_8;
+		byte[] byteArray = userInfo.getBytes(charset);
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ZipOutputStream zos = new ZipOutputStream(baos);
+		ZipEntry entry = new ZipEntry((user.getFirstname() + "_" + user.getLastname() + ".txt"));
+		entry.setSize(byteArray.length);
+		zos.putNextEntry(entry);
+		zos.write(byteArray);
+		zos.closeEntry();
+		if (user.getParentDetails() != null) {
+			if (user.getParentDetails().getChildren().size() > 0) {
+				var children = user.getParentDetails().getChildren();
+				children.forEach(child -> {
+					if (child.getHealthRecord() != null) {
+						var newEntry = new ZipEntry(child.getHealthRecord().getFileName());
+						newEntry.setSize(child.getHealthRecord().getData().length);
+						try {
+							zos.putNextEntry(newEntry);
+							zos.write(child.getHealthRecord().getData());
+							zos.closeEntry();
+						}
+						catch(IOException e) {
+							e.printStackTrace();
+						}
+						
+					}
+				});
+			}
+		}
+		zos.close();
+		return baos.toByteArray();
+		
+
 	}
 
 }

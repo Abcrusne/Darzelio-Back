@@ -1,5 +1,6 @@
 package lt2021.projektas.child;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -162,7 +163,19 @@ public class Child {
 		this.healthRecord = healthRecord;
 	}
 
-	
+	@Override
+	public String toString() {
+		return
+				"\n  Vardas: " + this.firstname + ",\n" +
+				"  Pavardė: " + this.lastname + ",\n" +
+				"  Asmens kodas: " + this.personalCode + ",\n" +
+				"  Įvaikintas: " + (this.isAdopted ? "Taip" : "Ne") + ",\n" +
+				"  Gimimo data: " + new SimpleDateFormat("yyyy-MM-dd").format(this.birthdate).toString() + ",\n" +
+				"  Gyvenamasis adresas: " + this.livingAddress + ",\n" +
+				(this.parents.stream().filter(parent -> parent.getParent() == null).findFirst().orElse(null) == null ? "" :
+					"  Antro tėvo duomenys: \n" + this.parents.stream().filter(parent -> parent.getParent() == null).findFirst().orElse(null)) + "" + 
+				"  Registracijos forma: " + (this.registrationForm == null ? "nėra,\n" : "\n" + this.registrationForm);
+	}
 
 	
 }

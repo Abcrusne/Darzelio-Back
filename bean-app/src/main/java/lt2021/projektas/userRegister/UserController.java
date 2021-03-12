@@ -1,5 +1,6 @@
 package lt2021.projektas.userRegister;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -257,6 +258,17 @@ public class UserController {
 	@RequestMapping(path = "/register", method = RequestMethod.POST)
 	public ResponseEntity<String> newUserRegistration(@RequestBody RegistrationObject registration) {
 		return userService.newUserRegistration(registration);
+	}
+	
+	@RequestMapping(path = "/userdata/download", method = RequestMethod.GET)
+	public ResponseEntity<Resource> getUserDataArchive() throws IOException {
+		var user = userService.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
+		return ResponseEntity.ok()
+					.contentType(MediaType.parseMediaType("application/zip"))
+					.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + (user.getFirstname() + "_" + user.getLastname()) + ".zip" + "\"")
+					.body(new ByteArrayResource(userService.getUserDataArchive(user)));
+					
+				
 	}
 
 }
