@@ -41,7 +41,7 @@ public class KindergartenController {
 	}
 	
 	@RequestMapping(method = RequestMethod.GET)
-	@PreAuthorize("hasRole('ROLE_EDU') or hasRole('ROLE_ADMIN')")
+	@PreAuthorize("hasRole('ROLE_EDU') or hasRole('ROLE_ADMIN') or hasRole('ROLE_PARENT')")
 	public List<CreateKindergartenCommand> getAllKindergartens() {
 		return kgService.getAllKindergartens();
 	}

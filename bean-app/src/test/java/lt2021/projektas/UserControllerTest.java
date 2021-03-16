@@ -31,6 +31,7 @@ import lt2021.projektas.userRegister.User;
 import lt2021.projektas.userRegister.UserDao;
 import lt2021.projektas.userRegister.UserRole;
 import lt2021.projektas.userRegister.UserService;
+import lt2021.projektas.userRegister.UserTableObject;
 
 
 @RunWith(SpringRunner.class)
@@ -96,10 +97,11 @@ public class UserControllerTest {
 		
 		var headers = this.loginWithSpecifiedUser("admin@test.lt", "admin");
 		HttpEntity<String> request = new HttpEntity<>(headers);
-		var response = rest.exchange(rest.getRootUri() + "/api/users", HttpMethod.GET, request, ServiceLayerUser[].class);
-		ServiceLayerUser[] responseUsers = response.getBody();
+		var response = rest.exchange(rest.getRootUri() + "/api/users?page=1", HttpMethod.GET, request, UserTableObject.class);
+		System.out.println("????????? " + response.getBody());
+		List<ServiceLayerUser> responseUsers = response.getBody().getUsers();
 		var users = userDao.findAll();
-		assertTrue(responseUsers.length == users.size(), "GET request should return correct amount of users");
+		assertTrue(responseUsers.size() == users.size(), "GET request should return correct amount of users");
 		
 	}
 	
