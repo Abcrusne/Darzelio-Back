@@ -24,7 +24,7 @@ public class ParentDetailsController {
 	private UserService userService;
 	
 	@RequestMapping(method = RequestMethod.GET)
-	@PreAuthorize("hasRole('ROLE_PARENT')")
+	@PreAuthorize("hasRole('ROLE_PARENT') or hasRole('ROLE_ADMIN')")
 	public CreateDetailsCommand getParentDetails(@PathVariable final long id) {
 		var user = userService.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
 		if (user.getId() != id) {

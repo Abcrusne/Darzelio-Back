@@ -78,7 +78,7 @@ public class UserController {
 	}
 
 	@RequestMapping(path = "/{userId}", method = RequestMethod.GET)
-	@PreAuthorize("hasRole('ROLE_ADMIN')")
+	@PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_PARENT')")
 	public ServiceLayerUser getSingleUser(@PathVariable final long userId) {
 		return userService.getSingleUser(userId);
 	}

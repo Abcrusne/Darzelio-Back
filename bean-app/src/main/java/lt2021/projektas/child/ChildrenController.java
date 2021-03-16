@@ -30,7 +30,7 @@ public class ChildrenController {
 	private UserService userService;
 	
 	@RequestMapping(method = RequestMethod.POST)
-	@PreAuthorize("hasRole('ROLE_PARENT')")
+	@PreAuthorize("hasRole('ROLE_PARENT') or hasRole('ROLE_ADMIN')")
 	public ResponseEntity<String> addChild(@RequestBody final CreateChildCommand child, @PathVariable("userId") final long id) throws ParseException {
 		var user = userService.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
 		if (user.getId() != id) {
@@ -51,7 +51,7 @@ public class ChildrenController {
 	}
 	
 	@RequestMapping(method = RequestMethod.GET)
-	@PreAuthorize("hasRole('ROLE_PARENT')")
+	@PreAuthorize("hasRole('ROLE_PARENT') or hasRole('ROLE_ADMIN')")
 	public List<CreateChildCommand> getChildren(@PathVariable("userId") final long id) throws ParseException {
 		var user = userService.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
 		if (user.getId() != id) {
@@ -83,7 +83,7 @@ public class ChildrenController {
 	
 	
 	@RequestMapping(path = "/{childId}", method = RequestMethod.GET)
-	@PreAuthorize("hasRole('ROLE_PARENT')")
+	@PreAuthorize("hasRole('ROLE_PARENT') or hasRole('ROLE_ADMIN')")
 	public CreateChildCommand getChildDetails(@PathVariable("userId") final long userId, @PathVariable("childId") final long childId) throws ParseException {
 		var user = userService.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
 		if (user.getId() != userId) {
@@ -98,7 +98,7 @@ public class ChildrenController {
 	
 
 	@RequestMapping(path = "/{childId}", method = RequestMethod.PUT)
-	@PreAuthorize("hasRole('ROLE_PARENT')")
+	@PreAuthorize("hasRole('ROLE_PARENT') or hasRole('ROLE_ADMIN')")
 	public ResponseEntity<String> updateChild(@RequestBody final CreateChildCommand child, @PathVariable("userId") final long userId, @PathVariable("childId") final long childId) throws ParseException {
 		var user = userService.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
 		if (user.getId() != userId) {
@@ -123,7 +123,7 @@ public class ChildrenController {
 	}
 	
 	@RequestMapping(path = "/{childId}", method = RequestMethod.DELETE)
-	@PreAuthorize("hasRole('ROLE_PARENT')")
+	@PreAuthorize("hasRole('ROLE_PARENT') or hasRole('ROLE_ADMIN')")
 	public void deleteChild(@PathVariable("userId") final long userId, @PathVariable("childId") final long childId) {
 		var user = userService.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
 		if (user.getId() == userId) {

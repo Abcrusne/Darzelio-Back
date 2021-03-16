@@ -143,10 +143,17 @@ public class UserService implements UserDetailsService {
 	@Transactional
 	public void updateUser(ServiceLayerUser user, User loggedUser) {
 		var updatedUser = userDao.findById(user.getId()).orElse(null);
-		updatedUser.setFirstname(user.getFirstname());
-		updatedUser.setLastname(user.getLastname());
-		updatedUser.setEmail(user.getEmail().toLowerCase());
-		updatedUser.setRole(user.getRole());
+		if (user.getFirstname().length() > 0) {
+			updatedUser.setFirstname(user.getFirstname());
+		}
+		if (user.getLastname().length() > 0) {
+			updatedUser.setLastname(user.getLastname());
+		}
+		if (user.getEmail().length() > 0) {
+			updatedUser.setEmail(user.getEmail().toLowerCase());
+		} if (user.getRole().toString().length() > 0) {
+			updatedUser.setRole(user.getRole());
+		}
 		if (!(user.getPassword().equals(updatedUser.getPassword()))) {
 			updatedUser.setPassword(passwordEncoder.encode(user.getPassword()));
 		}
