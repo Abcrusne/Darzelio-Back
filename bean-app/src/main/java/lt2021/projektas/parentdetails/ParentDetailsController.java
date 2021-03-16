@@ -27,7 +27,7 @@ public class ParentDetailsController {
 	@PreAuthorize("hasRole('ROLE_PARENT') or hasRole('ROLE_ADMIN')")
 	public CreateDetailsCommand getParentDetails(@PathVariable final long id) {
 		var user = userService.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
-		if (user.getId() != id) {
+		if (user.getId() != id && !user.getRole().toString().equals("ADMIN")) {
 			return null;
 		}
 		ServiceLayerDetails parent = detailsService.getParentDetails(id);

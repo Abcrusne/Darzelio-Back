@@ -54,7 +54,7 @@ public class ChildrenController {
 	@PreAuthorize("hasRole('ROLE_PARENT') or hasRole('ROLE_ADMIN')")
 	public List<CreateChildCommand> getChildren(@PathVariable("userId") final long id) throws ParseException {
 		var user = userService.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
-		if (user.getId() != id) {
+		if (user.getId() != id && !user.getRole().toString().equals("ADMIN")) {
 			return null;
 		}
 		List<ServiceLayerChild> children = childService.getChildren(id);
@@ -86,7 +86,7 @@ public class ChildrenController {
 	@PreAuthorize("hasRole('ROLE_PARENT') or hasRole('ROLE_ADMIN')")
 	public CreateChildCommand getChildDetails(@PathVariable("userId") final long userId, @PathVariable("childId") final long childId) throws ParseException {
 		var user = userService.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
-		if (user.getId() != userId) {
+		if (user.getId() != userId && !user.getRole().toString().equals("ADMIN")) {
 			return null;
 		} else if (user.getParentDetails() != null) {
 			if (!user.getParentDetails().getChildren().stream().anyMatch(child -> child.getId() == childId)) {

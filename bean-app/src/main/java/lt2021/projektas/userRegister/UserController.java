@@ -78,7 +78,7 @@ public class UserController {
 	}
 
 	@RequestMapping(path = "/{userId}", method = RequestMethod.GET)
-	@PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_PARENT')")
+	@PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_PARENT') or hasRole('ROLE_EDU')")
 	public ServiceLayerUser getSingleUser(@PathVariable final long userId) {
 		return userService.getSingleUser(userId);
 	}
@@ -115,7 +115,7 @@ public class UserController {
 	}
 	
 	@RequestMapping(path = "/delete", method = RequestMethod.DELETE)
-	@PreAuthorize("hasRole('ROLE_PARENT')")
+	@PreAuthorize("hasRole('ROLE_PARENT') or hasRole('ROLE_EDU')")
 	public void deletedLoggedUser(@RequestParam("eraseData") boolean eraseData) {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		var loggedUser = userService.findByEmail(auth.getName());
@@ -300,7 +300,7 @@ public class UserController {
 	}
 	
 	@RequestMapping(path = "/userdata/download", method = RequestMethod.GET)
-	@PreAuthorize("hasRole('ROLE_PARENT')")
+	@PreAuthorize("hasRole('ROLE_PARENT') or hasRole('ROLE_EDU')")
 	public ResponseEntity<Resource> getUserDataArchive() throws IOException {
 		var user = userService.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
 		return ResponseEntity.ok()
