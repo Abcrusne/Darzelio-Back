@@ -63,11 +63,18 @@ public class UserController {
 	@Autowired
 	private LogService logService;
 
-	@RequestMapping(method = RequestMethod.GET)
+	@RequestMapping(method = RequestMethod.GET, params = {"page"})
 	@ApiOperation(value = "Get users list", notes = "Returns all users")
 	@PreAuthorize("hasRole('ROLE_ADMIN')")
-	public List<ServiceLayerUser> getUsers() {
-		return userService.getUsers();
+	public UserTableObject getUsers(@RequestParam("page") int pageNumber) {
+		return userService.getUsers(pageNumber, "");
+	}
+	
+	@RequestMapping(method = RequestMethod.GET, params = {"page", "email"})
+	@ApiOperation(value = "Get users list", notes = "Returns all users")
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
+	public UserTableObject getUsers(@RequestParam("page") int pageNumber, @RequestParam("email") String email) {
+		return userService.getUsers(pageNumber, email);
 	}
 
 	@RequestMapping(path = "/{userId}", method = RequestMethod.GET)
@@ -80,12 +87,12 @@ public class UserController {
 	@ResponseStatus(HttpStatus.CREATED)
 	@ApiOperation(value = "Create user", notes = "Creates users with data")
 	@PreAuthorize("hasRole('ROLE_ADMIN')")
-	public List<ServiceLayerUser> createUser(
+	public UserTableObject createUser(
 			@ApiParam(value = "User Data", required = true) @RequestBody final CreateUserCommand user) {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		var admin = userService.findByEmail(auth.getName());
 		userService.createUser(user, admin);
-		return userService.getUsers();
+		return userService.getUsers(1, "");
 	}
 
 	@RequestMapping(path = "/{userId}", method = RequestMethod.PUT)
@@ -116,6 +123,7 @@ public class UserController {
 	}
 
 	@RequestMapping(path = "/loggedrole", method = RequestMethod.GET)
+	@PreAuthorize("hasRole('ROLE_PARENT') or hasRole('ROLE_EDU') or hasRole('ROLE_ADMIN')")
 	public String getLoggedRole() {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		if (!(auth instanceof AnonymousAuthenticationToken)) {
@@ -126,6 +134,7 @@ public class UserController {
 	}
 
 	@RequestMapping(path = "/loggeduserid", method = RequestMethod.GET)
+	@PreAuthorize("hasRole('ROLE_PARENT') or hasRole('ROLE_EDU') or hasRole('ROLE_ADMIN')")
 	public Long getLoggedInUserId() {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		if (!(auth instanceof AnonymousAuthenticationToken)) {

@@ -13,6 +13,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
@@ -87,13 +89,23 @@ public class UserService implements UserDetailsService {
 	}
 
 	@Transactional(readOnly = true)
-	public List<ServiceLayerUser> getUsers() {
-		var users = userDao.findAll();
-		return users.stream()
-				.map(userFromService -> new ServiceLayerUser(userFromService.getId(), userFromService.getFirstname(),
-						userFromService.getLastname(), userFromService.getEmail(), userFromService.getPassword(),
-						userFromService.getRole()))
-				.collect(Collectors.toList());
+	public UserTableObject getUsers(int pageNumber, String email) {
+		if (email.length() == 0) {
+			var users = userDao.findAll(PageRequest.of(pageNumber - 1, 20, Sort.by(Sort.Order.asc("email"))));
+			int pageCount = users.getTotalPages();
+			long totalUsers = users.getTotalElements();
+			var serviceUsers = users.get().map(user -> new ServiceLayerUser(user.getId(), user.getFirstname(),
+					user.getLastname(), user.getEmail(), user.getPassword(), user.getRole())).collect(Collectors.toList());
+			return new UserTableObject(pageNumber, pageCount, totalUsers, serviceUsers);
+		} else {
+			var users = userDao.filterByEmail(email, PageRequest.of(pageNumber - 1, 20, Sort.by(Sort.Order.asc("email"))));
+			int pageCount = users.getTotalPages();
+			long totalUsers = users.getTotalElements();
+			var serviceUsers = users.get().map(user -> new ServiceLayerUser(user.getId(), user.getFirstname(),
+					user.getLastname(), user.getEmail(), user.getPassword(), user.getRole())).collect(Collectors.toList());
+			return new UserTableObject(pageNumber, pageCount, totalUsers, serviceUsers);
+		}
+		
 	}
 
 	@Transactional(readOnly = true)
@@ -110,7 +122,20 @@ public class UserService implements UserDetailsService {
 				newUser.getRole());
 		var psw = passwordEncoder.encode(newUser.getFirstname());
 		userToSave.setPassword(psw);
-		userDao.save(userToSave);
+		var user = userDao.save(userToSave);
+		Thread newThread = new Thread(() -> {
+			SimpleMailMessage message = new SimpleMailMessage();
+			message.setFrom("bean.vaidar.mailinformer@gmail.com");
+			message.setTo(user.getEmail());
+			message.setSubject("Vartotojo registracija");
+			message.setText("Sveiki, " + user.getFirstname() + " " + user.getLastname() + ", \n"
+					+ "Jums buvo sukurta paskyra į darželių sistemą. Prisijungimo duomenys: \n" + "Paštas: " + user.getEmail()
+					+ "\n" + "Slaptažodis: " + user.getFirstname() + "\n"
+					+ "Prisijungę būtinai pasikeiskite savo slaptažodį! \n"
+					+ "http://akademijait.vtmc.lt:8181/bean-app");
+			emailSender.send(message);
+		});
+		newThread.start();
 		logDao.save(new Log(new Date(), admin.getEmail(), admin.getRole().toString(),
 				("Sukurtas naujas vartotojas su el. paštu: " + newUser.getEmail())));
 	}

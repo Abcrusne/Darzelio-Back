@@ -3,7 +3,9 @@ package lt2021.projektas.kindergarten;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -33,28 +35,33 @@ public class KindergartenController {
 	 */
 	
 	@RequestMapping(path = "/{kgId}", method = RequestMethod.GET)
+	@PreAuthorize("hasRole('ROLE_EDU') or hasRole('ROLE_ADMIN')")
 	public CreateKindergartenCommand getKindergarten(@PathVariable final long kgId) {
 		return kgService.getKindergarten(kgId);
 	}
 	
 	@RequestMapping(method = RequestMethod.GET)
+	@PreAuthorize("hasRole('ROLE_EDU') or hasRole('ROLE_ADMIN')")
 	public List<CreateKindergartenCommand> getAllKindergartens() {
 		return kgService.getAllKindergartens();
 	}
 	
 	@RequestMapping(method = RequestMethod.POST)
+	@PreAuthorize("hasRole('ROLE_EDU') or hasRole('ROLE_ADMIN')")
 	public void createKindergarten(@RequestBody final CreateKindergartenCommand kg) {
 		var user = userService.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
 		kgService.addKindergarten(kg, user);
 	}
 	
 	@RequestMapping(path = "/{kgId}", method = RequestMethod.PUT)
+	@PreAuthorize("hasRole('ROLE_EDU') or hasRole('ROLE_ADMIN')")
 	public void updateKindergarten(@RequestBody final CreateKindergartenCommand kg, @PathVariable final long kgId) {
 		var user = userService.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
 		kgService.updateKindergarten(kg, kgId, user);
 	}
 	
 	@RequestMapping(path = "/{kgId}", method = RequestMethod.DELETE)
+	@PreAuthorize("hasRole('ROLE_EDU') or hasRole('ROLE_ADMIN')")
 	public List<CreateKindergartenCommand> deleteKinderkarten(@PathVariable final long kgId) {
 		var user = userService.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
 		return kgService.deleteKindergarten(kgId, user);
@@ -65,29 +72,45 @@ public class KindergartenController {
 	 */
 	
 	@RequestMapping(path = "/register", method = RequestMethod.POST)
+	@PreAuthorize("hasRole('ROLE_PARENT')")
 	public ResponseEntity<String> addRegistration(@RequestBody final CreateRegistrationCommand reg) {
 		return kgRegService.addRegistration(reg);
 	}
 	
 	@RequestMapping(path = "/register", method = RequestMethod.GET)
+	@PreAuthorize("hasRole('ROLE_EDU') or hasRole('ROLE_ADMIN')")
 	public List<CreateRegistrationCommand> getAllRegistrations() {
 		return kgRegService.getAllRegistrations();
 	}
 	
 	@RequestMapping(path = "/register/{childId}", method = RequestMethod.GET)
+	@PreAuthorize("hasRole('ROLE_PARENT')")
 	public CreateRegistrationCommand getChildRegistration(@PathVariable("childId") final long childId) {
+		var user = userService.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
+		if (user.getParentDetails() != null) {
+			if (!user.getParentDetails().getChildren().stream().anyMatch(child -> child.getId() == childId)) {
+				return null;
+			}
+		}
 		return kgRegService.getChildRegistration(childId);
 	}
 	
 	@RequestMapping(path = "/register/{childId}/update", method = RequestMethod.PUT)
+	@PreAuthorize("hasRole('ROLE_PARENT')")
 	public void updateRegistration(@RequestBody final CreateRegistrationCommand reg) {
+		var user = userService.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
 		kgRegService.updateRegistration(reg);
 	}
 	
 	@RequestMapping(path = "/register/{childId}/delete", method = RequestMethod.DELETE)
+	@PreAuthorize("hasRole('ROLE_PARENT')")
 	public void deleteRegistration(@PathVariable("childId") final long childId) {
 		var user = userService.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
-		kgRegService.deleteRegistration(childId, user);
+		if (user.getParentDetails() != null) {
+			if (user.getParentDetails().getChildren().stream().anyMatch(child -> child.getId() == childId)) {
+				kgRegService.deleteRegistration(childId, user);
+			}
+		}
 	}
 	
 	

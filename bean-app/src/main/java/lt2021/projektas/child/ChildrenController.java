@@ -5,7 +5,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import lt2021.projektas.parentdetails.Address;
 import lt2021.projektas.parentdetails.ServiceLayerDetails;
+import lt2021.projektas.userRegister.UserService;
 
 @RestController
 @RequestMapping(value = "/api/users/{userId}/parentdetails/children")
@@ -22,8 +26,16 @@ public class ChildrenController {
 	@Autowired
 	private ChildService childService;
 	
+	@Autowired
+	private UserService userService;
+	
 	@RequestMapping(method = RequestMethod.POST)
+	@PreAuthorize("hasRole('ROLE_PARENT')")
 	public ResponseEntity<String> addChild(@RequestBody final CreateChildCommand child, @PathVariable("userId") final long id) throws ParseException {
+		var user = userService.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
+		if (user.getId() != id) {
+			return new ResponseEntity<String>("Pateiktas svetimo vartotojo ID", HttpStatus.BAD_REQUEST);
+		}
 		if (!child.isSecondParent()) {
 			return childService.addChild(id, new ServiceLayerChild(child.getFirstname(), child.getLastname(), child.getPersonalCode(), child.isAdopted(), 
 					child.getBirthdate(), new Address(child.getCity(), child.getStreet(), child.getHouseNumber(), child.getFlatNumber())));
@@ -39,7 +51,12 @@ public class ChildrenController {
 	}
 	
 	@RequestMapping(method = RequestMethod.GET)
+	@PreAuthorize("hasRole('ROLE_PARENT')")
 	public List<CreateChildCommand> getChildren(@PathVariable("userId") final long id) throws ParseException {
+		var user = userService.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
+		if (user.getId() != id) {
+			return null;
+		}
 		List<ServiceLayerChild> children = childService.getChildren(id);
 		List<CreateChildCommand> finalChildren = new ArrayList<>();
 		for (ServiceLayerChild child: children) {
@@ -66,13 +83,31 @@ public class ChildrenController {
 	
 	
 	@RequestMapping(path = "/{childId}", method = RequestMethod.GET)
+	@PreAuthorize("hasRole('ROLE_PARENT')")
 	public CreateChildCommand getChildDetails(@PathVariable("userId") final long userId, @PathVariable("childId") final long childId) throws ParseException {
+		var user = userService.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
+		if (user.getId() != userId) {
+			return null;
+		} else if (user.getParentDetails() != null) {
+			if (!user.getParentDetails().getChildren().stream().anyMatch(child -> child.getId() == childId)) {
+				return null;
+			}
+		}
 		return childService.getChildDetails(userId, childId);
 	}
 	
 
 	@RequestMapping(path = "/{childId}", method = RequestMethod.PUT)
+	@PreAuthorize("hasRole('ROLE_PARENT')")
 	public ResponseEntity<String> updateChild(@RequestBody final CreateChildCommand child, @PathVariable("userId") final long userId, @PathVariable("childId") final long childId) throws ParseException {
+		var user = userService.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
+		if (user.getId() != userId) {
+			return null;
+		} else if (user.getParentDetails() != null) {
+			if (!user.getParentDetails().getChildren().stream().anyMatch(ch -> ch.getId() == childId)) {
+				return null;
+			}
+		}
 		if (!(child.isSecondParent())) {
 			return childService.updateChild(new ServiceLayerChild(child.getFirstname(), child.getLastname(), child.getPersonalCode(), child.isAdopted(), 
 					child.getBirthdate(), new Address(child.getCity(), child.getStreet(), child.getHouseNumber(), child.getFlatNumber())), userId, childId);
@@ -88,8 +123,16 @@ public class ChildrenController {
 	}
 	
 	@RequestMapping(path = "/{childId}", method = RequestMethod.DELETE)
+	@PreAuthorize("hasRole('ROLE_PARENT')")
 	public void deleteChild(@PathVariable("userId") final long userId, @PathVariable("childId") final long childId) {
-		childService.deleteChild(userId, childId);
+		var user = userService.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
+		if (user.getId() == userId) {
+			if (user.getParentDetails() != null) {
+				if (user.getParentDetails().getChildren().stream().anyMatch(ch -> ch.getId() == childId)) {
+					childService.deleteChild(userId, childId);
+				}
+			}
+		}
 	}
 	
 
