@@ -85,6 +85,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 					response.setHeader("Content-Type", "application/json;charset=UTF-8");
 					response.setStatus(401);
 					response.setHeader("Response-Code", "bad-credentials");
+					exception.printStackTrace();
 					logDao.save(new Log(new Date(), request.getParameter("username"), "", "Nesėkmingas prisijungimas"));
 				}
 			})

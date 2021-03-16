@@ -72,6 +72,9 @@ public class UserService implements UserDetailsService {
 	
 	@Autowired
 	private UserArchiveDao archiveDao;
+	
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 
 	@Autowired
 	private LogDao logDao;
@@ -105,9 +108,8 @@ public class UserService implements UserDetailsService {
 	public void createUser(CreateUserCommand newUser, User admin) {
 		User userToSave = new User(newUser.getFirstname(), newUser.getLastname(), newUser.getEmail().toLowerCase(),
 				newUser.getRole());
-		@SuppressWarnings("deprecation")
-		PasswordEncoder encoder = new MessageDigestPasswordEncoder("SHA-256");
-		userToSave.setPassword(encoder.encode(newUser.getFirstname()));
+		var psw = passwordEncoder.encode(newUser.getFirstname());
+		userToSave.setPassword(psw);
 		userDao.save(userToSave);
 		logDao.save(new Log(new Date(), admin.getEmail(), admin.getRole().toString(),
 				("Sukurtas naujas vartotojas su el. paštu: " + newUser.getEmail())));
@@ -115,18 +117,15 @@ public class UserService implements UserDetailsService {
 
 	@Transactional
 	public void updateUser(ServiceLayerUser user, User loggedUser) {
-
 		var updatedUser = userDao.findById(user.getId()).orElse(null);
 		updatedUser.setFirstname(user.getFirstname());
 		updatedUser.setLastname(user.getLastname());
 		updatedUser.setEmail(user.getEmail().toLowerCase());
 		updatedUser.setRole(user.getRole());
-		@SuppressWarnings("deprecation")
-		PasswordEncoder encoder = new MessageDigestPasswordEncoder("SHA-256");
 		if (!(user.getPassword().equals(updatedUser.getPassword()))) {
-			updatedUser.setPassword(encoder.encode(user.getPassword()));
+			updatedUser.setPassword(passwordEncoder.encode(user.getPassword()));
 		}
-		userDao.save(updatedUser);
+		var u = userDao.save(updatedUser);
 		logDao.save(new Log(new Date(), loggedUser.getEmail(), loggedUser.getRole().toString(),
 				("Pakeisti vartotojo " + user.getEmail() + " duomenys")));
 	}
@@ -210,15 +209,13 @@ public class UserService implements UserDetailsService {
 
 	@Transactional
 	public ResponseEntity<String> changePassword(User user, String oldPassword, String newPassword) {
-		@SuppressWarnings("deprecation")
-		PasswordEncoder encoder = new MessageDigestPasswordEncoder("SHA-256");
 		if (oldPassword.equals(newPassword)) {
 			logDao.save(new Log(new Date(), user.getEmail(), user.getRole().toString(),
 					("Bandytas pakeisti slaptažodis. Nepakeistas (senas ir naujas sutapo)")));
 			return new ResponseEntity<String>("Senas ir naujas slaptažodis negali sutapti", HttpStatus.BAD_REQUEST);
 		}
-		if (encoder.matches(oldPassword, user.getPassword())) {
-			user.setPassword(encoder.encode(newPassword));
+		if (passwordEncoder.matches(oldPassword, user.getPassword())) {
+			user.setPassword(passwordEncoder.encode(newPassword));
 			userDao.save(user);
 			logDao.save(new Log(new Date(), user.getEmail(), user.getRole().toString(),
 					("Pakeistas vartotojo slaptažodis")));
@@ -234,9 +231,7 @@ public class UserService implements UserDetailsService {
 		var user = findByEmail(email);
 		UserStatusObject status = new UserStatusObject();
 		List<ChildStatusObject> childrenStatus = new ArrayList<>();
-		@SuppressWarnings("deprecation")
-		PasswordEncoder encoder = new MessageDigestPasswordEncoder("SHA-256");
-		status.setPasswordChanged(encoder.matches(user.getFirstname(), user.getPassword()) ? false : true);
+		status.setPasswordChanged(passwordEncoder.matches(user.getFirstname(), user.getPassword()) ? false : true);
 		status.setDetailsFilled(user.getParentDetails() == null ? false : true);
 		status.setAdmissionActive(admissionService.areAdmissionsActive());
 		if (user.getParentDetails() != null) {
@@ -317,13 +312,11 @@ public class UserService implements UserDetailsService {
 	@Transactional
 	public ResponseEntity<String> resetUserPassword(String email) {
 		var user = findByEmail(email);
-		@SuppressWarnings("deprecation")
-		PasswordEncoder encoder = new MessageDigestPasswordEncoder("SHA-256");
 		if (user != null) {
 			if (user.getToken() == null) {
 				var token = new PasswordResetToken(user);
 				user.setToken(token);
-				user.setPassword(encoder.encode((new Date().toString() + user.getFirstname() + user.getLastname())));
+				user.setPassword(passwordEncoder.encode((new Date().toString() + user.getFirstname() + user.getLastname())));
 				userDao.save(user);
 				token = tokenDao.save(token);
 				final var finalToken = token;
@@ -349,7 +342,7 @@ public class UserService implements UserDetailsService {
 				tokenDao.delete(tokenToDelete);
 				var token = new PasswordResetToken(user);
 				user.setToken(token);
-				user.setPassword(encoder.encode((new Date().toString() + user.getFirstname() + user.getLastname())));
+				user.setPassword(passwordEncoder.encode((new Date().toString() + user.getFirstname() + user.getLastname())));
 				userDao.save(user);
 				token = tokenDao.save(token);
 				final var finalToken = token;
@@ -376,8 +369,6 @@ public class UserService implements UserDetailsService {
 
 	@Transactional
 	public ResponseEntity<String> changeUserPasswordAfterReset(PasswordResetDTO resetObject) {
-		@SuppressWarnings("deprecation")
-		PasswordEncoder encoder = new MessageDigestPasswordEncoder("SHA-256");
 		if (resetObject.getToken() != null && resetObject.getToken().length() > 0) {
 			var token = tokenDao.findById(resetObject.getToken()).orElse(null);
 			if (token != null) {
@@ -388,7 +379,7 @@ public class UserService implements UserDetailsService {
 							HttpStatus.BAD_REQUEST);
 				} else {
 					if (resetObject.getNewPassword().equals(resetObject.getConfirmNewPassword())) {
-						token.getUser().setPassword(encoder.encode(resetObject.getNewPassword()));
+						token.getUser().setPassword(passwordEncoder.encode(resetObject.getNewPassword()));
 						logDao.save(new Log(new Date(), token.getUser().getEmail(),
 								token.getUser().getRole().toString(), "Sėkmingai atkurtas ir pakeistas slaptažodis"));
 						userDao.save(token.getUser());
@@ -407,11 +398,9 @@ public class UserService implements UserDetailsService {
 
 	@Transactional
 	public ResponseEntity<String> newUserRegistration(RegistrationObject registration) {
-		@SuppressWarnings("deprecation")
-		PasswordEncoder encoder = new MessageDigestPasswordEncoder("SHA-256");
 		var user = new User(registration.getFirstname(), registration.getLastname(), registration.getEmail(),
 				UserRole.PARENT);
-		user.setPassword(encoder.encode(registration.getFirstname()));
+		user.setPassword(passwordEncoder.encode(registration.getFirstname()));
 		userDao.save(user);
 		Thread newThread = new Thread(() -> {
 			SimpleMailMessage message = new SimpleMailMessage();

@@ -63,6 +63,16 @@ public class User {
 		this.role = role;
 
 	}
+	
+	public User(@NotBlank String firstname, @NotBlank String lastname, @NotBlank String email, String password, UserRole role) {
+		super();
+		this.firstname = firstname;
+		this.lastname = lastname;
+		this.email = email;
+		this.password = password;
+		this.role = role;
+
+	}
 
 	public Long getId() {
 		return id;
