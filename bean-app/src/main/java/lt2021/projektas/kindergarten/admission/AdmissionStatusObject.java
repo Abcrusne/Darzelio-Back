@@ -8,13 +8,14 @@ public class AdmissionStatusObject {
 	private int spotsInSecondAgeGroups;
 	private boolean active;
 	private boolean locked;
+	private boolean passwordChanged;
 	
 	public AdmissionStatusObject() {
 		// TODO Auto-generated constructor stub
 	}
 
 	public AdmissionStatusObject(int registrationsInFirstAgeGroup, int registrationsInSecondAgeGroup,
-			int spotsInFirstAgeGroups, int spotsInSecondAgeGroups, boolean active, boolean locked) {
+			int spotsInFirstAgeGroups, int spotsInSecondAgeGroups, boolean active, boolean locked, boolean passwordChanged) {
 		super();
 		this.registrationsInFirstAgeGroup = registrationsInFirstAgeGroup;
 		this.registrationsInSecondAgeGroup = registrationsInSecondAgeGroup;
@@ -22,6 +23,7 @@ public class AdmissionStatusObject {
 		this.spotsInSecondAgeGroups = spotsInSecondAgeGroups;
 		this.active = active;
 		this.locked = locked;
+		this.passwordChanged = passwordChanged;
 	}
 
 	public int getRegistrationsInFirstAgeGroup() {
@@ -70,6 +72,14 @@ public class AdmissionStatusObject {
 
 	public void setLocked(boolean locked) {
 		this.locked = locked;
+	}
+
+	public boolean isPasswordChanged() {
+		return passwordChanged;
+	}
+
+	public void setPasswordChanged(boolean passwordChanged) {
+		this.passwordChanged = passwordChanged;
 	} 
 	
 	

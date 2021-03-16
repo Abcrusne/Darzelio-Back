@@ -1,5 +1,6 @@
 package lt2021.projektas.userRegister;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +14,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -33,8 +35,13 @@ import lt2021.projektas.child.CreateChildCommand;
 import lt2021.projektas.child.DBFile;
 import lt2021.projektas.child.ServiceLayerChild;
 import lt2021.projektas.kindergarten.KindergartenStatisticsObject;
+import lt2021.projektas.logging.LogService;
+import lt2021.projektas.logging.LogTableObject;
 import lt2021.projektas.parentdetails.CreateDetailsCommand;
 import lt2021.projektas.parentdetails.ParentDetailsService;
+import lt2021.projektas.passwordreset.PasswordResetDTO;
+import lt2021.projektas.userRegister.archive.UserArchiveObject;
+import lt2021.projektas.userRegister.archive.UserArchiveService;
 
 @RestController
 @Api(value = "users")
@@ -49,14 +56,29 @@ public class UserController {
 
 	@Autowired
 	private ParentDetailsService detailsService;
+	
+	@Autowired
+	private UserArchiveService archiveService;
+	
+	@Autowired
+	private LogService logService;
 
-	@RequestMapping(method = RequestMethod.GET)
+	@RequestMapping(method = RequestMethod.GET, params = {"page"})
 	@ApiOperation(value = "Get users list", notes = "Returns all users")
-	public List<ServiceLayerUser> getUsers() {
-		return userService.getUsers();
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
+	public UserTableObject getUsers(@RequestParam("page") int pageNumber) {
+		return userService.getUsers(pageNumber, "");
+	}
+	
+	@RequestMapping(method = RequestMethod.GET, params = {"page", "email"})
+	@ApiOperation(value = "Get users list", notes = "Returns all users")
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
+	public UserTableObject getUsers(@RequestParam("page") int pageNumber, @RequestParam("email") String email) {
+		return userService.getUsers(pageNumber, email);
 	}
 
 	@RequestMapping(path = "/{userId}", method = RequestMethod.GET)
+	@PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_PARENT') or hasRole('ROLE_EDU')")
 	public ServiceLayerUser getSingleUser(@PathVariable final long userId) {
 		return userService.getSingleUser(userId);
 	}
@@ -64,26 +86,44 @@ public class UserController {
 	@RequestMapping(method = RequestMethod.POST)
 	@ResponseStatus(HttpStatus.CREATED)
 	@ApiOperation(value = "Create user", notes = "Creates users with data")
-	public List<ServiceLayerUser> createUser(
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
+	public UserTableObject createUser(
 			@ApiParam(value = "User Data", required = true) @RequestBody final CreateUserCommand user) {
-		userService.createUser(user);
-		return userService.getUsers();
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		var admin = userService.findByEmail(auth.getName());
+		userService.createUser(user, admin);
+		return userService.getUsers(1, "");
 	}
 
 	@RequestMapping(path = "/{userId}", method = RequestMethod.PUT)
+	@PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_PARENT') or hasRole('ROLE_EDU')")
 	public void updateUser(@PathVariable final long userId, @Valid @RequestBody final CreateUserCommand user) {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		var loggedUser = userService.findByEmail(auth.getName());
 		userService.updateUser(new ServiceLayerUser(userId, user.getFirstname(), user.getLastname(), user.getEmail(),
-				user.getPassword(), user.getRole(), user.isMarkedForDeletion()));
+				user.getPassword(), user.getRole()), loggedUser);
 	}
 
 //	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@RequestMapping(path = "/{userId}", method = RequestMethod.DELETE)
 	@ApiOperation(value = "Delete user", notes = "Deletes user by id")
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
 	public void deleteUser(@PathVariable final Long userId) {
-		userService.deleteUser(userId);
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		var loggedUser = userService.findByEmail(auth.getName());
+		userService.deleteUser(userId, loggedUser);
+	}
+	
+	@RequestMapping(path = "/delete", method = RequestMethod.DELETE)
+	@PreAuthorize("hasRole('ROLE_PARENT') or hasRole('ROLE_EDU')")
+	public void deletedLoggedUser(@RequestParam("eraseData") boolean eraseData) {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		var loggedUser = userService.findByEmail(auth.getName());
+		userService.deleteUser(loggedUser, eraseData);
 	}
 
 	@RequestMapping(path = "/loggedrole", method = RequestMethod.GET)
+	@PreAuthorize("hasRole('ROLE_PARENT') or hasRole('ROLE_EDU') or hasRole('ROLE_ADMIN')")
 	public String getLoggedRole() {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		if (!(auth instanceof AnonymousAuthenticationToken)) {
@@ -94,6 +134,7 @@ public class UserController {
 	}
 
 	@RequestMapping(path = "/loggeduserid", method = RequestMethod.GET)
+	@PreAuthorize("hasRole('ROLE_PARENT') or hasRole('ROLE_EDU') or hasRole('ROLE_ADMIN')")
 	public Long getLoggedInUserId() {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		if (!(auth instanceof AnonymousAuthenticationToken)) {
@@ -104,6 +145,7 @@ public class UserController {
 	}
 
 	@RequestMapping(path = "/getloggeduserchildren", method = RequestMethod.GET)
+	@PreAuthorize("hasRole('ROLE_PARENT')")
 	public List<CreateChildCommand> getLoggedInUserChildren() throws ParseException {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		if (!(auth instanceof AnonymousAuthenticationToken)) {
@@ -152,6 +194,7 @@ public class UserController {
 	
 	
 	@RequestMapping(path = "/getparentdetails", method = RequestMethod.GET)
+	@PreAuthorize("hasRole('ROLE_PARENT')")
 	public CreateDetailsCommand getLoggedParentDetails() {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		if (!(auth instanceof AnonymousAuthenticationToken)) {
@@ -174,6 +217,7 @@ public class UserController {
 	
 	
 	@RequestMapping(path = "/changePassword", method = RequestMethod.POST)
+	@PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_PARENT') or hasRole('ROLE_EDU')")
 	public ResponseEntity<String> changePassword(@RequestBody final PasswordChange passwordChange) {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		if (!(auth instanceof AnonymousAuthenticationToken)) {
@@ -184,11 +228,13 @@ public class UserController {
 	}
 	
 	@RequestMapping(path = "/pdf", method = RequestMethod.POST)
+	@PreAuthorize("hasRole('ROLE_PARENT')")
 	public ResponseEntity<String> uploadHealthRecord(@RequestParam("data") MultipartFile file, @RequestParam("id") long id) {
 		return childService.uploadHealthRecord(file, id);
 	}
 	
 	@RequestMapping(path = "/pdf/{childId}/download", method = RequestMethod.GET)
+	@PreAuthorize("hasRole('ROLE_PARENT')")
 	public ResponseEntity<Resource> downloadHealthRecord(@PathVariable("childId") final long childId) {
 		DBFile dbfile = childService.getHealthRecord(childId);
 		return ResponseEntity.ok()
@@ -198,11 +244,13 @@ public class UserController {
 	}
 	
 	@RequestMapping(path = "/pdf/{childId}/delete", method = RequestMethod.DELETE)
+	@PreAuthorize("hasRole('ROLE_PARENT')")
 	public ResponseEntity<String> deleteHealthRecord(@PathVariable("childId") final long childId) {
 		return childService.deleteHealthRecord(childId);
 	}
 	
 	@RequestMapping(path = "/status", method = RequestMethod.GET)
+	@PreAuthorize("hasRole('ROLE_PARENT')")
 	public UserStatusObject getUserStatus() {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		if (!(auth instanceof AnonymousAuthenticationToken)) {
@@ -213,8 +261,70 @@ public class UserController {
 	}
 	
 	@RequestMapping(path = "/statistics", method = RequestMethod.GET)
+	@PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_PARENT') or hasRole('ROLE_EDU')")
 	public List<KindergartenStatisticsObject> getStatistics() {
 		return userService.getStatistics();
+	}
+	
+	@RequestMapping(path = "/logs", method = RequestMethod.GET, params = "page")
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
+	public LogTableObject getLogs(@RequestParam int page) {
+		return logService.retrieveAllLogs(page, "", "");
+	}
+	
+	@RequestMapping(path = "/logs", method = RequestMethod.GET, params = {"page", "sortby"})
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
+	public LogTableObject getLogs(@RequestParam int page, @RequestParam String sortby) {
+		return logService.retrieveAllLogs(page, sortby, "");
+	}
+	
+	@RequestMapping(path = "/logs", method = RequestMethod.GET, params = {"page", "sortby", "email"})
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
+	public LogTableObject getLogs(@RequestParam int page, @RequestParam String sortby, @RequestParam String email) {
+		return logService.retrieveAllLogs(page, sortby, email);
+	}
+	
+	@RequestMapping(path ="/resetpassword", method = RequestMethod.POST, params = "email")
+	public ResponseEntity<String> resetPassword(@RequestParam String email) {
+		return userService.resetUserPassword(email);
+	}
+	
+	@RequestMapping(path = "/resetpasswordchange", method = RequestMethod.POST)
+	public ResponseEntity<String> changePasswordAfterReset(@RequestBody PasswordResetDTO passwordReset) {
+		return userService.changeUserPasswordAfterReset(passwordReset);
+	}
+	
+	@RequestMapping(path = "/register", method = RequestMethod.POST)
+	public ResponseEntity<String> newUserRegistration(@RequestBody RegistrationObject registration) {
+		return userService.newUserRegistration(registration);
+	}
+	
+	@RequestMapping(path = "/userdata/download", method = RequestMethod.GET)
+	@PreAuthorize("hasRole('ROLE_PARENT') or hasRole('ROLE_EDU')")
+	public ResponseEntity<Resource> getUserDataArchive() throws IOException {
+		var user = userService.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
+		return ResponseEntity.ok()
+					.contentType(MediaType.parseMediaType("application/zip"))
+					.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + (user.getFirstname() + "_" + user.getLastname()) + ".zip" + "\"")
+					.body(new ByteArrayResource(userService.getUserDataArchive(user)));
+					
+				
+	}
+	
+	@RequestMapping(path = "/archive", method = RequestMethod.GET)
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
+	public List<UserArchiveObject> getUserArchive() {
+		return archiveService.getUserArchive();
+	}
+	
+	@RequestMapping(path = "/archive/{archiveId}/download", method = RequestMethod.GET)
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
+	public ResponseEntity<Resource> getSpecifiedUserArchive(@PathVariable("archiveId") long archiveId) {
+		var data = archiveService.downloadArchivedUserData(archiveId);
+		return ResponseEntity.ok()
+				.contentType(MediaType.parseMediaType("application/zip"))
+				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + data.getFilename() + "\"")
+				.body(new ByteArrayResource(data.getData()));
 	}
 
 }

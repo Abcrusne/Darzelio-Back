@@ -15,6 +15,9 @@ import lt2021.projektas.kindergarten.admission.AdmissionDao;
 import lt2021.projektas.kindergarten.admission.AdmissionService;
 import lt2021.projektas.kindergarten.registration.KindergartenRegistration;
 import lt2021.projektas.kindergarten.registration.KindergartenRegistrationDao;
+import lt2021.projektas.logging.Log;
+import lt2021.projektas.logging.LogDao;
+import lt2021.projektas.userRegister.User;
 
 @Service
 public class QueueService {
@@ -33,9 +36,12 @@ public class QueueService {
 
 	@Autowired
 	private KindergartenRegistrationDao registrationDao;
+	
+	@Autowired
+	private LogDao logDao;
 
 	@Transactional
-	public void createNewQueuesForKindergarten(Kindergarten kg) {
+	public void createNewQueuesForKindergarten(Kindergarten kg, User user) {
 		var admission = admissionDao.findAll().get(0);
 		if (!(kg.getQueues().stream().anyMatch(queue -> queue.getAgeGroup().equals(AgeGroup.PRESCHOOL)))
 				&& kg.getSpotsInFirstAgeGroup() > 0) {
@@ -46,6 +52,7 @@ public class QueueService {
 			var adQueues = admission.getQueues();
 			adQueues.add(preSchool);
 			admission.setQueues(adQueues);
+			logDao.save(new Log(new Date(), user.getEmail(), user.getRole().toString(), "Sukurta nauja darželio: " + kg.getName() + ", 2-3m. grupės eilė"));
 		}
 		if (!(kg.getQueues().stream().anyMatch(queue -> queue.getAgeGroup().equals(AgeGroup.KINDERGARTEN)))
 				&& kg.getSpotsInSecondAgeGroup() > 0) {
@@ -56,8 +63,8 @@ public class QueueService {
 			var adQueues = admission.getQueues();
 			adQueues.add(kindergarten);
 			admission.setQueues(adQueues);
+			logDao.save(new Log(new Date(), user.getEmail(), user.getRole().toString(), "Sukurta nauja darželio: " + kg.getName() + ", 3-6m. grupės eilė"));
 		}
-
 		kindergartenDao.save(kg);
 		admissionDao.save(admission);
 	}

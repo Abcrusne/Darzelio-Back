@@ -1,5 +1,6 @@
 package lt2021.projektas.kindergarten.registration;
 
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -14,6 +15,9 @@ import lt2021.projektas.kindergarten.admission.AdmissionDao;
 import lt2021.projektas.kindergarten.admission.AdmissionService;
 import lt2021.projektas.kindergarten.queue.QueueDao;
 import lt2021.projektas.kindergarten.queue.QueueService;
+import lt2021.projektas.logging.Log;
+import lt2021.projektas.logging.LogDao;
+import lt2021.projektas.userRegister.User;
 
 @Service
 public class KindergartenRegistrationService {
@@ -36,6 +40,9 @@ public class KindergartenRegistrationService {
 	@Autowired
 	private AdmissionService admissionService;
 	
+	@Autowired
+	private LogDao logDao;
+	
 	
 	@Transactional
 	public ResponseEntity<String> addRegistration(CreateRegistrationCommand registrationForm) {
@@ -45,7 +52,7 @@ public class KindergartenRegistrationService {
 				if (admissionService.areAdmissionsActive()) {
 					var registration = new KindergartenRegistration(child, registrationForm.getFirstPriority(), registrationForm.getSecondPriority(), 
 							registrationForm.getThirdPriority(), registrationForm.getFourthPriority(), registrationForm.getFifthPriority());
-					if (child.getLivingAddress().getCity().toLowerCase().equals("vilnius")) {
+					if (child.getLivingAddress().getCity().toLowerCase().contains("viln")) {
 						registration.setRating(registration.getRating() + 5);
 					}
 					if (child.isAdopted()) {
@@ -61,7 +68,10 @@ public class KindergartenRegistrationService {
 						registration.setRating(registration.getRating() + 1);
 					}
 					child.setRegistrationForm(registration);
+					var user = child.getParents().stream().filter(p -> p.getParent() != null).findFirst().orElse(null);
 					queueService.addRegistrationToQueues(kgRegDao.save(registration));
+					logDao.save(new Log(new Date(), user.getParent().getEmail(), user.getParent().getRole().toString(),
+							"Sukurta nauja registracijos forma vaikui: " + child.getFirstname() + " " + child.getLastname()));
 					return new ResponseEntity<String>("Vaiko registracija išsaugota", HttpStatus.OK);
 				}
 				return new ResponseEntity<String>("Registracijos šiuo metu užrakintos", HttpStatus.BAD_REQUEST);
@@ -74,12 +84,11 @@ public class KindergartenRegistrationService {
 	@Transactional
 	public void updateRegistrationOnParentOrChildInfoChange(long childId) {
 		var updatedChild = childDao.findById(childId).orElse(null);
-		var childRegistrations = kgRegDao.findByChild(updatedChild);
-		if (childRegistrations != null) {
-			var childRegistration = childRegistrations.stream().filter(reg -> reg.getAcceptedKindergarten() == null).findFirst().orElse(null);
-			if (childRegistration != null) {
+		var childRegistration = updatedChild.getRegistrationForm();
+		if (childRegistration != null) {
+			if (childRegistration.getAcceptedKindergarten() == null) {
 				childRegistration.setRating(0);
-				if (updatedChild.getLivingAddress().getCity().toLowerCase().equals("vilnius")) {
+				if (updatedChild.getLivingAddress().getCity().toLowerCase().contains("viln")) {
 					childRegistration.setRating(childRegistration.getRating() + 5);
 				}
 				if (updatedChild.isAdopted()) {
@@ -115,6 +124,9 @@ public class KindergartenRegistrationService {
 				queue.setRegistrations(regs);
 			});
 			queueService.addRegistrationToQueues(registration);
+			var user = registration.getChild().getParents().stream().filter(p -> p.getParent() != null).findFirst().orElse(null);
+			logDao.save(new Log(new Date(), user.getParent().getEmail(), user.getParent().getRole().toString(),
+					"Pakoreguota registracijos forma vaikui: " + registration.getChild().getFirstname() + " " + registration.getChild().getLastname()));
 		}
 	}
 	
@@ -147,7 +159,7 @@ public class KindergartenRegistrationService {
 	}
 	
 	@Transactional
-	public void deleteRegistration(long childId) {
+	public void deleteRegistration(long childId, User user) {
 		var admission = admissionDao.findAll().get(0);
 		var child = childDao.findById(childId).orElse(null);
 		var registration = child.getRegistrationForm();
@@ -165,6 +177,8 @@ public class KindergartenRegistrationService {
 			admissionDao.save(admission);
 			child.setRegistrationForm(null);
 			kgRegDao.delete(registration);
+			logDao.save(new Log(new Date(),user.getEmail(), user.getRole().toString(),
+					"Ištrinta registracijos forma vaikui: " + child.getFirstname() + " " + child.getLastname()));
 		}
 	}
 	

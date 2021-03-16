@@ -14,6 +14,7 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 
 import lt2021.projektas.parentdetails.ParentDetails;
+import lt2021.projektas.passwordreset.PasswordResetToken;
 
 @Entity
 public class User {
@@ -32,21 +33,23 @@ public class User {
 	@Column(unique = true)
 	@Email(message = "email format needs to be correct")
 	private String email;
-	
+
 	@Enumerated(EnumType.STRING)
 	private UserRole role;
 
 	// @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=\\S+$).{8,}$")
 	@NotBlank(message = "password can't be blank")
 	private String password;
-	
-	@OneToOne(cascade= CascadeType.ALL)
-	@JoinColumn(name="parentDetails_id")
+
+	@OneToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "parentDetails_id")
 	private ParentDetails parentDetails;
 //	@NotNull
 //	private String confirmPassword;
-	
-	private boolean markedForDeletion;
+
+	@OneToOne(mappedBy = "user")
+	private PasswordResetToken token;
+
 
 	public User() {
 		super();
@@ -58,7 +61,17 @@ public class User {
 		this.lastname = lastname;
 		this.email = email;
 		this.role = role;
-		this.markedForDeletion = false;
+
+	}
+	
+	public User(@NotBlank String firstname, @NotBlank String lastname, @NotBlank String email, String password, UserRole role) {
+		super();
+		this.firstname = firstname;
+		this.lastname = lastname;
+		this.email = email;
+		this.password = password;
+		this.role = role;
+
 	}
 
 	public Long getId() {
@@ -117,14 +130,20 @@ public class User {
 		this.parentDetails = parentDetails;
 	}
 
-	public boolean isMarkedForDeletion() {
-		return markedForDeletion;
+	public PasswordResetToken getToken() {
+		return token;
 	}
 
-	public void setMarkedForDeletion(boolean markedForDeletion) {
-		this.markedForDeletion = markedForDeletion;
+	public void setToken(PasswordResetToken token) {
+		this.token = token;
 	}
+
 	
-	
+
+	@Override
+	public String toString() {
+		return "Vardas: " + this.firstname + ",\n" + "Pavardė: " + this.lastname + ",\n" + "Pašto adresas: "
+				+ this.email + ",\n" + "Registracijos duomenys: \n" + this.parentDetails;
+	}
 
 }

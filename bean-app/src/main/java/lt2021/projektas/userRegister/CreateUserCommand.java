@@ -11,13 +11,13 @@ public class CreateUserCommand {
 	private String password;
 //	private String confirmPassword;
 	
-	private boolean markedForDeletion;
+
 
 	public CreateUserCommand() {
 		super();
 	}
 
-	public CreateUserCommand(String firstname, String lastname, String email, String password, UserRole role, boolean markedForDeletion) {
+	public CreateUserCommand(String firstname, String lastname, String email, String password, UserRole role) {
 
 		super();
 		this.firstname = firstname;
@@ -25,7 +25,6 @@ public class CreateUserCommand {
 		this.email = email;
 		this.role = role;
 		this.password = password;
-		this.markedForDeletion = markedForDeletion;
 	}
 
 	public String getFirstname() {
@@ -68,13 +67,5 @@ public class CreateUserCommand {
 		this.password = password;
 	}
 
-	public boolean isMarkedForDeletion() {
-		return markedForDeletion;
-	}
-
-	public void setMarkedForDeletion(boolean markedForDeletion) {
-		this.markedForDeletion = markedForDeletion;
-	}
 	
-
 }
